@@ -2,11 +2,51 @@
 import boto3
 import json
 from django.http import HttpResponse
+from django.utils import timezone
+
 from .models import Provider, CloudService, ComputeSpecifications
+#-----------------------------------------------------------------------------
+# 2.  Compute Type:
+# How many users do you expect to have accessing your services simultaneously?
+# 	( Example ): Drop down
+# 1 vCPU  - 2 RAM ( Standard) 
+# 2 vCPU  - 4 RAM ( Standard) 
+# 4 vCPU  - 16 RAM ( Standard) 
+# 8 vCPU  - 32 RAM ( Standard) 
+#*****************************************************************************
 # sku = "3DG6WFZ5QW4JAAHJ" # 1 vCPU  - 2 RAM ( Standard) 
 # sku = "3K59PVQYWBTWXEHT" #2 vCPU  - 4 RAM ( Standard)
 # sku = "7WVK4XHSDKCTP5FX" #4 vCPU  - 16 RAM ( Standard)  
 sku = "4QB2537CEAFFV88T" #8 vCPU  - 32 RAM ( Standard) 
+
+#-----------------------------------------------------------------------------
+# 3.	Database Type:
+# Question: "What type of database services are you looking for?"Relational (SQL)
+# NoSQL
+# SQL
+# No database is required
+#*****************************************************************************
+# NoSQL 
+# Storage sku = "QVD35TA7MPS92RBC or YUPCZAH7K635UM3H" # SQL   Single-AZ or Multi-AZ )multiply with the size of the database ex. 100gb = 0.12-gb/month * 100GB = $12 a month
+# Instance sku = "MV3A7KKN6HB749EA or PHXMADZ7H8JN3RRW" 8 GiB memory singe AZ or Multi-AZ
+# No database is required
+
+#----------------------------------If SQL is selected in the previous question---------------------------
+# Question: "What is the expected size of your database?"
+# Small (under 500 GB) # Storage sku = "QVD35TA7MPS92RBC or YUPCZAH7K635UM3H" # SQL   Single-AZ or Multi-AZ )multiply with the size of the database ex. 100gb = 0.12-gb/month * 100GB = $12 a month
+# Medium (1 TB) # Storage sku = "QVD35TA7MPS92RBC or YUPCZAH7K635UM3H" # SQL   Single-AZ or Multi-AZ )multiply with the size of the database ex. 100gb = 0.12-gb/month * 100GB = $12 a month
+# Large (2 TB) # Storage sku = "QVD35TA7MPS92RBC or YUPCZAH7K635UM3H" # SQL   Single-AZ or Multi-AZ )multiply with the size of the database ex. 100gb = 0.12-gb/month * 100GB = $12 a month
+# Very large (5 TB) # Storage sku = "QVD35TA7MPS92RBC or YUPCZAH7K635UM3H" # SQL   Single-AZ or Multi-AZ )multiply with the size of the database ex. 100gb = 0.12-gb/month * 100GB = $12 a month
+#*****************************************************************************
+#----------------------------------If NoSQL is selected in the previous question---------------------------
+# Question: "What is the expected size of your database?"
+# Small (under 500 GB)
+# Medium (1 TB)
+# Large (2 TB)
+# Very large (5 TB)
+#*****************************************************************************
+
+
 
 
 def get_pricing(request):
@@ -46,6 +86,8 @@ def get_pricing(request):
             'description': pricing_info['Description'],
             'price_per_unit': pricing_info['Price per Unit'],
             'currency': 'USD',  # Assuming currency is always USD
+            'updated_at': timezone.now(),  # Explicitly set the updated_at field
+
             }
         )
 
