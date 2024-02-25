@@ -338,30 +338,6 @@ const AdvancedForm = () => {
               </FormControl>
             </Grid>
 
-            {/* Security and Compliance */}
-            <Grid item xs={6}>
-              <FormControl fullWidth>
-                <InputLabel id="security-compliance-label">Security and Compliance</InputLabel>
-                <Select
-                  labelId="security-compliance-label"
-                  value={formData.securityCompliance}
-                  onChange={handleChange}
-                  name="securityCompliance"
-                  label="Security and Compliance"
-                  error={validationErrors.securityCompliance}
-                >
-                  <MenuItem value="">Select...</MenuItem>
-                  <MenuItem value="standard">Standard</MenuItem>
-                  <MenuItem value="enhanced">Enhanced</MenuItem>
-                  <MenuItem value="high">High</MenuItem>
-                  <MenuItem value="custom">Custom</MenuItem>
-                </Select>
-                {validationErrors.securityCompliance && (
-                  <FormHelperText error>Please select security and compliance</FormHelperText>
-                )}
-              </FormControl>
-            </Grid>
-
             {/* Scalability */}
             <Grid item xs={6}>
               <FormControl fullWidth>
@@ -385,7 +361,48 @@ const AdvancedForm = () => {
                 )}
               </FormControl>
             </Grid>
-
+            {/* Location */}
+            <Grid item xs={6}>
+              <FormControl fullWidth>
+                <InputLabel id="location-label">Location</InputLabel>
+                <Select
+                  labelId="location-label"
+                  value={formData.location}
+                  onChange={handleChange}
+                  name="location"
+                  label="Location"
+                  error={validationErrors.location}
+                >
+                  <MenuItem value="">Select...</MenuItem>
+                  <MenuItem value="us-east-1">US East (N. Virginia)</MenuItem>
+                  <MenuItem value="us-east-2">US East (Ohio)</MenuItem>
+                  <MenuItem value="us-west-1">US West (N. California)</MenuItem>
+                  <MenuItem value="us-west-2">US West (Oregon)</MenuItem>
+                  <MenuItem value="ap-east-1">Asia Pacific (Hong Kong)</MenuItem>
+                  <MenuItem value="ap-south-1">Asia Pacific (Mumbai)</MenuItem>
+                  <MenuItem value="ap-northeast-3">Asia Pacific (Osaka-Local)</MenuItem>
+                  <MenuItem value="ap-northeast-2">Asia Pacific (Seoul)</MenuItem>
+                  <MenuItem value="ap-southeast-1">Asia Pacific (Singapore)</MenuItem>
+                  <MenuItem value="ap-southeast-2">Asia Pacific (Sydney)</MenuItem>
+                  <MenuItem value="ap-northeast-1">Asia Pacific (Tokyo)</MenuItem>
+                  <MenuItem value="ca-central-1">Canada (Central)</MenuItem>
+                  <MenuItem value="cn-north-1">China (Beijing)</MenuItem>
+                  <MenuItem value="cn-northwest-1">China (Ningxia)</MenuItem>
+                  <MenuItem value="eu-central-1">EU (Frankfurt)</MenuItem>
+                  <MenuItem value="eu-west-1">EU (Ireland)</MenuItem>
+                  <MenuItem value="eu-west-2">EU (London)</MenuItem>
+                  <MenuItem value="eu-south-1">EU (Milan)</MenuItem>
+                  <MenuItem value="eu-west-3">EU (Paris)</MenuItem>
+                  <MenuItem value="eu-north-1">EU (Stockholm)</MenuItem>
+                  <MenuItem value="me-south-1">Middle East (Bahrain)</MenuItem>
+                  <MenuItem value="sa-east-1">South America (Sao Paulo)</MenuItem>
+                  <MenuItem value="af-south-1">Africa (Cape Town)</MenuItem>
+                </Select>
+                {validationErrors.location && (
+                  <FormHelperText error>Please select a location</FormHelperText>
+                )}
+              </FormControl>
+            </Grid>
             {/* Submit Button */}
             <Grid item xs={12}>
               <Box mt={3} textAlign="center">
