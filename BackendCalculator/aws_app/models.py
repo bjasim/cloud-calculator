@@ -20,7 +20,7 @@ class CloudService(models.Model):
     
 # Compute Specifications Table
 class ComputeSpecifications(models.Model):
-    cloud_service = models.ForeignKey(CloudService, related_name='compute_specs', on_delete=models.CASCADE)
+    cloud_service = models.ForeignKey(CloudService, related_name='compute_specs', on_delete=models.CASCADE, null=True)
     sku = models.CharField(max_length=100, unique=True, default='SKU not provided')  # SKU should be unique
     instance_type = models.CharField(max_length=50, default='No type provided.')
     operating_system = models.CharField(max_length=50, default='Ubuntu Pro')

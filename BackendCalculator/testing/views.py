@@ -68,15 +68,30 @@ from django.http import HttpResponse
 def testing(request):
     client = boto3.client('pricing', region_name='us-east-1')
     response = client.get_products(
-        ServiceCode='AmazonDynamoDB',
+        # ServiceCode='AmazonDynamoDB',
+        # ServiceCode='AmazonS3',
+        # ServiceCode='AmazonEFS',
+        ServiceCode='AmazonRDS',  
+        # ServiceCode='AmazonEC2',
+
         Filters=[
-            {'Type': 'TERM_MATCH', 'Field': 'productFamily', 'Value': 'API Request'},
-            # # {'Type': 'TERM_MATCH', 'Field': 'volumeName', 'Value': 'gp2'},  # Filter for General Purpose SSD (gp2)
-            # {'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'us-east-1'},
-            # {'Type': 'TERM_MATCH', 'Field': 'databaseEdition', 'Value': 'standard'},
-            # {'Type': 'TERM_MATCH', 'Field': 'databaseEngine', 'Value': 'SQL Server'},
+            # {'Type': 'TERM_MATCH', 'Field': 'productFamily', 'Value': 'Storage'},
+            # {'Type': 'TERM_MATCH', 'Field': 'volumeApiName', 'Value': 'gp2'},  # Example: Filter for General Purpose SSD (gp2)
+            # {'Type': 'TERM_MATCH', 'Field': 'location', 'Value': 'US East (N. Virginia)'},  # Corresponds to 'us-east-1'
+
+            # {'Type': 'TERM_MATCH', 'Field': 'productFamily', 'Value': 'Storage instance'},
+            # {'Type': 'TERM_MATCH', 'Field': 'volumeName', 'Value': 'gp2'},  # Filter for General Purpose SSD (gp2)
+            {'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'us-east-1'},
+            {'Type': 'TERM_MATCH', 'Field': 'databaseEdition', 'Value': 'standard'},
+            {'Type': 'TERM_MATCH', 'Field': 'databaseEngine', 'Value': 'SQL Server'},
             # {'Type': 'TERM_MATCH', 'Field': 'instanceFamily', 'Value': 'General Purpose'},
-            # {'Type': 'TERM_MATCH', 'Field': 'instanceTypeFamily', 'Value': 'M4'}
+            # {'Type': 'TERM_MATCH', 'Field': 'instanceTypeFamily', 'Value': 'M4'},
+            # Filter for On-Demand Read and Write Requests
+            # {'Type': 'TERM_MATCH', 'Field': 'productFamily', 'Value': 'API Request'},
+            # Filter for On-Demand Storage pricing
+            {'Type': 'TERM_MATCH', 'Field': 'productFamily', 'Value': 'Database Storage'},
+            # Filter for specific AWS region (e.g., 'us-east-1')
+            # {'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'us-east-1'},
 
             # {'Type': 'TERM_MATCH', 'Field': 'productFamily', 'Value': 'Database Instance'},
             # {'Type': 'TERM_MATCH', 'Field': 'volumeName', 'Value': 'gp2'},  # Filter for General Purpose SSD (gp2)
