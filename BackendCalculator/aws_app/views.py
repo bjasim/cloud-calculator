@@ -1,4 +1,3 @@
-
 import boto3
 import json
 from django.http import HttpResponse
@@ -6,7 +5,7 @@ from django.utils import timezone
 from django.http import JsonResponse, HttpResponse
 
 
-from .models import Provider, CloudService, ComputeSpecifications
+from .models import Provider, CloudService, ComputeSpecifications, DatabaseStorageVolume
 #-----------------------------------------------------------------------------
 # 2.  Compute Type:
 # How many users do you expect to have accessing your services simultaneously?
@@ -83,9 +82,9 @@ sku_to_service_code = {
     "7WVK4XHSDKCTP5FX": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
     "4QB2537CEAFFV88T": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
     
-    "F3E2EDSYC6ZNW7XP": "AmazonDynamoDB",  # $0.25/gb storage
-    "MV3A7KKN6HB749EA": "AmazonRDS",  #8 GiB memory singe AZ SQL Server
-    "QVD35TA7MPS92RBC": "AmazonRDS",   # SQL   Single-AZ )multiply with the size of the database ex. 100gb = 0.12-gb/month * 100GB = $12 a month ServiceCode= AmazonRDS
+    "F3E2EDSYC6ZNW7XP": "AmazonDynamoDB",  # $0.25/gb storage  >>databasestoragevolume table
+    "MV3A7KKN6HB749EA": "AmazonRDS",  #8 GiB memory singe AZ SQL Server >>databaseSpecifications table
+    "QVD35TA7MPS92RBC": "AmazonRDS",   # SQL   Single-AZ )multiply with the size of the database ex. 100gb = 0.12-gb/month * 100GB = $12 a month ServiceCode= AmazonRDS >>databasestoragevolume table
 
     "WP9ANXZGBYYSGJEA": "AmazonS3",  # $$0.022/GB monthly
     "YFV3RHAD3CDDP3VE": "AmazonEFS",  #standard storage general purpose, $0.30 per GB-Mo
@@ -183,6 +182,92 @@ def process_ec2_data(sku, pricing_data):
             break  # Assuming we need the first found description and price
         break  # Exiting after processing the first SKU details
 
+def process_to_database_storage(sku, pricing_data):
+    # # Extracting initial attributes
+    # product_attributes = pricing_data.get('product', {}).get('attributes', {})
+    # volume_type = product_attributes.get('volumeType', "No volume type provided.")
+
+    # # Extracting the terms, description, and price
+    # terms = pricing_data.get('terms', {})
+    # on_demand = terms.get('OnDemand', {})
+    # description = "No description provided."
+    # price = "No price provided."
+    # unit = "No unit provided."
+
+    # found_first = False  # Flag to indicate if the first item has been processed
+
+    # for sku_details in on_demand.values():
+    #     for offer_term_code, offer_term_details in sku_details.get('priceDimensions', {}).items():
+    #         if found_first:
+    #             # Process the second item
+    #             description = offer_term_details.get('description', description)
+    #             price = offer_term_details.get('pricePerUnit', {}).get('USD', price)
+    #             unit = offer_term_details.get('unit', unit)
+    #             break  # Break after processing the second item
+    #         found_first = True  # Set the flag after processing the first item
+    #     if found_first:
+    #         break  # Break the outer loop if the second item has been processed
+
+    # # Print the extracted data
+    # print(f"SKU: {sku}")
+    # print(f"Description: {description}")
+    # print(f"Price: {price}")
+    # print(f"Volume Type: {volume_type}")
+    # print(f"Unit: {unit}")
+    # Extracting initial attributes
+    product_attributes = pricing_data.get('product', {}).get('attributes', {})
+    volume_type = product_attributes.get('volumeType', "No type provided.")
+    storage_capacity = product_attributes.get('storage', "Inf")
+
+    # Extracting the terms, description, and price
+    terms = pricing_data.get('terms', {})
+    on_demand = terms.get('OnDemand', {})
+    description = "No description provided."
+    price_per_unit = None  # Initialize as None to check if a valid price is found
+
+    price_count = 0  # Counter to skip the first price (free tier)
+
+    for sku_details in on_demand.values():
+        for offer_term_code, offer_term_details in sku_details.get('priceDimensions', {}).items():
+            temp_price = offer_term_details.get('pricePerUnit', {}).get('USD', "0.0")
+            # Parse the price as a float and check if it's the first valid price or a non-zero price
+            temp_price_float = float(temp_price)
+            if price_per_unit is None or (price_per_unit == 0.0 and temp_price_float != 0.0):
+                price_per_unit = temp_price_float
+                description = offer_term_details.get('description', description)
+
+    # Check if a record with the given SKU exists
+    try:
+        storage_volume = DatabaseStorageVolume.objects.get(volume_sku=sku)
+        # If the record exists, update it with the new details
+        created = False
+    except DatabaseStorageVolume.DoesNotExist:
+        # If the record does not exist, create a new one
+        storage_volume = DatabaseStorageVolume(
+            volume_sku=sku,
+            description=description,
+            volume_type=volume_type,
+            storage_capacity=storage_capacity,
+            volume_price=price_per_unit or 0.0,
+        )
+        created = True
+
+    # Save or update the record
+    storage_volume.description = description
+    storage_volume.volume_type = volume_type
+    storage_volume.storage_capacity = storage_capacity
+    formatted_price = "{:.4f}".format(price_per_unit)
+    storage_volume.volume_price = formatted_price
+    storage_volume.save()
+
+    print(f"Data {'created' if created else 'updated'} for SKU: {sku}")
+
+    # Verification Query
+    try:
+        verify_volume = DatabaseStorageVolume.objects.get(volume_sku=sku)
+        print(f"Verification: Found SKU: {storage_volume.volume_sku}, Price: {storage_volume.volume_price}, Volume Type: {storage_volume.volume_type}")
+    except DatabaseStorageVolume.DoesNotExist:
+        print(f"Verification Failed: SKU {sku} not found in database.")
 
     
     # # EC2 specific data extraction
@@ -221,6 +306,9 @@ def process_and_save_data(sku, service_code, pricing_data):
     # Check if SKU is part of AmazonEC2 and not "HY3BZPP2B6K8MSJF"
     if service_code == "AmazonEC2" and sku != "HY3BZPP2B6K8MSJF":
         process_ec2_data(sku, pricing_data)
+    elif service_code == "AmazonDynamoDB" or sku == "QVD35TA7MPS92RBC":
+        # Call the process_dynamodb_data function for DynamoDB SKUs
+        process_to_database_storage(sku, pricing_data)
     else:
         # Handle other cases or simply pass
         pass
@@ -302,8 +390,9 @@ def process_and_save_data(sku, service_code, pricing_data):
 #         return HttpResponse(f"No pricing data found for SKU {sku}", status=404)
 #-----------------------------------------------------------------------------------------------------------------------------------------
 
-# specify each sku and the serviceCode for it
-# Call the api with sku and service code
+# specify each sku and the serviceCode for it --------------------------
+# Call the api with sku and service cod --------------------------------
+# Create functions to store database and storage information into tables based on SKUs, just like compute is done
 # store/update to the tables with sku information (automate those three steps every morning)
 # get submitted form and make backend logic for it
 #

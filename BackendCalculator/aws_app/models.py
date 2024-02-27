@@ -69,12 +69,13 @@ class DatabaseSpecifications(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 class DatabaseStorageVolume(models.Model):
-    instance = models.ForeignKey(DatabaseSpecifications, related_name='storage_volumes', on_delete=models.CASCADE)
+    # instance = models.ForeignKey(DatabaseSpecifications, related_name='storage_volumes', on_delete=models.CASCADE)
+    description = models.TextField(default='No description provided.')
     volume_type = models.CharField(max_length=50, default='No type provided.')  # e.g., General Purpose SSD, Provisioned IOPS SSD
     volume_sku = models.CharField(max_length=100, default='No SKU provided.')  # SKU for the storage
-    storage_capacity = models.CharField(max_length=50)  # e.g., '200 GB', '1 TB'
+    storage_capacity = models.CharField(max_length=50, default='Inf')  # e.g., '200 GB', '1 TB'
     max_iops = models.IntegerField(null=True, blank=True)  # Optional field
-    volume_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)  # Monthly price per GB
+    volume_price = models.DecimalField(max_digits=10, decimal_places=4, default=0.00)  # Monthly price per GB with higher precision
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
