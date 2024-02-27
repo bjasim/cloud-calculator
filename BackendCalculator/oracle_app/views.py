@@ -14,54 +14,14 @@ import requests
 # Create your views here.
 def get_pricing(request):
 
+    #config path + profile name.
+    config_file_path = "c:/Users/Philip/.oci/config"
+    profile_name = "DEFAULT"
 
+    #config
+    config = oci.config.from_file(file_location=config_file_path, profile_name=profile_name)
 
-    return HttpResponse("oracle App")
-
-#Database code.
-# ---
-# ---
-# ---
-
-#Instance details.
-def fetch_instance_details():
-    compute_client = oci.core.ComputeClient(config)
-    shapes = compute_client.list_shapes(compartment_id=config["tenancy"]).data
-
-    for shape in shapes:
-        print(f"Shape: {shape.shape}, CPUs: {shape.ocpus}, RAM: {shape.memory_in_gbs} GB")
-
-#Storage [NOT WORKING].
-def fetch_volume_details():
-    block_storage_client = oci.core.BlockstorageClient(config)
-    volumes = block_storage_client.list_volumes(compartment_id=config["tenancy"]).data
-
-    for volume in volumes:
-        print(f"Volume: {volume.display_name}, Size: {volume.size_in_gbs} GB, Availability Domain: {volume.availability_domain}")
-
-#Database.
-def fetch_database_options():
-    database_client = oci.database.DatabaseClient(config)
-    db_versions = database_client.list_db_versions(compartment_id=config["tenancy"]).data
-    db_shapes = database_client.list_db_system_shapes(compartment_id=config["tenancy"]).data
-
-    print("\nAvailable Database Versions:")
-    for version in db_versions:
-        print(f"Version: {version.version}")
-
-    print("\nAvailable Database Shapes:")
-    for shape in db_shapes:
-        print(f"Shape: {shape.shape}")
-
-
-#Networking [NOT WORKING].
-def fetch_networking_options():
-    virtual_network_client = oci.core.VirtualNetworkClient(config)
-    vcns = virtual_network_client.list_vcns(compartment_id=config["tenancy"]).data
-
-#Pricing.
-def fetch_filtered_api_data():
-
+    #----------------------------------ALL PRICING-----------------------------------------------#
     url = "https://apexapps.oracle.com/pls/apex/cetools/api/v1/products/"
     response = requests.get(url)
     
@@ -110,24 +70,57 @@ def fetch_filtered_api_data():
                 print(f"    Estimated Monthly Cost (744 hours): ${price['monthlyCost']}")
             print("-----------------------------------")
 
-    else:
-        print(f"Failed to fetch data from the API. Status code: {response.status_code}")
+        else:
+            print(f"Failed to fetch data from the API. Status code: {response.status_code}")
+    #----------------------------------ALL PRICING-----------------------------------------------#
 
-#----------------------------------------------------------------------------------------------------------
+    #----------------------------------COMPUTE LIST-------------------------------------------#
+    compute_client = oci.core.ComputeClient(config)
+    shapes = compute_client.list_shapes(compartment_id=config["tenancy"]).data
 
-if __name__ == "__main__":
+    for shape in shapes:
+        print(f"Shape: {shape.shape}, CPUs: {shape.ocpus}, RAM: {shape.memory_in_gbs} GB")
+    #----------------------------------COMPUTE LIST-------------------------------------------#
+        
+    #----------------------------------STORAGE------------------------------------------------#
+    block_storage_client = oci.core.BlockstorageClient(config)
+    volumes = block_storage_client.list_volumes(compartment_id=config["tenancy"]).data
 
-    config_file_path = "c:/Users/Philip/.oci/config"
-    profile_name = "DEFAULT"
+    for volume in volumes:
+        print(f"Volume: {volume.display_name}, Size: {volume.size_in_gbs} GB, Availability Domain: {volume.availability_domain}")
+    #----------------------------------STORAGE------------------------------------------------#
 
-    config = oci.config.from_file(file_location=config_file_path, profile_name=profile_name)
+    #----------------------------------DATABASE------------------------------------------------#
+    database_client = oci.database.DatabaseClient(config)
+    db_versions = database_client.list_db_versions(compartment_id=config["tenancy"]).data
+    db_shapes = database_client.list_db_system_shapes(compartment_id=config["tenancy"]).data
+
+    print("\nAvailable Database Versions:")
+    for version in db_versions:
+        print(f"Version: {version.version}")
+
+    print("\nAvailable Database Shapes:")
+    for shape in db_shapes:
+        print(f"Shape: {shape.shape}")
+    #----------------------------------DATABASE------------------------------------------------#
+        
+    #----------------------------------NETWORKING------------------------------------------------#
+    virtual_network_client = oci.core.VirtualNetworkClient(config)
+    vcns = virtual_network_client.list_vcns(compartment_id=config["tenancy"]).data
+    #----------------------------------NETWORKING------------------------------------------------#
+
+    #Database code.
+        # ---
+        # ---
+        # ---
+
+    return HttpResponse("oracle App")
     
-    fetch_filtered_api_data()
-    fetch_instance_details()
-    fetch_volume_details()
-    fetch_database_options()
-    fetch_networking_options()
-    
+
+
+
+
+
 # ======================== Third Party Components ========================
 # certifi
 # * Copyright 2022, Kenneth Reitz
