@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class AwsAppConfig(AppConfig):
+class DatabaseserverConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'aws_app'
+    name = 'databaseServer'

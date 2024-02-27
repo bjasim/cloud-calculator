@@ -1,5 +1,5 @@
 """
-ASGI config for BackendCalculator project.
+ASGI config for MainCalculator project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'BackendCalculator.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'MainCalculator.settings')
 
 application = get_asgi_application()
