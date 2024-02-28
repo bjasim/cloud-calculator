@@ -91,23 +91,35 @@ sku_to_service_code = {
     "HY3BZPP2B6K8MSJF": "AmazonEC2",   # gp2-general purpose storage 0.10 per GB-Mo
 }
 def get_pricing(request):
-    sku = request.GET.get('sku')
-    if not sku:
-        return HttpResponse("SKU parameter is missing", status=400)
+    # Iterate over each SKU in the sku_to_service_code dictionary
+    for sku, service_code in sku_to_service_code.items():
+        # Fetch Pricing Data for each SKU
+        pricing_data = fetch_pricing_data(sku, service_code)
+        if not pricing_data:
+            continue
 
-    service_code = sku_to_service_code.get(sku)
-    if not service_code:
-        return HttpResponse(f"Service code not found for SKU {sku}", status=404)
+        # Process and Save Data for each SKU
+        process_and_save_data(sku, service_code, pricing_data)
 
-    # Fetch Pricing Data
-    pricing_data = fetch_pricing_data(sku, service_code)
-    if not pricing_data:
-        return HttpResponse(f"No pricing data found for SKU {sku}", status=404)
+    return HttpResponse("All SKUs have been processed.")
 
-    # Process and Save Data
-    process_and_save_data(sku, service_code, pricing_data)
+    # sku = request.GET.get('sku')
+    # if not sku:
+    #     return HttpResponse("SKU parameter is missing", status=400)
 
-    return JsonResponse(pricing_data, safe=False, json_dumps_params={'indent': 4})
+    # service_code = sku_to_service_code.get(sku)
+    # if not service_code:
+    #     return HttpResponse(f"Service code not found for SKU {sku}", status=404)
+
+    # # Fetch Pricing Data
+    # pricing_data = fetch_pricing_data(sku, service_code)
+    # if not pricing_data:
+    #     return HttpResponse(f"No pricing data found for SKU {sku}", status=404)
+
+    # # Process and Save Data
+    # process_and_save_data(sku, service_code, pricing_data)
+
+    # return JsonResponse(pricing_data, safe=False, json_dumps_params={'indent': 4})
 
 def fetch_pricing_data(sku, service_code):
     client = boto3.client('pricing', region_name='us-east-1')
