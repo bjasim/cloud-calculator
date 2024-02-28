@@ -46,7 +46,7 @@ def storage_fetch_view(request):
                 cloud_service=cloud_service,
                 sku=item.get('skuName'),
                 unit_price=item.get('retailPrice'),
-                unit_of_measure=item.get('unitOfMeasure'),
+                unit_of_storage=item.get('unitOfMeasure'),
                 region=item.get('armRegionName', 'No region provided')  # Providing default value
             )
         return HttpResponse("Data fetched and stored successfully.")
