@@ -5,7 +5,7 @@ from django.utils import timezone
 from django.http import JsonResponse, HttpResponse
 
 
-from .models import Provider, CloudService, ComputeSpecifications, DatabaseStorageVolume
+from .models import Provider, CloudService, ComputeSpecifications, DatabaseStorageVolume, DatabaseSpecifications, StorageSpecifications
 #-----------------------------------------------------------------------------
 # 2.  Compute Type:
 # How many users do you expect to have accessing your services simultaneously?
@@ -183,38 +183,6 @@ def process_ec2_data(sku, pricing_data):
         break  # Exiting after processing the first SKU details
 
 def process_to_database_storage(sku, pricing_data):
-    # # Extracting initial attributes
-    # product_attributes = pricing_data.get('product', {}).get('attributes', {})
-    # volume_type = product_attributes.get('volumeType', "No volume type provided.")
-
-    # # Extracting the terms, description, and price
-    # terms = pricing_data.get('terms', {})
-    # on_demand = terms.get('OnDemand', {})
-    # description = "No description provided."
-    # price = "No price provided."
-    # unit = "No unit provided."
-
-    # found_first = False  # Flag to indicate if the first item has been processed
-
-    # for sku_details in on_demand.values():
-    #     for offer_term_code, offer_term_details in sku_details.get('priceDimensions', {}).items():
-    #         if found_first:
-    #             # Process the second item
-    #             description = offer_term_details.get('description', description)
-    #             price = offer_term_details.get('pricePerUnit', {}).get('USD', price)
-    #             unit = offer_term_details.get('unit', unit)
-    #             break  # Break after processing the second item
-    #         found_first = True  # Set the flag after processing the first item
-    #     if found_first:
-    #         break  # Break the outer loop if the second item has been processed
-
-    # # Print the extracted data
-    # print(f"SKU: {sku}")
-    # print(f"Description: {description}")
-    # print(f"Price: {price}")
-    # print(f"Volume Type: {volume_type}")
-    # print(f"Unit: {unit}")
-    # Extracting initial attributes
     product_attributes = pricing_data.get('product', {}).get('attributes', {})
     volume_type = product_attributes.get('volumeType', "No type provided.")
     storage_capacity = product_attributes.get('storage', "Inf")
@@ -253,6 +221,8 @@ def process_to_database_storage(sku, pricing_data):
         created = True
 
     # Save or update the record
+    storage_volume.sku = sku
+    storage_volume.storage_capacity = storage_capacity
     storage_volume.description = description
     storage_volume.volume_type = volume_type
     storage_volume.storage_capacity = storage_capacity
@@ -269,37 +239,135 @@ def process_to_database_storage(sku, pricing_data):
     except DatabaseStorageVolume.DoesNotExist:
         print(f"Verification Failed: SKU {sku} not found in database.")
 
-    
-    # # EC2 specific data extraction
-    # attributes = pricing_data.get('product', {}).get('attributes', {})
-    # instance_type = attributes.get('instanceType')
-    # operating_system = attributes.get('operatingSystem')
-    # cpu = attributes.get('vcpu')
-    # memory = attributes.get('memory')
-    # network_performance = attributes.get('networkPerformance')
-    # tenancy = attributes.get('tenancy')
 
-    # # Extract price and description
-    # price_list = pricing_data.get('terms', {}).get('OnDemand', {})
-    # for sku_details in price_list.values():
-    #     for offer_term_code, offer_term_details in sku_details.get('priceDimensions', {}).items():
-    #         description = offer_term_details.get('description')
-    #         price_per_unit = offer_term_details.get('pricePerUnit', {}).get('USD')
 
-    #         # Print extracted data to the console
-    #         print(f"Compute ---------------------------------------------")
-    #         print(f"SKU: {sku}")
-    #         print(f"Instance Type: {instance_type}")
-    #         print(f"Operating System: {operating_system}")
-    #         print(f"CPU: {cpu}")
-    #         print(f"Memory: {memory}")
-    #         print(f"Network Performance: {network_performance}")
-    #         print(f"Tenancy: {tenancy}")
-    #         print(f"Description: {description}")
-    #         print(f"Price per Unit: {price_per_unit}")
-    #         print(f"Compute ---------------------------------------------")
-    #         break
-    #     break
+def process_to_database_specifications(sku, pricing_data):
+    product = pricing_data.get('product', {}).get('productFamily', {})
+    attributes = pricing_data.get('product', {}).get('attributes', {})
+    instance_type = attributes.get('instanceType')
+    database_engine = attributes.get('databaseEngine')
+    cpu = attributes.get('vcpu')
+    memory = attributes.get('memory')
+    network_performance = attributes.get('networkPerformance')
+
+    # Default values
+    description = ''
+    price_per_unit = '0.0'
+
+    price_list = pricing_data.get('terms', {}).get('OnDemand', {})
+    for sku_details in price_list.values():
+        for offer_term_code, offer_term_details in sku_details.get('priceDimensions', {}).items():
+            description = offer_term_details.get('description', description)
+            price_per_unit = offer_term_details.get('pricePerUnit', {}).get('USD', price_per_unit)
+
+    try:
+        database_specifications = DatabaseSpecifications.objects.get(instance_sku=sku)
+        created = False
+    except DatabaseSpecifications.DoesNotExist:
+        database_specifications = DatabaseSpecifications(
+            product=product,
+            instance_sku=sku,
+            instance_type=instance_type,
+            db_engine=database_engine,
+            cpu=cpu,
+            memory=memory,
+            network_performance=network_performance,
+            description=description,
+            instance_price=price_per_unit,
+        )
+        created = True
+
+
+    database_specifications.product = product
+    database_specifications.instance_sku = sku
+    database_specifications.db_engine = database_engine
+    database_specifications.cpu = cpu
+    database_specifications.memory = memory
+    database_specifications.network_performance = network_performance
+    database_specifications.description = description
+    database_specifications.instance_type = instance_type
+
+    # Safely convert price_per_unit to float
+    try:
+        formatted_price = "{:.4f}".format(float(price_per_unit))
+    except ValueError:
+        formatted_price = "0.0000"
+
+    database_specifications.instance_price = formatted_price
+    database_specifications.save()
+
+    print(f"Data {'created' if created else 'updated'} for SKU: {sku}")
+
+    # Verification Query
+    try:
+        verify_volume = DatabaseStorageVolume.objects.get(volume_sku=sku)
+        print(f"Verification: Found SKU: {database_specifications.volume_sku}, Price: {database_specifications.volume_price}, Volume Type: {database_specifications.volume_type}")
+    except DatabaseStorageVolume.DoesNotExist:
+        print(f"Verification Failed: SKU {sku} not found in database.")
+
+
+def process_to_storage_specifications(sku, pricing_data):
+    # Extracting initial attributes
+    product_attributes = pricing_data.get('product', {}).get('attributes', {})
+    volume_type = product_attributes.get('volumeType', "No volume type provided.")
+    storage_class = product_attributes.get('storageClass', "No storage class provided.")
+    durability = product_attributes.get('durability', "No durability provided.")
+    service_code = product_attributes.get('servicecode', "No service code provided.")
+
+    # Extracting the terms, description, and price
+    terms = pricing_data.get('terms', {})
+    on_demand = terms.get('OnDemand', {})
+    description = "No description provided."
+    price = "No price provided."
+    unit = "No unit provided."
+
+    # found_first = False  # Flag to indicate if the first item has been processed
+    price_list = pricing_data.get('terms', {}).get('OnDemand', {})
+    for sku_details in price_list.values():
+        for offer_term_code, offer_term_details in sku_details.get('priceDimensions', {}).items():
+            description = offer_term_details.get('description', description)
+            price = offer_term_details.get('pricePerUnit', {}).get('USD', price)
+            # unit = offer_term_details.get('unit', unit)
+
+
+
+    # Check if a record with the given SKU exists
+    try:
+        storage_specifications = StorageSpecifications.objects.get(sku=sku)
+        # If the record exists, update it with the new details
+        created = False
+    except StorageSpecifications.DoesNotExist:
+        # If the record does not exist, create a new one
+        storage_specifications = StorageSpecifications(
+            sku=sku,
+            description=description,
+            durability=durability,
+            volume_type=volume_type,
+            service_code=service_code,
+            storage_class=storage_class,
+            price=price or 0.0,
+        )
+        created = True
+
+    # Save or update the record
+    storage_specifications.sku=sku
+    storage_specifications.description = description
+    storage_specifications.durability = durability
+    storage_specifications.volume_type = volume_type
+    storage_specifications.service_code = service_code
+    storage_specifications.storage_class = storage_class
+    formatted_price = "{:.4f}".format(float(price))
+    storage_specifications.price = formatted_price
+    storage_specifications.save()
+
+    print(f"Data {'created' if created else 'updated'} for SKU: {sku}")
+
+    # Verification Query
+    try:
+        verify_volume = StorageSpecifications.objects.get(sku=sku)
+        print(f"Verification: Found SKU: {sku}, Price: {price}, Volume Type: {volume_type}")
+    except StorageSpecifications.DoesNotExist:
+        print(f"Verification Failed: SKU {sku} not found in database.")
 
 
 def process_and_save_data(sku, service_code, pricing_data):
@@ -309,168 +377,21 @@ def process_and_save_data(sku, service_code, pricing_data):
     elif service_code == "AmazonDynamoDB" or sku == "QVD35TA7MPS92RBC":
         # Call the process_dynamodb_data function for DynamoDB SKUs
         process_to_database_storage(sku, pricing_data)
+    elif sku == "MV3A7KKN6HB749EA":
+        process_to_database_specifications(sku, pricing_data)
+    elif service_code == "AmazonS3" or service_code == "AmazonEFS" or sku == "HY3BZPP2B6K8MSJF":
+        process_to_storage_specifications(sku, pricing_data)
     else:
         # Handle other cases or simply pass
         pass
 
     # Return the original pricing_data for the Django view
     return pricing_data
-#     if service_code == "AmazonEC2":
-#         if sku == "HY3BZPP2B6K8MSJF":
-#             # Save to StorageSpecifications table
-#             # ...
-#         else:
-#             # Save to ComputeSpecifications table
-#             # ...
 
-#     elif service_code == "AmazonDynamoDB":
-#         # Save to DatabaseStorageVolume table
-#         # ...
-
-#     elif service_code == "AmazonS3" or service_code == "AmazonEFS":
-#         # Save to StorageSpecifications table
-#         # ...
-
-#     elif service_code == "AmazonRDS" and sku == "QVD35TA7MPS92RBC":
-#         # Save to DatabaseStorageVolume table
-#         # ...
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# --------------------------------------was working perfectlty for the specificd sku in the url-------------------------------------------------------------
-# # Dictionary mapping SKU to Service Code
-# sku_to_service_code = {
-#     "3DG6WFZ5QW4JAAHJ": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
-#     "3K59PVQYWBTWXEHT": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
-#     "7WVK4XHSDKCTP5FX": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
-#     "4QB2537CEAFFV88T": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
-    
-#     "F3E2EDSYC6ZNW7XP": "AmazonDynamoDB",  # $0.25/gb storage
-#     "MV3A7KKN6HB749EA": "AmazonRDS",  #8 GiB memory singe AZ SQL Server
-#     "QVD35TA7MPS92RBC": "AmazonRDS",   # SQL   Single-AZ )multiply with the size of the database ex. 100gb = 0.12-gb/month * 100GB = $12 a month ServiceCode= AmazonRDS
-
-#     "WP9ANXZGBYYSGJEA": "AmazonS3",  # $$0.022/GB monthly
-#     "YFV3RHAD3CDDP3VE": "AmazonEFS",  #standard storage general purpose, $0.30 per GB-Mo
-#     "HY3BZPP2B6K8MSJF": "AmazonEC2",   # gp2-general purpose storage 0.10 per GB-Mo
-
-#     # Add other SKUs and their corresponding service codes here
-# }
-
-# def get_pricing(request):
-#     sku = request.GET.get('sku')
-#     if not sku:
-#         return HttpResponse("SKU parameter is missing", status=400)
-
-#     service_code = sku_to_service_code.get(sku)
-#     if not service_code:
-#         return HttpResponse(f"Service code not found for SKU {sku}", status=404)
-
-#     client = boto3.client('pricing', region_name='us-east-1')
-#     response = client.get_products(
-#         ServiceCode=service_code,
-#         Filters=[{'Type': 'TERM_MATCH', 'Field': 'sku', 'Value': sku}],
-#         MaxResults=1
-#     )
-
-#     if response['PriceList']:
-#         pricing_data = json.loads(response['PriceList'][0])
-#         return JsonResponse(pricing_data, safe=False, json_dumps_params={'indent': 4})
-#     else:
-#         return HttpResponse(f"No pricing data found for SKU {sku}", status=404)
-#-----------------------------------------------------------------------------------------------------------------------------------------
 
 # specify each sku and the serviceCode for it --------------------------
 # Call the api with sku and service cod --------------------------------
-# Create functions to store database and storage information into tables based on SKUs, just like compute is done
+# Create functions to store "MV3A7KKN6HB749EA" and storage information into tables based on SKUs, just like compute is done
 # store/update to the tables with sku information (automate those three steps every morning)
 # get submitted form and make backend logic for it
-#
-#
-#
 
-
-
-
-
-
-
-# def get_pricing(request):
-#     client = boto3.client('pricing', region_name='us-east-1')
-#     response = client.get_products(
-#         ServiceCode='AmazonEC2',
-#         Filters=[
-#             {'Type': 'TERM_MATCH', 'Field': 'sku', 'Value': sku}
-#         ],
-#         MaxResults=1
-#     )
-
-#     if response['PriceList']:
-#         price_data = json.loads(response['PriceList'][0])
-#         pricing_info = process_price_data(price_data)
-
-#         provider, _ = Provider.objects.get_or_create(name='AWS')
-#         cloud_service, _ = CloudService.objects.get_or_create(
-#             provider=provider,
-#             service_type='Compute',
-#             defaults={'description': pricing_info['Description']}
-#         )
-
-#         ComputeSpecifications.objects.update_or_create(
-#             sku=pricing_info['SKU'],  # Include SKU as a lookup field
-#             defaults={
-#             'cloud_service': cloud_service,
-#             'instance_type': pricing_info['Instance Type'],
-#             'operating_system': pricing_info['Operating System'],
-#             'cpu': pricing_info['vCPU'],
-#             'memory': pricing_info['Memory'],
-#             'network_performance': pricing_info['Network Performance'],
-#             'tenancy': pricing_info['Tenancy'],
-#             'description': pricing_info['Description'],
-#             'price_per_unit': pricing_info['Price per Unit'],
-#             'currency': 'USD',  # Assuming currency is always USD
-#             'updated_at': timezone.now(),  # Explicitly set the updated_at field
-
-#             }
-#         )
-#         return HttpResponse(f"Updated or added new pricing and specifications for SKU {sku}: {pricing_info['Price per Unit']} with vCPU {pricing_info['vCPU']} and Memory {pricing_info['Memory']}", content_type='text/plain')
-#     else:
-#         return HttpResponse(f"No pricing information found for SKU {sku}", content_type='text/plain')
-
-# def process_price_data(price_data):
-#     product_attrs = price_data.get('product', {}).get('attributes', {})
-#     sku = price_data.get('product', {}).get('sku')
-
-#     on_demand_data = price_data.get('terms', {}).get('OnDemand', {})
-#     for term_id, term_details in on_demand_data.items():
-#         for price_dimension_key, price_dimension in term_details.get('priceDimensions', {}).items():
-#             description = price_dimension.get('description')
-#             price_per_unit = price_dimension.get('pricePerUnit', {}).get('USD')
-            
-#             return {
-#                 "SKU": sku,
-#                 "Instance Type": product_attrs.get('instanceType'),
-#                 "Operating System": product_attrs.get('operatingSystem'),
-#                 "vCPU": product_attrs.get('vcpu'),
-#                 "Memory": product_attrs.get('memory'),
-#                 "Physical Processor": product_attrs.get('physicalProcessor'),
-#                 "Network Performance": product_attrs.get('networkPerformance'),
-#                 "Tenancy": product_attrs.get('tenancy'),
-#                 "Description": description,
-#                 "Price per Unit": price_per_unit,
-#                 "Unit": "Hrs"
-#             }
-
-#     return {}
-
-# Note: there is an assumption that the presence of USD in pricePerUnit and that we always have OnDemand data in our response.

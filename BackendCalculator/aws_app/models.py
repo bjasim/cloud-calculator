@@ -39,10 +39,15 @@ class ComputeSpecifications(models.Model):
 
 # Storage Specifications Table
 class StorageSpecifications(models.Model):
-    cloud_service = models.ForeignKey(CloudService, related_name='storage_specs', on_delete=models.CASCADE)
+    # cloud_service = models.ForeignKey(CloudService, related_name='storage_specs', on_delete=models.CASCADE)
     storage_class = models.CharField(max_length=50)
-    redundancy = models.CharField(max_length=50)
+    sku = models.CharField(max_length=100, unique=True, default='SKU not provided')  # SKU should be unique
+    description = models.TextField(default='No description provided.')
     durability = models.CharField(max_length=50)
+    service_code = models.CharField(max_length=50, default='No code provided.')
+    storage_class = models.CharField(max_length=50, default='No class provided.')
+    price = models.DecimalField(max_digits=10, decimal_places=4, default=0.00)  # Hourly price
+    volume_type = models.CharField(max_length=50, default='No type provided.')  # e.g., General Purpose SSD, Provisioned IOPS SSD
     created_at = models.DateTimeField(auto_now_add=False, default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -60,10 +65,15 @@ class NetworkingSpecifications(models.Model):
 
 
 class DatabaseSpecifications(models.Model):
-    cloud_service = models.ForeignKey(CloudService, related_name='database_instances', on_delete=models.CASCADE)
+    # cloud_service = models.ForeignKey(CloudService, related_name='database_instances', on_delete=models.CASCADE)
+    product = models.CharField(max_length=50, default='No product provided.')  # e.g., MySQL, PostgreSQL, MongoDB
     db_engine = models.CharField(max_length=50)  # e.g., MySQL, PostgreSQL, MongoDB
     instance_type = models.CharField(max_length=50, default='No type provided.')
     instance_sku = models.CharField(max_length=100, default='No SKU provided.')  # SKU for the database instance
+    cpu = models.CharField(max_length=50, default='No cpu provided.')  
+    memory = models.CharField(max_length=50, default='No memory provided.')
+    network_performance = models.CharField(max_length=50, default='No network provided.')
+    description = models.TextField(default='No description provided.')
     instance_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)  # Hourly price
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
