@@ -1,25 +1,15 @@
 
-# -----------------------TO RUN IT---------------------------------------
-# localhost/oracle/get-pricing/
-
 #
 #   BudgetCloud - Oracle Service Pricing/Details
 #
 from django.shortcuts import render
 from django.http import HttpResponse
-# from aws_app.models import Provider, CloudService, ComputeSpecifications, StorageSpecifications, NetworkingSpecifications, DatabaseSpecifications
+#from aws_app.models import Provider, CloudService, ComputeSpecifications, StorageSpecifications, NetworkingSpecifications, DatabaseSpecifications
 import oci
 import requests
 
-# Create your views here.
+#Create your views here.
 def get_pricing(request):
-
-    #config path + profile name.
-    config_file_path = "c:/Users/Philip/.oci/config"
-    profile_name = "DEFAULT"
-
-    #config
-    config = oci.config.from_file(file_location=config_file_path, profile_name=profile_name)
 
     #----------------------------------ALL PRICING-----------------------------------------------#
     url = "https://apexapps.oracle.com/pls/apex/cetools/api/v1/products/"
@@ -72,47 +62,8 @@ def get_pricing(request):
 
         else:
             print(f"Failed to fetch data from the API. Status code: {response.status_code}")
-    #----------------------------------ALL PRICING-----------------------------------------------#
-
-    #----------------------------------COMPUTE LIST-------------------------------------------#
-    compute_client = oci.core.ComputeClient(config)
-    shapes = compute_client.list_shapes(compartment_id=config["tenancy"]).data
-
-    for shape in shapes:
-        print(f"Shape: {shape.shape}, CPUs: {shape.ocpus}, RAM: {shape.memory_in_gbs} GB")
-    #----------------------------------COMPUTE LIST-------------------------------------------#
-        
-    #----------------------------------STORAGE------------------------------------------------#
-    block_storage_client = oci.core.BlockstorageClient(config)
-    volumes = block_storage_client.list_volumes(compartment_id=config["tenancy"]).data
-
-    for volume in volumes:
-        print(f"Volume: {volume.display_name}, Size: {volume.size_in_gbs} GB, Availability Domain: {volume.availability_domain}")
-    #----------------------------------STORAGE------------------------------------------------#
-
-    #----------------------------------DATABASE------------------------------------------------#
-    database_client = oci.database.DatabaseClient(config)
-    db_versions = database_client.list_db_versions(compartment_id=config["tenancy"]).data
-    db_shapes = database_client.list_db_system_shapes(compartment_id=config["tenancy"]).data
-
-    print("\nAvailable Database Versions:")
-    for version in db_versions:
-        print(f"Version: {version.version}")
-
-    print("\nAvailable Database Shapes:")
-    for shape in db_shapes:
-        print(f"Shape: {shape.shape}")
-    #----------------------------------DATABASE------------------------------------------------#
-        
-    #----------------------------------NETWORKING------------------------------------------------#
-    virtual_network_client = oci.core.VirtualNetworkClient(config)
-    vcns = virtual_network_client.list_vcns(compartment_id=config["tenancy"]).data
-    #----------------------------------NETWORKING------------------------------------------------#
-
+    
     #Database code.
-        # ---
-        # ---
-        # ---
 
     return HttpResponse("oracle App")
     
@@ -129,7 +80,7 @@ def get_pricing(request):
 #     conn = sqlite3.connect(database_path)
 #     cursor = conn.cursor()
 
-#     # Clear existing data from the table to ensure a fresh start
+#     #Clear existing data from the table to ensure a fresh start
 #     cursor.execute('DELETE FROM ServicePrices')
 #     conn.commit()
 
