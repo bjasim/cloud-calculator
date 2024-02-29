@@ -7,6 +7,9 @@ from azure_app.views import compute_fetch_view
 from azure_app.views import storage_fetch_view
 from azure_app.views import networking_fetch_view
 from azure_app.views import database_fetch_view
+from aws_app.views import get_pricing
+from testing.views import testing
+# from django.urls import include
 
 
 router = DefaultRouter()
@@ -22,4 +25,8 @@ urlpatterns = [
     path('storage-fetch/', storage_fetch_view, name='fetch-storage'),
     path('networking-fetch/', networking_fetch_view, name='fetch-networking'),
     path('database-fetch/', database_fetch_view, name='fetch-database'),
+    path('aws/', get_pricing, name='get-pricing'),    
+    path('testing/', testing, name='testing'),
+
+
 ] + router.urls

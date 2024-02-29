@@ -3,9 +3,13 @@ import json
 from django.http import HttpResponse
 from django.utils import timezone
 from django.http import JsonResponse, HttpResponse
+from databaseServer.models import (
+    Provider, CloudService, StorageSpecifications, NetworkingSpecifications, 
+    DatabaseSpecifications, ComputeSpecifications
+)
 
 
-from .models import Provider, CloudService, ComputeSpecifications, DatabaseStorageVolume, DatabaseSpecifications, StorageSpecifications
+# from .models import Provider, CloudService, ComputeSpecifications, DatabaseStorageVolume, DatabaseSpecifications, StorageSpecifications
 #-----------------------------------------------------------------------------
 # 2.  Compute Type:
 # How many users do you expect to have accessing your services simultaneously?
@@ -73,9 +77,9 @@ from .models import Provider, CloudService, ComputeSpecifications, DatabaseStora
 #     else:
 #         return HttpResponse(f"No pricing information found for SKU {sku}", content_type='text/plain')
 #--------------------------------------------------------------------------------------------------------------------------------------------
-from django.db import IntegrityError
+# from django.db import IntegrityError
 
-# Dictionary mapping SKU to Service Code
+# # Dictionary mapping SKU to Service Code
 sku_to_service_code = {
     "3DG6WFZ5QW4JAAHJ": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
     "3K59PVQYWBTWXEHT": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
@@ -91,6 +95,7 @@ sku_to_service_code = {
     "HY3BZPP2B6K8MSJF": "AmazonEC2",   # gp2-general purpose storage 0.10 per GB-Mo
 }
 def get_pricing(request):
+
     # Iterate over each SKU in the sku_to_service_code dictionary
     for sku, service_code in sku_to_service_code.items():
         # Fetch Pricing Data for each SKU
@@ -134,6 +139,17 @@ def fetch_pricing_data(sku, service_code):
 
 
 def process_ec2_data(sku, pricing_data):
+    # AWS Provider and Compute CloudService setup
+    provider_name = 'AWS'
+    provider, _ = Provider.objects.get_or_create(name=provider_name)
+
+    cloud_service_type = 'Compute'
+    cloud_service, _ = CloudService.objects.get_or_create(
+        provider=provider, 
+        service_type=cloud_service_type,
+        defaults={'description': 'AWS EC2 Service'}
+    )
+
     # EC2 specific data extraction
     attributes = pricing_data.get('product', {}).get('attributes', {})
     instance_type = attributes.get('instanceType', 'No type provided.')
@@ -149,52 +165,41 @@ def process_ec2_data(sku, pricing_data):
         for offer_term_code, offer_term_details in sku_details.get('priceDimensions', {}).items():
             description = offer_term_details.get('description', 'No description provided.')
             price_per_unit = offer_term_details.get('pricePerUnit', {}).get('USD')
-
-            # Check if a record with the given SKU exists
-            try:
-                compute_spec = ComputeSpecifications.objects.get(sku=sku)
-                # If the record exists, update it with the new details
-                created = False
-            except ComputeSpecifications.DoesNotExist:
-                # If the record does not exist, create a new one
-                compute_spec = ComputeSpecifications(
-                    sku=sku,
-                    instance_type=instance_type,
-                    operating_system=operating_system,
-                    cpu=cpu,
-                    memory=memory,
-                    network_performance=network_performance,
-                    tenancy=tenancy,
-                    description=description,
-                    price_per_unit=price_per_unit or 0.0,
-                    currency='USD'
-                )
-                created = True
             
-            # Save or update the record
-            compute_spec.instance_type = instance_type
-            compute_spec.operating_system = operating_system
-            compute_spec.cpu = cpu
-            compute_spec.memory = memory
-            compute_spec.network_performance = network_performance
-            compute_spec.tenancy = tenancy
-            compute_spec.description = description
-            compute_spec.price_per_unit = price_per_unit or 0.0
-            compute_spec.save()
+            # Update or create new ComputeSpecifications entry
+            compute_spec, created = ComputeSpecifications.objects.update_or_create(
+                sku=sku,
+                defaults={
+                    'provider': provider,
+                    'cloud_service': cloud_service,
+                    'instance_type': instance_type,
+                    'operating_system': operating_system,
+                    'cpu': cpu,
+                    'memory': memory,
+                    'network_performance': network_performance,
+                    'tenancy': tenancy,
+                    'description': description,
+                    'unit_price': price_per_unit or 0.0,
+                    'currency': 'USD'
+                }
+            )
+            print(f"New data created for SKU: {sku}")
+            break
+        break
 
-            print(f"Data {'created' if created else 'updated'} for SKU: {sku}")
+    return HttpResponse("AWS data processed successfully.")
 
-            # Verification Query
-            try:
-                verify_spec = ComputeSpecifications.objects.get(sku=sku)
-                print(f"Verification: Found SKU: {verify_spec.sku}, Price: {verify_spec.price_per_unit}, Network Performance: {verify_spec.network_performance}")
-            except ComputeSpecifications.DoesNotExist:
-                print(f"Verification Failed: SKU {sku} not found in database.")
+def process_to_database_storage_specification(sku, pricing_data):
+    provider_name = 'AWS'
+    provider, _ = Provider.objects.get_or_create(name=provider_name)
 
-            break  # Assuming we need the first found description and price
-        break  # Exiting after processing the first SKU details
+    cloud_service_type = 'Database'
+    cloud_service, _ = CloudService.objects.get_or_create(
+        provider=provider, 
+        service_type=cloud_service_type,
+        defaults={'description': 'AWS Database Service'}
+    )
 
-def process_to_database_storage(sku, pricing_data):
     product_attributes = pricing_data.get('product', {}).get('attributes', {})
     volume_type = product_attributes.get('volumeType', "No type provided.")
     storage_capacity = product_attributes.get('storage', "Inf")
@@ -204,7 +209,6 @@ def process_to_database_storage(sku, pricing_data):
     on_demand = terms.get('OnDemand', {})
     description = "No description provided."
     price_per_unit = None  # Initialize as None to check if a valid price is found
-
     price_count = 0  # Counter to skip the first price (free tier)
 
     for sku_details in on_demand.values():
@@ -218,17 +222,19 @@ def process_to_database_storage(sku, pricing_data):
 
     # Check if a record with the given SKU exists
     try:
-        storage_volume = DatabaseStorageVolume.objects.get(volume_sku=sku)
+        storage_volume = DatabaseSpecifications.objects.get(sku=sku)
         # If the record exists, update it with the new details
         created = False
-    except DatabaseStorageVolume.DoesNotExist:
+    except DatabaseSpecifications.DoesNotExist:
         # If the record does not exist, create a new one
-        storage_volume = DatabaseStorageVolume(
-            volume_sku=sku,
+        storage_volume = DatabaseSpecifications(
+            provider=provider,  # Assign the AWS provider
+            cloud_service=cloud_service,  # Assign the AWS Database service 
+            unit_price=price_per_unit or 0.0,
+            sku=sku,
             description=description,
             volume_type=volume_type,
             storage_capacity=storage_capacity,
-            volume_price=price_per_unit or 0.0,
         )
         created = True
 
@@ -246,14 +252,24 @@ def process_to_database_storage(sku, pricing_data):
 
     # Verification Query
     try:
-        verify_volume = DatabaseStorageVolume.objects.get(volume_sku=sku)
-        print(f"Verification: Found SKU: {storage_volume.volume_sku}, Price: {storage_volume.volume_price}, Volume Type: {storage_volume.volume_type}")
-    except DatabaseStorageVolume.DoesNotExist:
+        verify_volume = DatabaseSpecifications.objects.get(sku=sku)
+        print(f"Verification: Found SKU: {storage_volume.sku}, Price: {storage_volume.unit_price}, Volume Type: {storage_volume.volume_type}")
+    except DatabaseSpecifications.DoesNotExist:
         print(f"Verification Failed: SKU {sku} not found in database.")
 
 
 
 def process_to_database_specifications(sku, pricing_data):
+    provider_name = 'AWS'
+    provider, _ = Provider.objects.get_or_create(name=provider_name)
+
+    cloud_service_type = 'Database'
+    cloud_service, _ = CloudService.objects.get_or_create(
+        provider=provider, 
+        service_type=cloud_service_type,
+        defaults={'description': 'AWS Database Service'}
+    )
+
     product = pricing_data.get('product', {}).get('productFamily', {})
     attributes = pricing_data.get('product', {}).get('attributes', {})
     instance_type = attributes.get('instanceType')
@@ -273,25 +289,27 @@ def process_to_database_specifications(sku, pricing_data):
             price_per_unit = offer_term_details.get('pricePerUnit', {}).get('USD', price_per_unit)
 
     try:
-        database_specifications = DatabaseSpecifications.objects.get(instance_sku=sku)
+        database_specifications = DatabaseSpecifications.objects.get(sku=sku)
         created = False
     except DatabaseSpecifications.DoesNotExist:
         database_specifications = DatabaseSpecifications(
+            provider=provider,  # Assign the AWS provider
+            cloud_service=cloud_service,  # Assign the AWS Database service
             product=product,
-            instance_sku=sku,
+            sku=sku,
             instance_type=instance_type,
             db_engine=database_engine,
             cpu=cpu,
             memory=memory,
             network_performance=network_performance,
             description=description,
-            instance_price=price_per_unit,
+            unit_price=price_per_unit,
         )
         created = True
 
 
     database_specifications.product = product
-    database_specifications.instance_sku = sku
+    database_specifications.sku = sku
     database_specifications.db_engine = database_engine
     database_specifications.cpu = cpu
     database_specifications.memory = memory
@@ -312,14 +330,24 @@ def process_to_database_specifications(sku, pricing_data):
 
     # Verification Query
     try:
-        verify_volume = DatabaseStorageVolume.objects.get(volume_sku=sku)
-        print(f"Verification: Found SKU: {database_specifications.volume_sku}, Price: {database_specifications.volume_price}, Volume Type: {database_specifications.volume_type}")
-    except DatabaseStorageVolume.DoesNotExist:
+        verify_volume = DatabaseSpecifications.objects.get(sku=sku)
+        print(f"Verification: Found SKU: {database_specifications.sku}, Price: {database_specifications.unit_price}, Volume Type: {database_specifications.volume_type}")
+    except DatabaseSpecifications.DoesNotExist:
         print(f"Verification Failed: SKU {sku} not found in database.")
 
 
 def process_to_storage_specifications(sku, pricing_data):
     # Extracting initial attributes
+    provider_name = 'AWS'
+    provider, _ = Provider.objects.get_or_create(name=provider_name)
+
+    cloud_service_type = 'Storage'
+    cloud_service, _ = CloudService.objects.get_or_create(
+        provider=provider, 
+        service_type=cloud_service_type,
+        defaults={'description': 'AWS Storage Service'}
+    )
+
     product_attributes = pricing_data.get('product', {}).get('attributes', {})
     volume_type = product_attributes.get('volumeType', "No volume type provided.")
     storage_class = product_attributes.get('storageClass', "No storage class provided.")
@@ -344,20 +372,21 @@ def process_to_storage_specifications(sku, pricing_data):
 
 
     # Check if a record with the given SKU exists
+
     try:
         storage_specifications = StorageSpecifications.objects.get(sku=sku)
-        # If the record exists, update it with the new details
         created = False
     except StorageSpecifications.DoesNotExist:
-        # If the record does not exist, create a new one
         storage_specifications = StorageSpecifications(
+            provider=provider,  # Assign the AWS provider
+            cloud_service=cloud_service,  # Assign the AWS Storage service
             sku=sku,
             description=description,
             durability=durability,
             volume_type=volume_type,
             service_code=service_code,
             storage_class=storage_class,
-            price=price or 0.0,
+            unit_price=price or 0.0,
         )
         created = True
 
@@ -388,7 +417,7 @@ def process_and_save_data(sku, service_code, pricing_data):
         process_ec2_data(sku, pricing_data)
     elif service_code == "AmazonDynamoDB" or sku == "QVD35TA7MPS92RBC":
         # Call the process_dynamodb_data function for DynamoDB SKUs
-        process_to_database_storage(sku, pricing_data)
+        process_to_database_storage_specification(sku, pricing_data)
     elif sku == "MV3A7KKN6HB749EA":
         process_to_database_specifications(sku, pricing_data)
     elif service_code == "AmazonS3" or service_code == "AmazonEFS" or sku == "HY3BZPP2B6K8MSJF":
@@ -401,9 +430,5 @@ def process_and_save_data(sku, service_code, pricing_data):
     return pricing_data
 
 
-# specify each sku and the serviceCode for it --------------------------
-# Call the api with sku and service cod --------------------------------
-# Create functions to store "MV3A7KKN6HB749EA" and storage information into tables based on SKUs, just like compute is done
-# store/update to the tables with sku information (automate those three steps every morning)
 # get submitted form and make backend logic for it
 
