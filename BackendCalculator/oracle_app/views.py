@@ -116,7 +116,115 @@ def get_pricing(request):
 
     return HttpResponse("oracle App")
     
+#-------------------------DATABASE CODE NEEDS TO BE MERGED----------
+# import requests
+# import sqlite3
+# import os
+# import oci  # Ensure OCI SDK is installed
 
+# def get_pricing():
+
+#     #Database setup
+#     database_path = os.path.join(os.path.dirname(__file__), 'db.sqlite3')
+#     conn = sqlite3.connect(database_path)
+#     cursor = conn.cursor()
+
+#     # Clear existing data from the table to ensure a fresh start
+#     cursor.execute('DELETE FROM ServicePrices')
+#     conn.commit()
+
+#     #Create table if it does not exist
+#     cursor.execute('''
+#     CREATE TABLE IF NOT EXISTS ServicePrices (
+#         id INTEGER PRIMARY KEY,
+#         partNumber TEXT NOT NULL,
+#         displayName TEXT,
+#         metricName TEXT,
+#         serviceCategory TEXT,
+#         valuePerHour REAL,
+#         monthlyCost REAL
+#     );
+#     ''')
+
+#     #OCI Configuration
+#     config_file_path = "c:/Users/Philip/.oci/config"
+#     profile_name = "DEFAULT"
+#     config = oci.config.from_file(file_location=config_file_path, profile_name=profile_name)
+
+#     #Compute shapes.
+#     compute_client = oci.core.ComputeClient(config)
+#     shapes = compute_client.list_shapes(compartment_id=config["tenancy"]).data
+#     for shape in shapes:
+#         print(f"Shape: {shape.shape}, CPUs: {shape.ocpus}, RAM: {shape.memory_in_gbs} GB")
+
+#     #Fetching pricing information
+#     url = "https://apexapps.oracle.com/pls/apex/cetools/api/v1/products/"
+#     response = requests.get(url)
+
+#     if response.status_code == 200:
+#         json_data = response.json()
+#         keywords = ["Compute - Virtual Machine", "Compute - VMware", "Storage", "Database", "Networking"]
+#         products_with_usd = []
+
+#         for product in json_data['items']:
+#             service_category = product.get('serviceCategory', '')
+#             sort_key = next((keywords.index(keyword) for keyword in keywords if keyword in service_category), len(keywords))
+
+#             usd_localizations = [localization for localization in product.get('currencyCodeLocalizations', [])
+#                                  if localization.get('currencyCode') == 'USD']
+#             usd_prices = [price for localization in usd_localizations for price in localization.get('prices', [])]
+
+#             if usd_prices:
+#                 for price in usd_prices:
+#                     price['monthlyCost'] = price.get('value', 0) * 744
+
+#                 filtered_product = {
+#                     'partNumber': product.get('partNumber'),
+#                     'displayName': product.get('displayName'),
+#                     'metricName': product.get('metricName'),
+#                     'serviceCategory': service_category,
+#                     'usdPrices': usd_prices,
+#                     'sortKey': sort_key
+#                 }
+#                 products_with_usd.append(filtered_product)
+
+#         sorted_products = sorted(products_with_usd, key=lambda x: (x['sortKey'], x['serviceCategory']))
+
+#         #Filtering logic refinement
+#         desired_categories = ["Compute - Virtual Machine", "Storage", "Database", "Networking"]
+#         prefix_allowed = ["Database -", "Storage -", "Database with", "Networking -"] 
+
+
+#         #--------------------------------------------------
+#         #BACKEND CALCULATOR MUST CALCULATE VCPU AND RAM PRICE INCREASE (find individual price per vcpu and ram to calculate)
+#         #------------------FIX-----------------------------
+#         #!!!: MONTHLY COST FOR STORAGE IS PER GB [READ METRICS] 
+#         # EDIT NAMES, ADJUST TABLE NAME FOR MAIN PROJECT
+
+
+#         for product in sorted_products:
+#             service_category = product['serviceCategory']
+#             #Check directly against desired categories or prefix conditions
+#             if service_category in desired_categories or any(service_category.startswith(prefix) for prefix in prefix_allowed):
+#                 for price in product['usdPrices']:
+#                     cursor.execute('''INSERT INTO ServicePrices (partNumber, displayName, metricName, serviceCategory, valuePerHour, monthlyCost)
+#                                     VALUES (?, ?, ?, ?, ?, ?)''',
+#                                 (product['partNumber'], product['displayName'], product['metricName'], service_category, price['value'], price['monthlyCost']))
+#                     print(f"Inserted: {service_category}")
+#                     conn.commit()
+#             else:
+#                 print(f"Skipped: {service_category}")
+
+
+
+#     else:
+#         print(f"Failed to fetch data from the API. Status code: {response.status_code}")
+
+#     cursor.close()
+#     conn.close()
+
+# if __name__ == "__main__":
+#     get_pricing()
 
 
 
