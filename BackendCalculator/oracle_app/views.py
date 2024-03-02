@@ -12,7 +12,7 @@ import os
 from django.db import transaction
 import logging
 
-#---------------------Add this to enable LOGGING----------------------: 
+#----------------Add this to: [MainCalculator -> Settings.py] to enable LOGGING----------------------: 
 # LOGGING = {
 #     'version': 1,
 #     'disable_existing_loggers': False,
