@@ -174,3 +174,7 @@ def database_fetch_view(request):
     store_database_pricing_data(database_pricing_data)
 
     return HttpResponse("Database pricing data fetched and stored successfully.")
+
+
+
+# the backend logic for advanced form

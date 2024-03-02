@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Button,
@@ -13,6 +14,8 @@ import {
 } from "@mui/material";
 
 const BasicForm = () => {
+  const navigate = useNavigate(); // Initialize navigate function
+
   const [formData, setFormData] = useState({
     computeComplexity: "",
     networkReliability: "",
@@ -43,7 +46,7 @@ const BasicForm = () => {
     }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     let isValid = true;
     const newValidationErrors = { ...validationErrors };
@@ -57,8 +60,26 @@ const BasicForm = () => {
     });
     setValidationErrors(newValidationErrors);
     if (isValid) {
-      console.log("Form Data:", formData);
-      // Here, you can calculate and compare the cloud resources based on user input
+      try {
+        const response = await fetch("http://localhost:8000/api/submit-basic-form/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        });
+        if (response.ok) {
+          // Handle success
+          console.log("Form data submitted successfully");
+          // Redirect to /results URL upon successful form submission
+          navigate("/results"); // Redirect to /results on successful form submission
+        } else {
+          // Handle error
+          console.error("Failed to submit form data");
+        }
+      } catch (error) {
+        console.error("Error submitting form data:", error);
+      }
     }
   };
 
