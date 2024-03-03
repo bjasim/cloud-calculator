@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 import {
   Box,
   Button,
@@ -13,32 +14,36 @@ import {
 } from "@mui/material";
 
 const AdvancedForm = () => {
+  const navigate = useNavigate(); // Initialize navigate function
+
   const [formData, setFormData] = useState({
     businessSize: "",
     expectedUsers: "",
+    monthlyBudget: "",
+    expectedRAM: "",
     databaseService: "",
     databaseSize: "",
     cloudStorage: "",
     storageType: "",
     networkPerformance: "",
     networkingFeature: "",
-    securityCompliance: "",
     scalability: "",
-    monthlyBudget: "",
+    location: "",
   });
 
   const [validationErrors, setValidationErrors] = useState({
     businessSize: false,
     expectedUsers: false,
+    monthlyBudget: false,
+    expectedRAM: false,
     databaseService: false,
     databaseSize: false,
     cloudStorage: false,
     storageType: false,
     networkPerformance: false,
     networkingFeature: false,
-    securityCompliance: false,
     scalability: false,
-    monthlyBudget: false,
+    location: false,
   });
 
   const handleChange = (event) => {
@@ -53,7 +58,7 @@ const AdvancedForm = () => {
     }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     let isValid = true;
     const newValidationErrors = { ...validationErrors };
@@ -73,8 +78,27 @@ const AdvancedForm = () => {
     });
     setValidationErrors(newValidationErrors);
     if (isValid) {
-      console.log("Form Data:", formData);
-      // Here, you can send formData to your backend (Django API) using fetch or axios
+      try {
+        const response = await fetch("http://localhost:8000/api/submit-advanced-form/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        });
+        if (response.ok) {
+          console.log("Form data submitted successfully");
+          // Handle success
+          const responseData = await response.json(); // Parse response body as JSON
+          console.log("Response from backend:", responseData); // Print the response
+          navigate("/results", { state: { responseData } });
+        } else {
+          // Handle error
+          console.error("Failed to submit form data");
+        }
+      } catch (error) {
+        console.error("Error submitting form data:", error);
+      }
     }
   };
 
@@ -162,28 +186,24 @@ const AdvancedForm = () => {
             {/* Expected CPU&RAM */}
             <Grid item xs={6}>
               <FormControl fullWidth>
-                <InputLabel id="expected-users-label">Expected vCPU and RAM</InputLabel>
+                <InputLabel id="expected-cpu-ram">Expected vCPU and RAM</InputLabel>
                 <Select
-                  labelId="expected-users-label"
-                  value={formData.expectedUsers}
+                  labelId="expected-cpu-ram"
+                  value={formData.expectedRAM}
                   onChange={handleChange}
-                  name="expectedUsers"
+                  name="expectedRAM"
                   label="Expected Users"
-                  error={validationErrors.expectedUsers}
+                  error={validationErrors.expectedRAM}
                 >
                   <MenuItem value="">Select...</MenuItem>
                   <MenuItem value="1vCPU">1 vCPU - 2 RAM</MenuItem>
-                  <MenuItem value="2vCPU">2 vCPU - 4 RAM</MenuItem>
-                  <MenuItem value="4vCPU">4 vCPU - 16 RAM</MenuItem>
-                  <MenuItem value="8vCPU">8 vCPU - 32 RAM</MenuItem>
-                  <MenuItem value="12vCPU">12 vCPU - 48 RAM</MenuItem>
-                  <MenuItem value="16vCPU">16 vCPU - 64 RAM</MenuItem>
-                  <MenuItem value="24vCPU">24 vCPU - 96 RAM</MenuItem>
-                  <MenuItem value="32vCPU">32 vCPU - 128 RAM</MenuItem>
-                  <MenuItem value="48vCPU">48 vCPU - 192 RAM</MenuItem>
-                  <MenuItem value="64vCPU">64 vCPU - 256 RAM</MenuItem>
+                  <MenuItem value="2vCPUs">2 vCPU - 4 RAM</MenuItem>
+                  <MenuItem value="4vCPUs">4 vCPU - 16 RAM</MenuItem>
+                  <MenuItem value="8vCPUs">8 vCPU - 32 RAM</MenuItem>
+                  <MenuItem value="12vCPUs">12 vCPU - 48 RAM</MenuItem>
+                  <MenuItem value="16vCPUs">16 vCPU - 64 RAM</MenuItem>
                 </Select>
-                {validationErrors.expectedUsers && (
+                {validationErrors.expectedRAM && (
                   <FormHelperText error>Please select expected users</FormHelperText>
                 )}
               </FormControl>
@@ -251,10 +271,10 @@ const AdvancedForm = () => {
                   error={validationErrors.cloudStorage}
                 >
                   <MenuItem value="">Select...</MenuItem>
-                  <MenuItem value="objectStorage">Object Storage</MenuItem>
-                  <MenuItem value="fileStorage">File Storage (EFS)</MenuItem>
-                  <MenuItem value="blockStorage">Block Storage (EBS)</MenuItem>
-                  <MenuItem value="noStorage">No Storage Required</MenuItem>
+                  <MenuItem value="Object Storage">Object Storage</MenuItem>
+                  <MenuItem value="File Storage">File Storage (EFS)</MenuItem>
+                  <MenuItem value="Block Storage">Block Storage (EBS)</MenuItem>
+                  <MenuItem value="No Storage">No Storage Required</MenuItem>
                 </Select>
                 {validationErrors.cloudStorage && (
                   <FormHelperText error>Please select cloud storage</FormHelperText>
@@ -275,12 +295,10 @@ const AdvancedForm = () => {
                   error={validationErrors.storageType}
                 >
                   <MenuItem value="">Select...</MenuItem>
-                  <MenuItem value="highVolume">High Volume Storage</MenuItem>
-                  <MenuItem value="fastAccess">Fast Access Storage</MenuItem>
-                  <MenuItem value="backupRecovery">Regular Backup and Recovery</MenuItem>
-                  <MenuItem value="archivingCompliance">Archiving and Compliance</MenuItem>
-                  <MenuItem value="noSpecific">No Specific Requirements</MenuItem>
-                  <MenuItem value="noStorage">No Storage Required</MenuItem>
+                  <MenuItem value="High Volume">High Volume Storage</MenuItem>
+                  <MenuItem value="Fast Access">Fast Access Storage</MenuItem>
+                  <MenuItem value="Backup Recovery">Regular Backup and Recovery</MenuItem>
+                  <MenuItem value="No Storage">No Storage Required</MenuItem>
                 </Select>
                 {validationErrors.storageType && (
                   <FormHelperText error>Please select storage type</FormHelperText>
@@ -325,11 +343,9 @@ const AdvancedForm = () => {
                   error={validationErrors.networkingFeature}
                 >
                   <MenuItem value="">Select...</MenuItem>
-                  <MenuItem value="loadBalancing">Load Balancing</MenuItem>
-                  <MenuItem value="vpnConnections">VPN Connections</MenuItem>
-                  <MenuItem value="contentDeliveryNetwork">Content Delivery Network (CDN)</MenuItem>
-                  <MenuItem value="directConnectionToOnPremises">
-                    Direct Connection to On-premises
+                  <MenuItem value="Virtual Private Networking">VPN Connections</MenuItem>
+                  <MenuItem value="Content Delivery Network">
+                    Content Delivery Network (CDN)
                   </MenuItem>
                 </Select>
                 {validationErrors.networkingFeature && (

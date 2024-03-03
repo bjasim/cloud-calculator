@@ -1,134 +1,228 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Card, CardContent, Typography, CardMedia } from "@mui/material";
 import GoogleCloudLogo from "../Assets/google.png";
 import AwsLogo from "../Assets/aws.png";
 import AzureLogo from "../Assets/azure.png";
 import OracleLogo from "../Assets/oracle.jpg";
 
-const RecommendedPlans = () => {
-  const plans = [
-    {
-      name: "Google Cloud",
-      logo: GoogleCloudLogo,
-      monthly: "$300",
-      annual: "$3000",
-      compute: { instance: "t4g.nano - 2 vCPU 4 GiB ", price: "$100" }, // Add compute pricing
-      storage: { instance: "Standard HDD - 100GB", price: "$50" }, // Add storage pricing
-      database: { instance: "MySQL - 1 GB ", price: "$0.25" }, // Add database pricing
-      networking: { instance: "VPC - 1 Gbps", price: "$70" }, // Add networking pricing
-    },
-    {
-      name: "AWS",
-      logo: AwsLogo,
-      monthly: "$350",
-      annual: "$3500",
-      compute: { instance: "t3.nano - 2 vCPU 4 GiB ", price: "$120" }, // Add compute pricing
-      storage: { instance: "S3 Standard - 100GB", price: "$60" }, // Add storage pricing
-      database: { instance: "MySQL - 1 GB ", price: "$0.25" }, // Add database pricing
-      networking: { instance: "VPC - 1 Gbps", price: "$80" }, // Add networking pricing
-    },
-    {
-      name: "Microsoft Azure",
-      logo: AzureLogo,
-      monthly: "$320",
-      annual: "$3200",
-      compute: { instance: "B1ls - 2 vCPU 4 GiB ", price: "$110" }, // Add compute pricing
-      storage: { instance: "Blob Storage - 100GB", price: "$55" }, // Add storage pricing
-      database: { instance: "MySQL - 1 GB ", price: "$0.25" }, // Add database pricing
-      networking: { instance: "VNET - 1 Gbps", price: "$75" }, // Add networking pricing
-    },
-    {
-      name: "Oracle",
-      logo: OracleLogo,
-      monthly: "$320",
-      annual: "$3200",
-      compute: { instance: "E2.1.Micro - 2 vCPU 4 GiB ", price: "$110" }, // Add compute pricing
-      storage: { instance: "Object Storage - 100GB", price: "$55" }, // Add storage pricing
-      database: { instance: "MySQL - 1 GB ", price: "$0.25" }, // Add database pricing
-      networking: { instance: "VCN - 1 Gbps", price: "$75" }, // Add networking pricing
-    },
-  ];
+const RecommendedPlans = ({ responseData }) => {
+  const logos = {
+    "Microsoft Azure": AzureLogo,
+    AWS: AwsLogo,
+    "Google Cloud": GoogleCloudLogo,
+    Oracle: OracleLogo,
+  };
+
+  const [loading, setLoading] = useState(true);
+  const [plans, setPlans] = useState([]);
+
+  useEffect(() => {
+    if (responseData && responseData.provider) {
+      const { provider, compute, storage, database, networking } = responseData;
+      const newPlan = {
+        provider,
+        compute,
+        storage,
+        database,
+        networking,
+      };
+      console.log(newPlan);
+      setPlans([newPlan]); // Wrap the new plan in an array since plans is an array
+      setLoading(false);
+    }
+  }, [responseData]);
+
+  useEffect(() => {
+    console.log("loading:", loading);
+  }, [loading]);
+
+  useEffect(() => {
+    console.log("plans:", plans);
+  }, [plans]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  console.log(responseData);
+  console.log(plans);
 
   return (
     <Box sx={{ display: "flex", justifyContent: "center", p: 4, flexWrap: "wrap" }}>
-      {plans.map((plan, index) => (
-        <Card key={index} sx={{ maxWidth: 345, m: 2, display: "flex", flexDirection: "column" }}>
-          <Box
-            sx={{
-              height: 200,
-              width: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: "#fff",
-            }}
-          >
-            <CardMedia
-              component="img"
-              sx={{
-                height: "auto",
-                width: "auto",
-                maxHeight: 140,
-                maxWidth: 400,
-              }}
-              image={plan.logo}
-              alt={`${plan.name} logo`}
-            />
-          </Box>
-          <CardContent sx={{ flexGrow: 1, paddingTop: "0px" }}>
-            <Typography
-              gutterBottom
-              variant="h5"
-              component="div"
-              align="center"
-              sx={{
-                paddingTop: "0px",
-              }}
+      {Array.isArray(plans) &&
+        plans.map((plan, index) => {
+          const name = plan.provider;
+          return (
+            <Card
+              key={index}
+              sx={{ maxWidth: 345, m: 2, display: "flex", flexDirection: "column" }}
             >
-              {plan.name}
-            </Typography>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              fontWeight="bold"
-              sx={{
-                marginTop: "20px",
-              }}
-            >
-              <div>
-                <h2 style={{ textAlign: "center", marginBottom: "15px", fontSize: "1.5rem" }}>
-                  Price/Month
-                </h2>{" "}
-                {/* Center align and increase font size */}
-                <div>
-                  <span style={{ fontSize: "1.2rem" }}>Compute:</span>{" "}
-                  <span style={{ fontSize: "1.2rem" }}>{plan.compute.price}</span> <br />
-                  <span style={{ fontSize: "1.1rem" }}>{plan.compute.instance}</span>
-                  <div>==================</div>
-                  <br />
-                  <span style={{ fontSize: "1.2rem" }}>Storage:</span>{" "}
-                  <span style={{ fontSize: "1.2rem" }}>{plan.storage.price}</span> <br />
-                  <span style={{ fontSize: "1.1rem" }}>{plan.storage.instance}</span>
-                  <div>==================</div>
-                  <br />
-                  <span style={{ fontSize: "1.2rem" }}>Database:</span>{" "}
-                  <span style={{ fontSize: "1.2rem" }}>{plan.database.price}</span> <br />
-                  <span style={{ fontSize: "1.1rem" }}>{plan.database.instance}</span>
-                  <div>==================</div>
-                  <br />
-                  <span style={{ fontSize: "1.2rem" }}>Networking:</span>{" "}
-                  <span style={{ fontSize: "1.2rem" }}>{plan.networking.price}</span> <br />
-                  <span style={{ fontSize: "1.1rem" }}>{plan.networking.instance}</span>
-                  <br />
+              <Box
+                sx={{
+                  height: 200,
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: "#fff",
+                }}
+              >
+                <CardMedia
+                  component="img"
+                  sx={{
+                    height: "auto",
+                    width: "auto",
+                    maxHeight: 140,
+                    maxWidth: 400,
+                  }}
+                  image={logos[name]}
+                  alt={`${name} logo`}
+                />
+              </Box>
+              <CardContent sx={{ flexGrow: 1, paddingTop: "0px" }}>
+                <Typography gutterBottom variant="h5" component="div" align="center">
+                  {name}
+                </Typography>
+                <div style={{ marginBottom: "15px", fontSize: "1.5rem", textAlign: "center" }}>
+                  Price
                 </div>
-              </div>
-              <div style={{ marginBottom: "5px", marginTop: "15px" }}>==================</div>
-              <span style={{ fontSize: "1.2rem" }}>Monthly Total: {plan.monthly}</span> <br />
-              <span style={{ fontSize: "1.2rem" }}>Annual Total: {plan.annual}</span>
-            </Typography>
-          </CardContent>
-        </Card>
-      ))}
+                {plan ? (
+                  <div>
+                    <div style={{ fontSize: "1.2rem", textAlign: "center" }}>
+                      <strong>Compute</strong>
+                    </div>
+                    <div style={{ textAlign: "center" }}>
+                      {plan.compute ? (
+                        <>
+                          <div style={{ textAlign: "left" }}>
+                            <span style={{ fontSize: "1.1rem" }}>Name: {plan.compute.name}</span>
+                          </div>
+                          <div style={{ textAlign: "left" }}>
+                            <span style={{ fontSize: "1.1rem" }}>Sku: {plan.compute.sku}</span>
+                          </div>
+                          <div style={{ textAlign: "left" }}>
+                            <span style={{ fontSize: "1.1rem" }}>
+                              {plan.compute.cpu} - {plan.compute.memory}
+                            </span>
+                          </div>
+                          <div style={{ fontSize: "1.2rem", textAlign: "left" }}>
+                            Unit Price: {plan.compute.unit_price}
+                          </div>
+                        </>
+                      ) : (
+                        <div>
+                          <span style={{ fontSize: "1.1rem" }}>CPU: Not Available</span>
+                        </div>
+                      )}
+                    </div>
+                    <div>==================</div>
+                    <div style={{ fontSize: "1.2rem", textAlign: "center" }}>
+                      <strong>Storage</strong>
+                    </div>
+                    <div style={{ textAlign: "center" }}>
+                      {plan.storage ? (
+                        <>
+                          <div style={{ textAlign: "left" }}>
+                            <span style={{ fontSize: "1.1rem" }}>
+                              Name:
+                              {plan.storage.name}
+                            </span>{" "}
+                          </div>
+                          <div style={{ textAlign: "left" }}>
+                            <span style={{ fontSize: "1.1rem" }}>Sku: {plan.storage.sku}</span>
+                          </div>
+                          <div style={{ fontSize: "1.2rem", textAlign: "left" }}>
+                            Unit Price: {plan.storage.unit_price}
+                          </div>
+                        </>
+                      ) : (
+                        <div style={{ textAlign: "left" }}>
+                          <span style={{ fontSize: "1.1rem" }}>Storage: Not Available</span>
+                        </div>
+                      )}
+                    </div>
+                    <div>==================</div>
+                    <div style={{ fontSize: "1.2rem", textAlign: "center" }}>
+                      <strong>Database</strong>
+                    </div>
+                    <div style={{ textAlign: "center" }}>
+                      {plan.database && plan.database.unit_price ? (
+                        <>
+                          <div style={{ textAlign: "center" }}>
+                            <div style={{ textAlign: "left" }}>
+                              <span style={{ fontSize: "1.1rem" }}>Name: {plan.database.name}</span>{" "}
+                            </div>
+                            <div style={{ textAlign: "left" }}>
+                              <span style={{ fontSize: "1.1rem" }}>Sku: {plan.database.sku}</span>{" "}
+                            </div>
+                            <div style={{ fontSize: "1.2rem", textAlign: "left" }}>
+                              Unit Price: {plan.database.unit_price}
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        <div style={{ fontSize: "1.2rem", textAlign: "center" }}>
+                          <div style={{ textAlign: "left" }}>
+                            <span style={{ fontSize: "1.1rem" }}>Database: Not Available</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <div>==================</div>
+                    <div style={{ fontSize: "1.2rem", textAlign: "center" }}>
+                      <strong>Networking</strong>
+                    </div>
+                    <div style={{ textAlign: "center" }}>
+                      {plan.networking ? (
+                        <>
+                          <div style={{ textAlign: "left" }}>
+                            <span style={{ fontSize: "1.1rem" }}>
+                              Name:
+                              {plan.networking.name}
+                            </span>{" "}
+                          </div>
+                          <div style={{ textAlign: "left" }}>
+                            <span style={{ fontSize: "1.1rem" }}>Sku: {plan.networking.sku}</span>
+                          </div>
+                          <div style={{ fontSize: "1.2rem", textAlign: "left" }}>
+                            Unit Price: {plan.networking.unit_price}
+                          </div>
+                        </>
+                      ) : (
+                        <div style={{ textAlign: "left" }}>
+                          <span style={{ fontSize: "1.1rem" }}>Networking: Not Available</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <Typography align="center">No data available</Typography>
+                )}
+              </CardContent>
+              {plan && (
+                <CardContent>
+                  <div style={{ fontSize: "1.3rem" }}>
+                    ============== <br />
+                    <span style={{ fontSize: "1.2rem" }}>
+                      Monthly Total: {plan.monthly || "-"}
+                    </span>{" "}
+                    <br />
+                    <span style={{ fontSize: "1.2rem" }}>Annual Total: {plan.annual || "-"}</span>
+                  </div>
+                </CardContent>
+              )}
+            </Card>
+          );
+        })}
+      {/* Add additional placeholder cards if plans array is empty */}
+      {!Array.isArray(plans) ||
+        (plans.length === 0 && (
+          <Card sx={{ maxWidth: 345, m: 2, display: "flex", flexDirection: "column" }}>
+            <CardContent>
+              <Typography align="center">No data available</Typography>
+            </CardContent>
+          </Card>
+        ))}
     </Box>
   );
 };
