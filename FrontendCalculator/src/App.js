@@ -10,6 +10,7 @@ import LearnMorePage from "./Pages/LearnMorePage";
 import AdvancedFormPage from "./Pages/AdvancedFormPage";
 import BasicFormPage from "./Pages/BasicFormPage";
 import ResultsPage from "./Pages/ResultsPage";
+import TestResultsPage from "./Pages/TestResultsPage";
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/learnmore" element={<LearnMorePage />} />
           <Route path="/results" element={<ResultsPage />} />
+          <Route path="/test" element={<TestResultsPage />} />
         </Routes>
       </div>
     </Router>
