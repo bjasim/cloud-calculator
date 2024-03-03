@@ -7,6 +7,7 @@ from azure_app.views import compute_fetch_view
 from azure_app.views import storage_fetch_view
 from azure_app.views import networking_fetch_view
 from azure_app.views import database_fetch_view
+from google_app.views import callmain
 
 
 router = DefaultRouter()
@@ -22,4 +23,7 @@ urlpatterns = [
     path('storage-fetch/', storage_fetch_view, name='fetch-storage'),
     path('networking-fetch/', networking_fetch_view, name='fetch-networking'),
     path('database-fetch/', database_fetch_view, name='fetch-database'),
+    
+    #gcp
+    path('gcpdb/',callmain,name='callmain'),
 ] + router.urls
