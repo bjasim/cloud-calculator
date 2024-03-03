@@ -71,7 +71,7 @@ def testing(request):
         # ServiceCode='AmazonDynamoDB',
         # ServiceCode='AmazonS3',
         # ServiceCode='AmazonEFS',
-        ServiceCode='AmazonRDS',  
+        ServiceCode='AmazonEC2',  
         # ServiceCode='AmazonEC2',
 
         Filters=[
@@ -82,14 +82,14 @@ def testing(request):
             # {'Type': 'TERM_MATCH', 'Field': 'productFamily', 'Value': 'Storage instance'},
             # {'Type': 'TERM_MATCH', 'Field': 'volumeName', 'Value': 'gp2'},  # Filter for General Purpose SSD (gp2)
             {'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'us-east-1'},
-            {'Type': 'TERM_MATCH', 'Field': 'databaseEdition', 'Value': 'standard'},
-            {'Type': 'TERM_MATCH', 'Field': 'databaseEngine', 'Value': 'SQL Server'},
+            # {'Type': 'TERM_MATCH', 'Field': 'databaseEdition', 'Value': 'standard'},
+            # {'Type': 'TERM_MATCH', 'Field': 'databaseEngine', 'Value': 'SQL Server'},
             # {'Type': 'TERM_MATCH', 'Field': 'instanceFamily', 'Value': 'General Purpose'},
             # {'Type': 'TERM_MATCH', 'Field': 'instanceTypeFamily', 'Value': 'M4'},
             # Filter for On-Demand Read and Write Requests
             # {'Type': 'TERM_MATCH', 'Field': 'productFamily', 'Value': 'API Request'},
             # Filter for On-Demand Storage pricing
-            {'Type': 'TERM_MATCH', 'Field': 'productFamily', 'Value': 'Database Storage'},
+            # {'Type': 'TERM_MATCH', 'Field': 'productFamily', 'Value': 'Database Storage'},
             # Filter for specific AWS region (e.g., 'us-east-1')
             # {'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'us-east-1'},
 

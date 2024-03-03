@@ -149,6 +149,7 @@ def process_ec2_data(sku, pricing_data):
         service_type=cloud_service_type,
         defaults={'description': 'AWS EC2 Service'}
     )
+    
 
     # EC2 specific data extraction
     attributes = pricing_data.get('product', {}).get('attributes', {})
@@ -272,11 +273,11 @@ def process_to_database_specifications(sku, pricing_data):
 
     product = pricing_data.get('product', {}).get('productFamily', {})
     attributes = pricing_data.get('product', {}).get('attributes', {})
-    instance_type = attributes.get('instanceType')
+    instance_type = attributes.get('instanceType', 'Not specified')
     database_engine = attributes.get('databaseEngine')
-    cpu = attributes.get('vcpu')
-    memory = attributes.get('memory')
-    network_performance = attributes.get('networkPerformance')
+    cpu = attributes.get('vcpu', 'Not specified')
+    memory = attributes.get('memory', 'Not specified')
+    network_performance = attributes.get('networkPerformance', 'Not specified')
 
     # Default values
     description = ''
@@ -430,5 +431,176 @@ def process_and_save_data(sku, service_code, pricing_data):
     return pricing_data
 
 
-# get submitted form and make backend logic for it
 
+#----------------------------------------------------------------------------------------------------
+def aws_compute_fetch(request):
+    client = boto3.client('pricing', region_name='us-east-1')
+    max_records = 500
+    records_processed = 0
+
+    response = client.get_products(
+        ServiceCode='AmazonEC2',
+        Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'us-east-1'}],
+        MaxResults=100
+    )
+
+    # Pass the process_ec2_data function as an argument
+    records_processed += process_aws_pricing_data(response, process_ec2_data)
+
+    while 'NextToken' in response and records_processed < max_records:
+        response = client.get_products(
+            ServiceCode='AmazonEC2',
+            Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'us-east-1'}],
+            MaxResults=100,
+            NextToken=response['NextToken']
+        )
+        # Again, pass the process_ec2_data function
+        records_processed += process_aws_pricing_data(response, process_ec2_data)
+
+    return JsonResponse({"message": f"AWS EC2 data processed. Total records: {records_processed}"}, safe=False)
+#----------------------------------------------------------------------------------------------------------------------
+def aws_storage_fetch(request):
+    client = boto3.client('pricing', region_name='us-east-1')
+    max_records = 500
+    records_processed = 0
+
+    response = client.get_products(
+        ServiceCode='AmazonS3',  # change as needed for other services
+        Filters=[
+            {'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'us-east-1'}
+        ],
+        MaxResults=100
+    )
+
+    records_processed += process_aws_pricing_data(response, process_to_storage_specifications)
+
+    # Handle pagination
+    while 'NextToken' in response and records_processed < max_records:
+        response = client.get_products(
+            ServiceCode='AmazonS3',  
+            Filters=[
+                {'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'us-east-1'}
+            ],
+            MaxResults=100,
+            NextToken=response['NextToken']
+        )
+        records_processed += process_aws_pricing_data(response, process_to_storage_specifications)
+
+    return JsonResponse({"message": f"AWS Storage data processed. Total records: {records_processed}"}, safe=False)
+#--------------------------------------------------------------------------------------------------------------------------
+def aws_rds_fetch(request):
+    client = boto3.client('pricing', region_name='us-east-1')
+    max_records = 500
+    records_processed = 0
+
+    response = client.get_products(
+        ServiceCode='AmazonRDS',
+        Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'us-east-1'}],
+        MaxResults=100
+    )
+
+    records_processed += process_aws_pricing_data(response, process_to_database_specifications)
+
+    while 'NextToken' in response and records_processed < max_records:
+        response = client.get_products(
+            ServiceCode='AmazonRDS',
+            Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'us-east-1'}],
+            MaxResults=100,
+            NextToken=response['NextToken']
+        )
+        records_processed += process_aws_pricing_data(response, process_to_database_specifications)
+
+    return JsonResponse({"message": f"AWS RDS data processed. Total records: {records_processed}"}, safe=False)
+
+
+
+#---------------------------------------------------------------------------------------------------------------------------
+def aws_networking_fetch(request, service_code):
+    client = boto3.client('pricing', region_name='us-east-1')
+    max_records = 500
+    records_processed = 0
+
+    response = client.get_products(
+        ServiceCode=service_code,  # Use the provided service code
+        Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'us-east-1'}],
+        MaxResults=100
+    )
+
+    records_processed += process_aws_pricing_data(response, process_networking_data)
+
+    while 'NextToken' in response and records_processed < max_records:
+        response = client.get_products(
+            ServiceCode=service_code,  # Consistent service code
+            Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'us-east-1'}],
+            MaxResults=100,
+            NextToken=response['NextToken']
+        )
+        records_processed += process_aws_pricing_data(response, process_networking_data)
+
+    return JsonResponse({"message": f"AWS {service_code} data processed. Total records: {records_processed}"}, safe=False)
+
+
+def process_networking_data(sku, pricing_data):
+    provider_name = 'AWS'
+    provider, _ = Provider.objects.get_or_create(name=provider_name)
+
+    cloud_service_type = 'Networking'
+    cloud_service, _ = CloudService.objects.get_or_create(
+        provider=provider,
+        service_type=cloud_service_type,
+        defaults={'description': 'AWS Networking Service'}
+    )
+    service_code = pricing_data.get('product', {}).get('attributes', {}).get('servicecode', 'Not specified')
+    price_per_unit = '0.0'
+
+    price_list = pricing_data.get('terms', {}).get('OnDemand', {})
+    for sku_details in price_list.values():
+        for offer_term_code, offer_term_details in sku_details.get('priceDimensions', {}).items():
+            price_per_unit = offer_term_details.get('pricePerUnit', {}).get('USD', price_per_unit)
+
+    try:
+        networking_spec = NetworkingSpecifications.objects.get(sku=sku)
+    except NetworkingSpecifications.DoesNotExist:
+        networking_spec = NetworkingSpecifications(
+            provider=provider,
+            cloud_service=cloud_service,
+            sku=sku,
+            # service_code=service_code,
+            unit_price=price_per_unit or 0.0,
+        )
+        networking_spec.save()
+        print(f"New data created for SKU: {sku}")
+
+def aws_route53_fetch(request):
+    return aws_networking_fetch(request, "AmazonRoute53")
+
+def aws_direct_fetch(request):
+    return aws_networking_fetch(request, "AWSDirectConnect")
+
+def aws_cloudfront_fetch(request):
+    return aws_networking_fetch(request, "AmazonCloudFront")
+def aws_vpc_fetch(request):
+    return aws_networking_fetch(request, "AmazonVPC")
+
+
+
+
+def process_aws_pricing_data(response, process_function):
+    processed = 0
+    for price_str in response['PriceList']:
+        try:
+            pricing_data = json.loads(price_str)
+            sku = pricing_data.get('product', {}).get('sku')
+            if sku:
+                process_function(sku, pricing_data)
+                processed += 1
+        except json.JSONDecodeError as e:
+            print(f"JSON parsing error: {e}")
+    return processed
+
+
+
+
+
+# to-do
+# implement the same functionality for rds as the networking services and pass service code to the function to fetch data trhough API (S3, EFS, etc..)
