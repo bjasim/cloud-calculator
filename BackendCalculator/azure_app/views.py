@@ -175,7 +175,6 @@ def database_fetch_view(request):
     return HttpResponse("Database pricing data fetched and stored successfully.")
 
 
-
 # the backend logic for advanced form
 def calculated_data_Azure(database_service, expected_cpu, cloud_storage, networking_feature):
     computed_data = {'provider': 'Microsoft Azure',}  # Initialize dictionary to store computed data

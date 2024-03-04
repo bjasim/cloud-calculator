@@ -1,7 +1,7 @@
 import json
 import yaml
 import uuid
-from databaseServer.models import DatabaseSpecifications, CloudService, Provider, ComputeSpecifications
+from databaseServer.models import DatabaseSpecifications, CloudService, Provider, ComputeSpecifications, StorageSpecifications, NetworkingSpecifications
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials  
@@ -239,11 +239,10 @@ def combine_json_data(file1_path, file2_path, output_file_path):
                 unit_of_storage=unit_price,              
                 region=region              
             )
-            
-            
+                    
 def computeinfo():
     url = 'https://github.com/Cyclenerd/google-cloud-pricing-cost-calculator/raw/master/pricing.yml'
-    destination_file = 'C:/Users/Joseph/cloud-calculator/cloud-calculator/BackendCalculator/google_app/pricing.yml'
+    destination_file = 'google_app/pricing.yml'
     response = requests.get(url)
     provider_name = 'GCP'
     provider, _ = Provider.objects.get_or_create(name=provider_name)
@@ -284,13 +283,85 @@ def computeinfo():
             
             # Save the ComputeSpecifications object
             compute_spec.save()
-
-       
     
+    print("Compute information stored successfully")
+    
+def calculated_data_Azure(database_service, expected_cpu, cloud_storage, networking_feature):
+    computed_data = {'provider': 'Microsoft Azure',}  # Initialize dictionary to store computed data
+
+    # Retrieve data from the database based on the provided keyword
+    if expected_cpu:
+        # Query for the first compute instance
+        compute_instance = ComputeSpecifications.objects.filter(cpu=expected_cpu).first()
+        if compute_instance:
+            computed_data['compute'] = {
+                'name': compute_instance.name,
+                'unit_price': compute_instance.unit_price,
+                'cpu': compute_instance.cpu,
+                'memory': compute_instance.memory,
+                'sku': compute_instance.sku,
+                'provider': compute_instance.provider.name,
+                'cloud_service': compute_instance.cloud_service.service_type
+            }
+        
+
+    if cloud_storage:
+        # Query for the first storage instance based on the keyword "File"
+        storage_instance = StorageSpecifications.objects.filter(name__icontains='File').first()
+        if storage_instance:
+            computed_data['storage'] = {
+                'name': storage_instance.name,
+                'unit_price': storage_instance.unit_price,
+                'unit_of_storage': storage_instance.unit_of_storage,
+                'sku': storage_instance.sku,
+                'provider': storage_instance.provider.name,
+                'cloud_service': storage_instance.cloud_service.service_type
+            }
+        else:
+            computed_data['storage']= None
+
+    if database_service:
+        # Query for the first database instance
+        database_instance = DatabaseSpecifications.objects.filter(name__icontains=database_service).first()
+        if database_instance:
+            computed_data['database'] = {
+                'name': database_instance.name,
+                'unit_price': database_instance.unit_price,
+                'unit_of_storage': database_instance.unit_of_storage,
+                'sku': database_instance.sku,
+                'data_type': database_instance.data_type,
+                'provider': database_instance.provider.name,
+                'cloud_service': database_instance.cloud_service.service_type
+            }
+        else:
+            computed_data['database'] = None
+
+    if networking_feature:
+        if 'Content' in networking_feature:
+            # Query for the first networking instance based on the keyword "CDN"
+            networking_instance = NetworkingSpecifications.objects.filter(name__icontains='CDN').first()
+        else:
+            # Query for the first networking instance based on the first word
+            first_word = networking_feature.split()[0]
+            networking_instance = NetworkingSpecifications.objects.filter(name__icontains=first_word).first()
+
+        if networking_instance:
+            computed_data['networking'] = {
+                'name': networking_instance.name,
+                'unit_price': networking_instance.unit_price,
+                'unit_of_measure': networking_instance.unit_of_measure,
+                'sku': networking_instance.sku,
+                'provider': networking_instance.provider.name,
+                'cloud_service': networking_instance.cloud_service.service_type
+            }
+        else:
+            computed_data['networking']= None
+
+    return computed_data
+
 def callmain(request):
     main()
     return HttpResponse("Main function called successfully.")
-
 
 if __name__ == "__main__":
     main()

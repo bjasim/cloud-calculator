@@ -16,6 +16,7 @@ def handle_advanced_form_submission(request):
         networking_feature_Azure = form_data.get('networkingFeature')
 
         calculated_data = calculated_data_Azure(database_service_Azure, expected_cpu_Azure, cloud_storage_Azure, networking_feature_Azure)
+        #Write the code for dealing with logic in here GCP
 
         print(calculated_data)
         # Return computed data as JSON response
