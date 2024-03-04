@@ -620,8 +620,12 @@ def calculated_data_AWS(database_service, database_size, expected_cpu, cloud_sto
         # Fetch the compute instance with the specific SKU
         try:
             compute_instance = ComputeSpecifications.objects.get(sku=compute_sku, provider__name='AWS')
+            # unit_price = float(compute_instance.unit_price) * 720 # Convert unit price to float
+            unit_price = float(compute_instance.unit_price)# Convert unit price to float
+
             computed_data['compute'] = {
                 'name': compute_instance.name,
+                # 'unit_price': unit_price,
                 'unit_price': compute_instance.unit_price,
                 'cpu': compute_instance.cpu,
                 'memory': compute_instance.memory,
@@ -629,9 +633,15 @@ def calculated_data_AWS(database_service, database_size, expected_cpu, cloud_sto
                 'provider': compute_instance.provider.name,
                 'cloud_service': compute_instance.cloud_service.service_type,
                 'description': compute_instance.description  # Assuming there's a description field
-            }
+            }        
+            # compute_total_price = unit_price  # Calculate total price
+            compute_total_price = unit_price * 720  # Calculate total price
+
+            print(f"Compute total price is:  {compute_total_price}")
+
         except ComputeSpecifications.DoesNotExist:
             computed_data['compute'] = 'No compute instance found for SKU 3DG6WFZ5QW4JAAHJ.'
+
 
 
     if cloud_storage:
@@ -646,12 +656,14 @@ def calculated_data_AWS(database_service, database_size, expected_cpu, cloud_sto
                 'provider': storage_instance.provider.name,
                 'cloud_service': storage_instance.cloud_service.service_type
             }
+        storage_total_price = storage_instance.unit_price
+        print(f"Storage total price is:  {storage_total_price}")
 
     if database_service:
         if database_service == 'noSQL':
-            db_sku = '6CKE4SNQ9UFB7DND' # change it to "F3E2EDSYC6ZNW7XP" just multiply by the size they need , dynamoDB
+            db_sku = 'F3E2EDSYC6ZNW7XP' # change it to "F3E2EDSYC6ZNW7XP" just multiply by the size they need , dynamoDB
         elif database_service == 'sql':
-            db_sku = '6JDTD6BUCGDEUVDG' # change it to 'QVD35TA7MPS92RBC' # multiply with the size they need , and add instance price'
+            db_sku = 'QVD35TA7MPS92RBC' # change it to 'QVD35TA7MPS92RBC' # multiply with the size they need , and add instance price'
             # db_instance_sku = 'MV3A7KKN6HB749EA'
         else: 
             db_sku = '6JHCF6YMTED9558R'   
@@ -667,6 +679,9 @@ def calculated_data_AWS(database_service, database_size, expected_cpu, cloud_sto
                     'provider': database_instance.provider.name,
                     'cloud_service': database_instance.cloud_service.service_type
                 }
+            database_total_price = database_instance.unit_price
+            print(f"Database total price is:  {database_total_price}")
+
         except DatabaseSpecifications.DoesNotExist:
             computed_data['database'] = 'No database instance found for SKU fsdfsdfsdfsdfsd.'
 
