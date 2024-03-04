@@ -20,6 +20,7 @@ service_filter = "service=\"services/9662-B51E-5089\""
 desired_categories = ['MySQL', 'Postgres', 'SQL Server']
 output_file_path = 'C:/Users/Joseph/cloud-calculator/cloud-calculator/BackendCalculator/google_app/specs_info.json'
 output_file_path2 = 'C:/Users/Joseph/cloud-calculator/cloud-calculator/BackendCalculator/google_app/price_info.json'
+output_file_Storage = ""
 combined_info= 'C:/Users/Joseph/cloud-calculator/cloud-calculator/BackendCalculator/google_app/combined_info.json'
 
 
@@ -29,14 +30,17 @@ def main():
     # Get SKUs for a specific service
     service_name = "services/9662-B51E-5089"  # CloudSQL service name
     #Getting the price for all skus with above parent service
-    #get_prices(service,service_name)
+    get_prices(service,service_name)
     #Getting all parent service sku information (getting specifications about each sku)
-    #get_specs(endpoint_url, API_KEY, service_filter, desired_categories, output_file_path)
+    get_specs(endpoint_url, API_KEY, service_filter, desired_categories, output_file_path)
     #compute info
     computeinfo()
     # Create a new function to combine the information from the two json files based on skuid and insert into the db
-    #combine_json_data(output_file_path, output_file_path2,combined_info)
-    #write to DB 
+    combine_json_data(output_file_path, output_file_path2,combined_info)
+    #Getting storage specs
+    get_storage_specs(endpoint_url,API_KEY,service_filter,output_file_path)
+    #getting prices and inserting into db--
+    retrieve_prices_from_json(output_file_path,API_KEY,output_file_Storage)
     
 def get_authenticated_service():
     # Check if credentials file exists
@@ -110,6 +114,7 @@ def get_prices(service, service_name):
         print(f"Response details: {e._get_reason()}")
         print(f"URI: {e.uri}")
         print(f"Error details: {e.error_details}")
+        
 def get_specs(endpoint_url, API_KEY, service_filter, desired_categories, output_file_path):
     # Initialize an empty list to store all SKUs
     all_skus = []
@@ -286,8 +291,78 @@ def computeinfo():
     
     print("Compute information stored successfully")
     
+    
+def get_storage_specs(endpoint_url, api_key, service_filter, output_file_path):
+    all_skus = []
+    next_page_token = None
+
+    while True:
+        # Construct the request URL with parameters including the next page token if available
+        request_url = f"{endpoint_url}?key={api_key}&pageSize=5000&filter={service_filter}"
+        if next_page_token:
+            request_url += f"&pageToken={next_page_token}"
+
+        # Send GET request to the API endpoint
+        response = requests.get(request_url)
+
+        # Check if the request was successful
+        if response.status_code == 200:
+            # Parse the JSON response
+            data = response.json()
+
+            # Extract information from the response and filter based on category
+            skus = data.get('skus', [])
+            filtered_skus = [sku for sku in skus if any(category.get('category') in ['Nearline', 'Coldline', 'Archive', 'Standard'] for category in sku.get('productTaxonomy', {}).get('taxonomyCategories', []))]
+            all_skus.extend(filtered_skus)
+
+            # Check if there is a next page token
+            next_page_token = data.get('nextPageToken')
+
+            # Break the loop if there is no next page token
+            if not next_page_token:
+                break
+        else:
+            print(f"Error: {response.status_code} - {response.reason}")
+
+    # Save the formatted response to a JSON file
+    with open(output_file_path, 'w') as json_file:
+        json.dump(all_skus, json_file, indent=2)
+            
+# for each sku id found in the file it will call the api to get the details for that skuid (price) and write to file, This functon gets called by the other function below
+def get_google_cloud_sku_prices(sku_id, api_key, page_size=5000, page_token=None):
+    url = f"https://cloudbilling.googleapis.com/v1beta/skus/{sku_id}/prices?key={api_key}&pageSize={page_size}"
+    if page_token:
+        url += f"&pageToken={page_token}"
+
+    response = requests.get(url)
+    data = response.json()
+
+    return data
+
+#goes through each one of the skuid in the file and then sends that skuid to the function above to get price
+
+def retrieve_prices_from_json(json_file, api_key, output_file):
+    with open(json_file) as f:
+        skus_data = json.load(f)
+
+    combined_data = {}
+    for sku_info in skus_data:
+        sku_id = sku_info['skuId']
+        prices_data = get_google_cloud_sku_prices(sku_id, api_key)
+        combined_data[sku_id] = {
+            'sku_info': sku_info,
+            'prices_data': prices_data
+        }
+        with open(output_file, 'w') as outfile:
+            json.dump(combined_data, outfile, indent=2)
+
+print(f'All SKUs saved to {output_file_path}')      
+    
+
+#THE CODE BELOW IS LOGIC 
+    
 def calculated_data_Azure(database_service, expected_cpu, cloud_storage, networking_feature):
-    computed_data = {'provider': 'Microsoft Azure',}  # Initialize dictionary to store computed data
+    computed_data = {'provider': 'Google Cloud',}  # Initialize dictionary to store computed data
 
     # Retrieve data from the database based on the provided keyword
     if expected_cpu:

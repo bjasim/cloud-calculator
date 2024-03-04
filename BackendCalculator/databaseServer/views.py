@@ -2,7 +2,8 @@ from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 
 import json
-from azure_app.views import calculated_data_Azure
+from google_app.views import calculated_data_Azure
+
 
 
 @csrf_exempt
