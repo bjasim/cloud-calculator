@@ -53,15 +53,12 @@ class StorageSpecifications(models.Model):
     unit_price = models.CharField(max_length=50)
     unit_of_storage = models.CharField(max_length=50)
     region = models.CharField(max_length=50, default='No region provided')
-<<<<<<< HEAD
     description = models.TextField(blank=True, default='')
     durability = models.CharField(max_length=50, default='No durability provided.')
     service_code = models.CharField(max_length=50, default='No code provided.')
     storage_class = models.CharField(max_length=50, default='No class provided.')
     volume_type = models.CharField(max_length=50, default='No type provided.')  # e.g., General Purpose SSD, Provisioned IOPS SSD
-=======
     price_monthly = models.CharField(max_length=50,default='0.0')
->>>>>>> ec0cd56d60c2ddd98f44efc3fb36ef0f09980cc0
 
 
     def __str__(self):
@@ -92,7 +89,6 @@ class DatabaseSpecifications(models.Model):
     unit_price = models.CharField(max_length=50, default='0.0')
     unit_of_storage = models.CharField(max_length=50, default ='0.0')
     region = models.CharField(max_length=50, default='No region provided')
-<<<<<<< HEAD
     description = models.TextField(blank=True, default='')
     volume_type = models.CharField(max_length=100, blank=True, default='')
     storage_capacity = models.CharField(max_length=100, blank=True, default='')
@@ -102,9 +98,7 @@ class DatabaseSpecifications(models.Model):
     cpu = models.CharField(max_length=50, default='No cpu provided.')  
     memory = models.CharField(max_length=50, default='No memory provided.')
     network_performance = models.CharField(max_length=50, default='No network provided.')
-=======
     price_monthly = models.CharField(max_length=50,default='0.0')
->>>>>>> ec0cd56d60c2ddd98f44efc3fb36ef0f09980cc0
 
 
     def __str__(self):

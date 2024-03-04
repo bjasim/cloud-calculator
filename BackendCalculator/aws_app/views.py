@@ -600,7 +600,137 @@ def process_aws_pricing_data(response, process_function):
 
 
 
+def calculated_data_AWS(database_service, database_size, expected_cpu, cloud_storage, networking_feature):
+    computed_data = {'provider': 'AWS',}  # Initialize dictionary to store computed data
+    database_size = 100
+    if expected_cpu:
+        if expected_cpu == "1vCPU":
+            compute_sku = "3DG6WFZ5QW4JAAHJ"
+        elif expected_cpu == "2vCPUs":
+            compute_sku = '3K59PVQYWBTWXEHT'
+        elif expected_cpu == "4vCPUs":
+            compute_sku = '7WVK4XHSDKCTP5FX'
+        elif expected_cpu == "8vCPUs":
+            compute_sku = '4QB2537CEAFFV88T'
+        # else:
+        #     compute_sku = '4QB2537CEAFFV88T'
 
 
-# to-do
-# implement the same functionality for rds as the networking services and pass service code to the function to fetch data trhough API (S3, EFS, etc..)
+
+        # Fetch the compute instance with the specific SKU
+        try:
+            compute_instance = ComputeSpecifications.objects.get(sku=compute_sku, provider__name='AWS')
+            computed_data['compute'] = {
+                'name': compute_instance.name,
+                'unit_price': compute_instance.unit_price,
+                'cpu': compute_instance.cpu,
+                'memory': compute_instance.memory,
+                'sku': compute_instance.sku,
+                'provider': compute_instance.provider.name,
+                'cloud_service': compute_instance.cloud_service.service_type,
+                'description': compute_instance.description  # Assuming there's a description field
+            }
+        except ComputeSpecifications.DoesNotExist:
+            computed_data['compute'] = 'No compute instance found for SKU 3DG6WFZ5QW4JAAHJ.'
+
+
+    if cloud_storage:
+        # Query for the first storage instance based on the keyword "File"
+        storage_instance = StorageSpecifications.objects.filter(name__icontains='File').first()
+        if storage_instance:
+            computed_data['storage'] = {
+                'name': storage_instance.name,
+                'unit_price': storage_instance.unit_price,
+                'unit_of_storage': storage_instance.unit_of_storage,
+                'sku': storage_instance.sku,
+                'provider': storage_instance.provider.name,
+                'cloud_service': storage_instance.cloud_service.service_type
+            }
+
+    if database_service:
+        if database_service == 'noSQL':
+            db_sku = '6CKE4SNQ9UFB7DND' # change it to "F3E2EDSYC6ZNW7XP" just multiply by the size they need , dynamoDB
+        elif database_service == 'sql':
+            db_sku = '6JDTD6BUCGDEUVDG' # change it to 'QVD35TA7MPS92RBC' # multiply with the size they need , and add instance price'
+            # db_instance_sku = 'MV3A7KKN6HB749EA'
+        else: 
+            db_sku = '6JHCF6YMTED9558R'   
+            # Query for the first database instance
+        try:
+            database_instance = DatabaseSpecifications.objects.get(sku=db_sku, provider__name='AWS')
+            computed_data['database'] = {
+                    'name': database_instance.name,
+                    'unit_price': database_instance.unit_price,
+                    'unit_of_storage': database_instance.unit_of_storage,
+                    'sku': database_instance.sku,
+                    'data_type': database_instance.data_type,
+                    'provider': database_instance.provider.name,
+                    'cloud_service': database_instance.cloud_service.service_type
+                }
+        except DatabaseSpecifications.DoesNotExist:
+            computed_data['database'] = 'No database instance found for SKU fsdfsdfsdfsdfsd.'
+
+
+    
+    # if database_size:     
+    #     if database_size == 'Small (under 1 TB)':
+    #         db_size = 1000
+    #     elif database_size == 'Medium (1-10 TB)':
+    #         db_size = 5000
+    #     elif database_size == 'Large (10-100 TB)':
+    #         db_size = 10000
+    #     elif database_size == 'Very Large (over 100 TB)':
+    #         db_size = 100000
+    #     else:
+    #         db_size = 0
+
+
+            
+# NoSQL: Storage sku = "F3E2EDSYC6ZNW7XP" # $0.25/gb ServiceCode= AmazonDynamoDB
+# Instance sku =  price for per read and write requests (1.25 per million requests)
+# SQL: Storage sku = "QVD35TA7MPS92RBC or YUPCZAH7K635UM3H" # SQL   Single-AZ or Multi-AZ )multiply with the size of the database ex. 100gb = 0.12-gb/month * 100GB = $12 a month ServiceCode= AmazonRDS
+# Instance sku = "MV3A7KKN6HB749EA or PHXMADZ7H8JN3RRW" 8 GiB memory singe AZ or Multi-AZ
+# No database is required - skip to next question
+
+        
+        
+        # Query for the first database instance
+        # database_instance = DatabaseSpecifications.objects.get(sku=compute_sku, provider__name='AWS')
+        # if database_instance:
+        #     computed_data['database'] = {
+        #         'name': database_instance.name,
+        #         'unit_price': database_instance.unit_price,
+        #         'unit_of_storage': database_instance.unit_of_storage,
+        #         'sku': database_instance.sku,
+        #         'data_type': database_instance.data_type,
+        #         'provider': database_instance.provider.name,
+        #         'cloud_service': database_instance.cloud_service.service_type
+        #     }
+        # else:
+        #     computed_data['database'] = None
+            
+    if networking_feature:
+        if 'Content' in networking_feature:
+            # Query for the first networking instance based on the keyword "CDN"
+            networking_instance = NetworkingSpecifications.objects.filter(name__icontains='CDN').first()
+        else:
+            # Query for the first networking instance based on the first word
+            first_word = networking_feature.split()[0]
+            networking_instance = NetworkingSpecifications.objects.filter(name__icontains=first_word).first()
+
+        if networking_instance:
+            computed_data['networking'] = {
+                'name': networking_instance.name,
+                'unit_price': networking_instance.unit_price,
+                'unit_of_measure': networking_instance.unit_of_measure,
+                'sku': networking_instance.sku,
+                'provider': networking_instance.provider.name,
+                'cloud_service': networking_instance.cloud_service.service_type
+            }
+
+    return computed_data
+
+
+
+# # to-do
+# # implement the same functionality for rds as the networking services and pass service code to the function to fetch data trhough API (S3, EFS, etc..)

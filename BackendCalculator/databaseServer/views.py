@@ -3,6 +3,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 import json
 from azure_app.views import calculated_data_Azure
+from aws_app.views import calculated_data_AWS
 
 
 @csrf_exempt
@@ -14,8 +15,10 @@ def handle_advanced_form_submission(request):
         expected_cpu_Azure = form_data.get('expectedRAM')  # Assuming the CPU field stores RAM information
         cloud_storage_Azure = form_data.get('cloudStorage')
         networking_feature_Azure = form_data.get('networkingFeature')
+        database_size_Azure = form_data.get('databaseSize')
 
-        calculated_data = calculated_data_Azure(database_service_Azure, expected_cpu_Azure, cloud_storage_Azure, networking_feature_Azure)
+        # calculated_data = calculated_data_Azure(database_service_Azure, expected_cpu_Azure, cloud_storage_Azure, networking_feature_Azure)
+        calculated_data = calculated_data_AWS(database_service_Azure, database_size_Azure, expected_cpu_Azure, cloud_storage_Azure, networking_feature_Azure)
 
         print(calculated_data)
         # Return computed data as JSON response

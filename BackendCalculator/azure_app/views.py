@@ -176,24 +176,23 @@ def database_fetch_view(request):
 
 
 
-# the backend logic for advanced form
 def calculated_data_Azure(database_service, expected_cpu, cloud_storage, networking_feature):
     computed_data = {'provider': 'Microsoft Azure',}  # Initialize dictionary to store computed data
 
     # Retrieve data from the database based on the provided keyword
-    if expected_cpu:
-        # Query for the first compute instance
-        compute_instance = ComputeSpecifications.objects.filter(cpu=expected_cpu).first()
-        if compute_instance:
-            computed_data['compute'] = {
-                'name': compute_instance.name,
-                'unit_price': compute_instance.unit_price,
-                'cpu': compute_instance.cpu,
-                'memory': compute_instance.memory,
-                'sku': compute_instance.sku,
-                'provider': compute_instance.provider.name,
-                'cloud_service': compute_instance.cloud_service.service_type
-            }
+    # if expected_cpu:
+    #     # Query for the first compute instance
+    #     compute_instance = ComputeSpecifications.objects.filter(cpu=expected_cpu).first()
+    #     if compute_instance:
+    #         computed_data['compute'] = {
+    #             'name': compute_instance.name,
+    #             'unit_price': compute_instance.unit_price,
+    #             'cpu': compute_instance.cpu,
+    #             'memory': compute_instance.memory,
+    #             'sku': compute_instance.sku,
+    #             'provider': compute_instance.provider.name,
+    #             'cloud_service': compute_instance.cloud_service.service_type
+    #         }
 
     if cloud_storage:
         # Query for the first storage instance based on the keyword "File"
