@@ -21,6 +21,8 @@ from aws_app.views import aws_cloudfront_fetch
 
 from testing.views import testing
 # from django.urls import include
+from databaseServer.views import handle_advanced_form_submission
+from databaseServer.views import handle_basic_form_submission
 
 
 router = DefaultRouter()
@@ -31,6 +33,10 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/docs/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/schema/ui/', SpectacularSwaggerView.as_view()),
+    # handel submit advanced form
+    path('api/submit-advanced-form/', handle_advanced_form_submission, name='submit_advanced_form'),
+    # handel submit basic form
+    path('api/submit-basic-form/', handle_basic_form_submission, name='submit_basic_form'),
     # Azure catagories
     path('compute-fetch/', compute_fetch_view, name='fetch-compute'),
     path('storage-fetch/', storage_fetch_view, name='fetch-storage'),
