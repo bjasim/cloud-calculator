@@ -602,7 +602,7 @@ def process_aws_pricing_data(response, process_function):
 
 def calculated_data_AWS(database_service, database_size, expected_cpu, cloud_storage, networking_feature):
     computed_data = {'provider': 'AWS',}  # Initialize dictionary to store computed data
-    database_size = 100
+    print(f"database size is:  {database_size}")
     if expected_cpu:
         if expected_cpu == "1vCPU":
             compute_sku = "3DG6WFZ5QW4JAAHJ"
@@ -658,28 +658,46 @@ def calculated_data_AWS(database_service, database_size, expected_cpu, cloud_sto
             }
         storage_total_price = storage_instance.unit_price
         print(f"Storage total price is:  {storage_total_price}")
+# NoSQL: Storage sku = "F3E2EDSYC6ZNW7XP" # $0.25/gb ServiceCode= AmazonDynamoDB
+# Instance sku =  price for per read and write requests (1.25 per million requests)
+# SQL: Storage sku = "QVD35TA7MPS92RBC or YUPCZAH7K635UM3H" # SQL   Single-AZ or Multi-AZ )multiply with the size of the database ex. 100gb = 0.12-gb/month * 100GB = $12 a month ServiceCode= AmazonRDS
+# Instance sku = "MV3A7KKN6HB749EA or PHXMADZ7H8JN3RRW" 8 GiB memory singe AZ or Multi-AZ
+# No database is required - skip to next question
 
     if database_service:
         if database_service == 'noSQL':
-            db_sku = 'F3E2EDSYC6ZNW7XP' # change it to "F3E2EDSYC6ZNW7XP" just multiply by the size they need , dynamoDB
+            db_sku = 'F3E2EDSYC6ZNW7XP' # just multiply by the size they need , dynamoDB
         elif database_service == 'sql':
-            db_sku = 'QVD35TA7MPS92RBC' # change it to 'QVD35TA7MPS92RBC' # multiply with the size they need , and add instance price'
-            # db_instance_sku = 'MV3A7KKN6HB749EA'
-        else: 
-            db_sku = '6JHCF6YMTED9558R'   
-            # Query for the first database instance
+            db_sku = 'QVD35TA7MPS92RBC' # multiply with the size they need , and add instance price'
+            db_instance_sku = 'MV3A7KKN6HB749EA'
+        # elif: 
+        #     break            
+    if database_size:     
+        if database_size == 'small':
+            db_size = 1000
+        elif database_size == 'medium':
+            db_size = 5000
+        elif database_size == 'large':
+            db_size = 10000
+        elif database_size == 'veryLarge':
+            db_size = 100000
+        # else:
+        #     db_size = 10
+
         try:
             database_instance = DatabaseSpecifications.objects.get(sku=db_sku, provider__name='AWS')
+            db_unit_price = float(database_instance.unit_price)# Convert unit price to float
+
             computed_data['database'] = {
                     'name': database_instance.name,
-                    'unit_price': database_instance.unit_price,
+                    'unit_price': db_unit_price,
                     'unit_of_storage': database_instance.unit_of_storage,
                     'sku': database_instance.sku,
                     'data_type': database_instance.data_type,
                     'provider': database_instance.provider.name,
                     'cloud_service': database_instance.cloud_service.service_type
                 }
-            database_total_price = database_instance.unit_price
+            database_total_price = db_unit_price * db_size
             print(f"Database total price is:  {database_total_price}")
 
         except DatabaseSpecifications.DoesNotExist:
@@ -687,25 +705,9 @@ def calculated_data_AWS(database_service, database_size, expected_cpu, cloud_sto
 
 
     
-    # if database_size:     
-    #     if database_size == 'Small (under 1 TB)':
-    #         db_size = 1000
-    #     elif database_size == 'Medium (1-10 TB)':
-    #         db_size = 5000
-    #     elif database_size == 'Large (10-100 TB)':
-    #         db_size = 10000
-    #     elif database_size == 'Very Large (over 100 TB)':
-    #         db_size = 100000
-    #     else:
-    #         db_size = 0
 
 
             
-# NoSQL: Storage sku = "F3E2EDSYC6ZNW7XP" # $0.25/gb ServiceCode= AmazonDynamoDB
-# Instance sku =  price for per read and write requests (1.25 per million requests)
-# SQL: Storage sku = "QVD35TA7MPS92RBC or YUPCZAH7K635UM3H" # SQL   Single-AZ or Multi-AZ )multiply with the size of the database ex. 100gb = 0.12-gb/month * 100GB = $12 a month ServiceCode= AmazonRDS
-# Instance sku = "MV3A7KKN6HB749EA or PHXMADZ7H8JN3RRW" 8 GiB memory singe AZ or Multi-AZ
-# No database is required - skip to next question
 
         
         
