@@ -643,31 +643,41 @@ def calculated_data_AWS(database_service, database_size, expected_cpu, cloud_sto
         except ComputeSpecifications.DoesNotExist:
             computed_data['compute'] = 'No compute instance found for SKU 3DG6WFZ5QW4JAAHJ.'
 
-
+        #--------------------------------------Storage Options------------------------------------------------------
+# 7. Cloud Storage:
+# 7.1 Object Storage (S3) = sku:WP9ANXZGBYYSGJEA $0.022/GB monthly ServiceCode= AmazonS3
+# 7.2 File Storage (EFS) = sku:YFV3RHAD3CDDP3VE standard storage general purpose, $0.30 per GB-Mo ServiceCode= AmazonEFS
+# 7.3 Block Storage (EBS) = sku: HY3BZPP2B6K8MSJF gp2-general purpose storage 0.10 per GB-Mo ServiceCode= AmazonEC2 and productFamily= Storage
+# 7.4 No Storage Required
 
     if cloud_storage:
-        
-        
-        
-        
-        
-        
-        
-        
+        if cloud_storage == "Object Storage":
+            storage_sku = "WP9ANXZGBYYSGJEA"
+        elif cloud_storage == "File Storage":
+            storage_sku = 'YFV3RHAD3CDDP3VE'
+        elif cloud_storage == "Block Storage":
+            storage_sku = 'HY3BZPP2B6K8MSJF'
+        # elif cloud_storage == "No Storage":
+        #     storage_sku = '3K59PVQYWBTWXEHT'
+       
         # Query for the first storage instance based on the keyword "File"
-        storage_instance = StorageSpecifications.objects.filter(name__icontains='File').first()
+        storage_instance = StorageSpecifications.objects.get(sku=storage_sku, provider__name='AWS')
+        storage_unit_price = float(storage_instance.unit_price)# Convert unit price to float
+        # db_storage_total_price = db_storage_unit_price * db_size
+
         if storage_instance:
             computed_data['storage'] = {
                 'name': storage_instance.name,
-                'unit_price': storage_instance.unit_price,
+                'unit_price': storage_unit_price,
                 'unit_of_storage': storage_instance.unit_of_storage,
                 'sku': storage_instance.sku,
                 'provider': storage_instance.provider.name,
                 'cloud_service': storage_instance.cloud_service.service_type
             }
-        storage_total_price = storage_instance.unit_price
         print("-------------------------------------------------------------")
-        print(f"Storage total price is:  {storage_total_price}")
+        print(f"Storage unit price is:  {storage_unit_price}")
+        # print(f"Storage total price is:  {storage_total_price}")
+
         
     if database_service:
         if database_service == 'noSQL':
@@ -782,13 +792,24 @@ def calculated_data_AWS(database_service, database_size, expected_cpu, cloud_sto
                 'provider': networking_instance.provider.name,
                 'cloud_service': networking_instance.cloud_service.service_type
             }
+    plan_monthly_price = compute_total_price + storage_unit_price + total_db_price
+    plan_annual_price = float(plan_monthly_price) * 12
+    print("Total Monthly Plan Cost: ", plan_monthly_price)
+    print("Total Annual Plan Cost: ", plan_annual_price)
+
+    computed_data['monthly'] = plan_monthly_price
+    computed_data['annual'] = plan_annual_price
+
+
+
 
     return computed_data
 
 
 
 # # to-do
-# calculate database instance price
 # do logic for storage
 # calculate for storage
+# Show monthly and annual prices in the front-end UI
+# Add question for storage size
 # # implement the same functionality for rds as the networking services and pass service code to the function to fetch data trhough API (S3, EFS, etc..)
