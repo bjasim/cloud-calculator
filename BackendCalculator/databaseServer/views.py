@@ -4,6 +4,9 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from azure_app.views import calculated_data_Azure
 from aws_app.views import calculated_data_AWS
+from google_app.views import calculated_data_Google
+from oracle_app.views import calculated_data_Oracle
+
 
 
 @csrf_exempt
@@ -17,12 +20,25 @@ def handle_advanced_form_submission(request):
         networking_feature_Azure = form_data.get('networkingFeature')
         database_size_Azure = form_data.get('databaseSize')
 
-        # calculated_data = calculated_data_Azure(database_service_Azure, expected_cpu_Azure, cloud_storage_Azure, networking_feature_Azure)
-        calculated_data = calculated_data_AWS(database_service_Azure, database_size_Azure, expected_cpu_Azure, cloud_storage_Azure, networking_feature_Azure)
+        azure_data = calculated_data_Azure(database_service_Azure, expected_cpu_Azure, cloud_storage_Azure, networking_feature_Azure)
+        aws_data = calculated_data_AWS(database_service_Azure, database_size_Azure, expected_cpu_Azure, cloud_storage_Azure, networking_feature_Azure)
+        google_data = calculated_data_Google(database_service_Azure, expected_cpu_Azure, cloud_storage_Azure, networking_feature_Azure)
+        Oracle_data = calculated_data_Oracle(database_service_Azure, expected_cpu_Azure, cloud_storage_Azure, networking_feature_Azure)
 
-        print(calculated_data)
+        combined_data = {
+            'Azure': azure_data,
+            'AWS': aws_data,
+            'Google': google_data,
+            'Oracle': Oracle_data
+        }
+
+        # print(calculated_data)
+        # # Return computed data as JSON response
+        # return JsonResponse(calculated_data)
+        print(combined_data)
         # Return computed data as JSON response
-        return JsonResponse(calculated_data)
+        return JsonResponse(combined_data)
+
     else:
         # Return HTTP 400 Bad Request for unsupported request methods
         return HttpResponseBadRequest("Unsupported request method")
