@@ -81,7 +81,7 @@ def testing(request):
 
             # {'Type': 'TERM_MATCH', 'Field': 'productFamily', 'Value': 'Storage instance'},
             # {'Type': 'TERM_MATCH', 'Field': 'volumeName', 'Value': 'gp2'},  # Filter for General Purpose SSD (gp2)
-            {'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'us-east-1'},
+            # {'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'ap-south-1'},
             # {'Type': 'TERM_MATCH', 'Field': 'databaseEdition', 'Value': 'standard'},
             # {'Type': 'TERM_MATCH', 'Field': 'databaseEngine', 'Value': 'SQL Server'},
             # {'Type': 'TERM_MATCH', 'Field': 'instanceFamily', 'Value': 'General Purpose'},

@@ -138,7 +138,58 @@ def fetch_pricing_data(sku, service_code):
     return None
 
 
-def process_ec2_data(sku, pricing_data):
+# def process_ec2_data(sku, pricing_data):
+#     # AWS Provider and Compute CloudService setup
+#     provider_name = 'AWS'
+#     provider, _ = Provider.objects.get_or_create(name=provider_name)
+
+#     cloud_service_type = 'Compute'
+#     cloud_service, _ = CloudService.objects.get_or_create(
+#         provider=provider, 
+#         service_type=cloud_service_type,
+#         defaults={'description': 'AWS EC2 Service'}
+#     )
+    
+
+#     # EC2 specific data extraction
+#     attributes = pricing_data.get('product', {}).get('attributes', {})
+#     instance_type = attributes.get('instanceType', 'No type provided.')
+#     operating_system = attributes.get('operatingSystem', 'Ubuntu Pro')
+#     cpu = attributes.get('vcpu', 'Not specified')
+#     memory = attributes.get('memory', 'Not specified')
+#     network_performance = attributes.get('networkPerformance', 'No network provided.')
+#     tenancy = attributes.get('tenancy', 'Not specified')
+
+#     # Extract price and description
+#     price_list = pricing_data.get('terms', {}).get('OnDemand', {})
+#     for sku_details in price_list.values():
+#         for offer_term_code, offer_term_details in sku_details.get('priceDimensions', {}).items():
+#             description = offer_term_details.get('description', 'No description provided.')
+#             price_per_unit = offer_term_details.get('pricePerUnit', {}).get('USD')
+            
+#             # Update or create new ComputeSpecifications entry
+#             compute_spec, created = ComputeSpecifications.objects.update_or_create(
+#                 sku=sku,
+#                 defaults={
+#                     'provider': provider,
+#                     'cloud_service': cloud_service,
+#                     'instance_type': instance_type,
+#                     'operating_system': operating_system,
+#                     'cpu': cpu,
+#                     'memory': memory,
+#                     'network_performance': network_performance,
+#                     'tenancy': tenancy,
+#                     'description': description,
+#                     'unit_price': price_per_unit or 0.0,
+#                     'currency': 'USD'
+#                 }
+#             )
+#             print(f"New data created for SKU: {sku}")
+#             break
+#         break
+
+#     return HttpResponse("AWS data processed successfully.")
+def process_ec2_data(sku, pricing_data, region):
     # AWS Provider and Compute CloudService setup
     provider_name = 'AWS'
     provider, _ = Provider.objects.get_or_create(name=provider_name)
@@ -149,46 +200,61 @@ def process_ec2_data(sku, pricing_data):
         service_type=cloud_service_type,
         defaults={'description': 'AWS EC2 Service'}
     )
-    
 
     # EC2 specific data extraction
     attributes = pricing_data.get('product', {}).get('attributes', {})
     instance_type = attributes.get('instanceType', 'No type provided.')
     operating_system = attributes.get('operatingSystem', 'Ubuntu Pro')
-    cpu = attributes.get('vcpu', 'Not specified')
-    memory = attributes.get('memory', 'Not specified')
-    network_performance = attributes.get('networkPerformance', 'No network provided.')
-    tenancy = attributes.get('tenancy', 'Not specified')
+    cpu = attributes.get('vcpu', None)
+    memory = attributes.get('memory', None)
+    region = attributes.get('location', 'Not specified')
 
-    # Extract price and description
-    price_list = pricing_data.get('terms', {}).get('OnDemand', {})
-    for sku_details in price_list.values():
-        for offer_term_code, offer_term_details in sku_details.get('priceDimensions', {}).items():
-            description = offer_term_details.get('description', 'No description provided.')
-            price_per_unit = offer_term_details.get('pricePerUnit', {}).get('USD')
-            
-            # Update or create new ComputeSpecifications entry
-            compute_spec, created = ComputeSpecifications.objects.update_or_create(
-                sku=sku,
-                defaults={
-                    'provider': provider,
-                    'cloud_service': cloud_service,
-                    'instance_type': instance_type,
-                    'operating_system': operating_system,
-                    'cpu': cpu,
-                    'memory': memory,
-                    'network_performance': network_performance,
-                    'tenancy': tenancy,
-                    'description': description,
-                    'unit_price': price_per_unit or 0.0,
-                    'currency': 'USD'
-                }
-            )
-            print(f"New data created for SKU: {sku}")
-            break
-        break
+    if cpu is not None and memory is not None and memory != 'NA':
+        try:
+            cpu_value = int(cpu)
+            memory_value = float(memory.split()[0])  # Extract numeric part of memory and convert to float
+        except ValueError:
+            print(f"Invalid data for SKU: {sku}, skipping.")
+            return  # Skip this record
+
+
+        # Check if the instance matches the criteria
+        if cpu_value <= 16 and memory_value <= 64:
+            # Extract price and description
+            price_list = pricing_data.get('terms', {}).get('OnDemand', {})
+            for sku_details in price_list.values():
+                for offer_term_code, offer_term_details in sku_details.get('priceDimensions', {}).items():
+                    description = offer_term_details.get('description', 'No description provided.')
+                    price_per_unit = offer_term_details.get('pricePerUnit', {}).get('USD')
+
+                    # Update or create new ComputeSpecifications entry
+                    compute_spec, created = ComputeSpecifications.objects.update_or_create(
+                        sku=sku,
+                        defaults={
+                            'provider': provider,
+                            'cloud_service': cloud_service,
+                            'instance_type': instance_type,
+                            'operating_system': operating_system,
+                            'cpu': cpu,
+                            'memory': memory,
+                            'network_performance': attributes.get('networkPerformance', 'No network provided.'),
+                            'tenancy': attributes.get('tenancy', 'Not specified'),
+                            'description': description,
+                            'unit_price': price_per_unit or 0.0,
+                            'currency': 'USD',
+                            'region': region  # Saving the region information
+                        }
+                    )
+                    print(f"New data created for SKU: {sku} in region: {region}")
+                    break
+                break
+        else:
+            print(f"Skipping SKU: {sku} as it does not meet the criteria.")
+    else:
+        print(f"CPU or memory information missing for SKU: {sku}. Skipping.")
 
     return HttpResponse("AWS data processed successfully.")
+
 
 def process_to_database_storage_specification(sku, pricing_data):
     provider_name = 'AWS'
@@ -435,29 +501,86 @@ def process_and_save_data(sku, service_code, pricing_data):
 #----------------------------------------------------------------------------------------------------
 def aws_compute_fetch(request):
     client = boto3.client('pricing', region_name='us-east-1')
-    max_records = 500
+    # max_records = 500
+    regions = [
+        'us-east-1', 'us-east-2', 'us-west-1', 'us-west-2', 'af-south-1',
+    ]
+    
     records_processed = 0
 
-    response = client.get_products(
-        ServiceCode='AmazonEC2',
-        Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'us-east-1'}],
-        MaxResults=100
-    )
-
-    # Pass the process_ec2_data function as an argument
-    records_processed += process_aws_pricing_data(response, process_ec2_data)
-
-    while 'NextToken' in response and records_processed < max_records:
+    for region in regions:
+        records_processed = 0
         response = client.get_products(
             ServiceCode='AmazonEC2',
-            Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'us-east-1'}],
-            MaxResults=100,
-            NextToken=response['NextToken']
+            Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': region}],
+            MaxResults=100
         )
-        # Again, pass the process_ec2_data function
-        records_processed += process_aws_pricing_data(response, process_ec2_data)
+    # response = client.get_products(
+    #     ServiceCode='AmazonEC2',
+    #     Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'us-east-1'}],
+    #     MaxResults=100
+    # )
 
-    return JsonResponse({"message": f"AWS EC2 data processed. Total records: {records_processed}"}, safe=False)
+    # Pass the process_ec2_data function as an argument
+   
+        records_processed += process_aws_pricing_data(response, process_ec2_data, region)
+        while 'NextToken' in response and records_processed:
+            response = client.get_products(
+                ServiceCode='AmazonEC2',
+                Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': region}],
+                MaxResults=100,
+                NextToken=response['NextToken']
+            )
+            records_processed += process_aws_pricing_data(response, process_ec2_data, region)
+
+    # while 'NextToken' in response and records_processed < max_records:
+    #     response = client.get_products(
+    #         ServiceCode='AmazonEC2',
+    #         Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'us-east-1'}],
+    #         # Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'us-east-2'}],
+    #         # Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'us-west-1'}],
+    #         # Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'us-west-2'}],
+    #         # Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'af-south-1'}],
+    #         # Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'ap-east-1'}],
+    #         # Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'ap-south-2'}],
+    #         # Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'ap-southeast-3'}],
+    #         # Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'ap-southeast-4'}],
+    #         # Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'ap-south-1'}],
+    #         # Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'ap-northeast-3'}],
+    #         # Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'ap-northeast-2'}],
+    #         # Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'ap-southeast-1'}],
+    #         # Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'ap-southeast-2'}],
+    #         # Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'ap-northeast-1'}],
+    #         # Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'ca-central-1'}],
+    #         # Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'ca-west-1'}],
+    #         # Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'eu-central-1'}],
+    #         # Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'eu-west-1'}],
+    #         # Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'eu-west-2'}],
+    #         # Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'eu-south-1'}],
+    #         # Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'eu-west-3'}],
+    #         # Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'eu-south-2'}],
+    #         # Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'eu-north-1'}],
+    #         # Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'eu-central-2'}],
+    #         # Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'me-south-1'}],
+    #         # Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'me-central-1'}],
+    #         # Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'sa-east-1'}],
+    #         # Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'us-gov-east-1'}],
+    #         # Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'us-gov-west-1'}],
+    #         # Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'me-central-1'}],
+    #         # Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'me-central-1'}],
+    #         # Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'me-central-1'}],
+    #         # Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'me-central-1'}],
+    #         # Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'me-central-1'}],
+    #         # Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'me-central-1'}],
+
+    #         MaxResults=100,
+    #         NextToken=response['NextToken']
+    #     )
+    #     # Again, pass the process_ec2_data function
+        # records_processed += process_aws_pricing_data(response, process_ec2_data)
+        print(f"Processed {records_processed} records for region: {region}")
+
+    return JsonResponse({"message": "AWS EC2 data processed for all regions"}, safe=False)
 #----------------------------------------------------------------------------------------------------------------------
 def aws_storage_fetch(request):
     client = boto3.client('pricing', region_name='us-east-1')
@@ -585,19 +708,31 @@ def aws_vpc_fetch(request):
 
 
 
-def process_aws_pricing_data(response, process_function):
+# def process_aws_pricing_data(response, process_function):
+#     processed = 0
+#     for price_str in response['PriceList']:
+#         try:
+#             pricing_data = json.loads(price_str)
+#             sku = pricing_data.get('product', {}).get('sku')
+#             if sku:
+#                 process_function(sku, pricing_data)
+#                 processed += 1
+#         except json.JSONDecodeError as e:
+#             print(f"JSON parsing error: {e}")
+#     return processed
+
+def process_aws_pricing_data(response, process_function, region):
     processed = 0
     for price_str in response['PriceList']:
         try:
             pricing_data = json.loads(price_str)
             sku = pricing_data.get('product', {}).get('sku')
             if sku:
-                process_function(sku, pricing_data)
+                process_function(sku, pricing_data, region)  # Pass the region to the processing function
                 processed += 1
         except json.JSONDecodeError as e:
             print(f"JSON parsing error: {e}")
     return processed
-
 
 
 def calculated_data_AWS(database_service, database_size, expected_cpu, cloud_storage, networking_feature):
@@ -793,6 +928,8 @@ def calculated_data_AWS(database_service, database_size, expected_cpu, cloud_sto
                 'cloud_service': networking_instance.cloud_service.service_type
             }
     plan_monthly_price = compute_total_price + storage_unit_price + total_db_price
+    # plan_monthly_price = compute_total_price + storage_unit_price
+
     plan_annual_price = float(plan_monthly_price) * 12
     print("Total Monthly Plan Cost: ", plan_monthly_price)
     print("Total Annual Plan Cost: ", plan_annual_price)
