@@ -14,16 +14,23 @@ def handle_advanced_form_submission(request):
     if request.method == 'POST':
         form_data = json.loads(request.body)
         print("Received form data:", form_data)
-        database_service_Azure = form_data.get('databaseService')
-        expected_cpu_Azure = form_data.get('expectedRAM')  # Assuming the CPU field stores RAM information
-        cloud_storage_Azure = form_data.get('cloudStorage')
-        networking_feature_Azure = form_data.get('networkingFeature')
-        database_size_Azure = form_data.get('databaseSize')
+        
+        monthly_budget = form_data.get('monthlyBudget')
+        expected_cpu = form_data.get('expectedRAM')  # Assuming the CPU field stores RAM information
+        database_service = form_data.get('databaseService')
+        database_size = form_data.get('databaseSize')
+        cloud_storage = form_data.get('cloudStorage')
+        storage_size = form_data.get('storageSize')
+        dns_connection = form_data.get('dnsConnection')
+        cdn_connection = form_data.get('cdnConnection')
+        scalability = form_data.get('scalability')
+        location = form_data.get('location')
+        # networking_feature = form_data.get('networkingFeature')
 
-        azure_data = calculated_data_Azure(database_service_Azure, expected_cpu_Azure, cloud_storage_Azure, networking_feature_Azure)
-        aws_data = calculated_data_AWS(database_service_Azure, database_size_Azure, expected_cpu_Azure, cloud_storage_Azure, networking_feature_Azure)
-        google_data = calculated_data_Google(database_service_Azure, expected_cpu_Azure, cloud_storage_Azure, networking_feature_Azure)
-        Oracle_data = calculated_data_Oracle(database_service_Azure, expected_cpu_Azure, cloud_storage_Azure, networking_feature_Azure)
+        azure_data = calculated_data_Azure(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location)
+        aws_data = calculated_data_AWS(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location)
+        google_data = calculated_data_Google(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location)
+        Oracle_data = calculated_data_Oracle(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location)
 
         combined_data = {
             'Azure': azure_data,

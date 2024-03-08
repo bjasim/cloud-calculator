@@ -735,7 +735,7 @@ def process_aws_pricing_data(response, process_function, region):
     return processed
 
 
-def calculated_data_AWS(database_service, database_size, expected_cpu, cloud_storage, networking_feature):
+def calculated_data_AWS(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location):
     computed_data = {'provider': 'AWS',}  # Initialize dictionary to store computed data
     # print(f"database size is:  {database_size}")
     if expected_cpu:
@@ -909,24 +909,24 @@ def calculated_data_AWS(database_service, database_size, expected_cpu, cloud_sto
         # else:
         #     computed_data['database'] = None
             
-    if networking_feature:
-        if 'Content' in networking_feature:
-            # Query for the first networking instance based on the keyword "CDN"
-            networking_instance = NetworkingSpecifications.objects.filter(name__icontains='CDN').first()
-        else:
-            # Query for the first networking instance based on the first word
-            first_word = networking_feature.split()[0]
-            networking_instance = NetworkingSpecifications.objects.filter(name__icontains=first_word).first()
+    # if networking_feature:
+    #     if 'Content' in networking_feature:
+    #         # Query for the first networking instance based on the keyword "CDN"
+    #         networking_instance = NetworkingSpecifications.objects.filter(name__icontains='CDN').first()
+    #     else:
+    #         # Query for the first networking instance based on the first word
+    #         first_word = networking_feature.split()[0]
+    #         networking_instance = NetworkingSpecifications.objects.filter(name__icontains=first_word).first()
 
-        if networking_instance:
-            computed_data['networking'] = {
-                'name': networking_instance.name,
-                'unit_price': networking_instance.unit_price,
-                'unit_of_measure': networking_instance.unit_of_measure,
-                'sku': networking_instance.sku,
-                'provider': networking_instance.provider.name,
-                'cloud_service': networking_instance.cloud_service.service_type
-            }
+    #     if networking_instance:
+    #         computed_data['networking'] = {
+    #             'name': networking_instance.name,
+    #             'unit_price': networking_instance.unit_price,
+    #             'unit_of_measure': networking_instance.unit_of_measure,
+    #             'sku': networking_instance.sku,
+    #             'provider': networking_instance.provider.name,
+    #             'cloud_service': networking_instance.cloud_service.service_type
+    #         }
     plan_monthly_price = compute_total_price + storage_unit_price + total_db_price
     # plan_monthly_price = compute_total_price + storage_unit_price
 

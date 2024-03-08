@@ -6,7 +6,7 @@ from django.http import HttpResponse
 from databaseServer.models import Provider, CloudService, StorageSpecifications, NetworkingSpecifications, DatabaseSpecifications, ComputeSpecifications
 
 # Create your views here.
-def calculated_data_Google(database_service, expected_cpu, cloud_storage, networking_feature):
+def calculated_data_Google(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location):
     computed_data = {'provider': 'Google Cloud',}  # Initialize dictionary to store computed data
 
     # Retrieve data from the database based on the provided keyword
@@ -53,23 +53,23 @@ def calculated_data_Google(database_service, expected_cpu, cloud_storage, networ
         else:
             computed_data['database'] = None
 
-    if networking_feature:
-        if 'Content' in networking_feature:
-            # Query for the first networking instance based on the keyword "CDN"
-            networking_instance = NetworkingSpecifications.objects.filter(name__icontains='CDN').first()
-        else:
-            # Query for the first networking instance based on the first word
-            first_word = networking_feature.split()[0]
-            networking_instance = NetworkingSpecifications.objects.filter(name__icontains=first_word).first()
+    # if networking_feature:
+    #     if 'Content' in networking_feature:
+    #         # Query for the first networking instance based on the keyword "CDN"
+    #         networking_instance = NetworkingSpecifications.objects.filter(name__icontains='CDN').first()
+    #     else:
+    #         # Query for the first networking instance based on the first word
+    #         first_word = networking_feature.split()[0]
+    #         networking_instance = NetworkingSpecifications.objects.filter(name__icontains=first_word).first()
 
-        if networking_instance:
-            computed_data['networking'] = {
-                'name': networking_instance.name,
-                'unit_price': networking_instance.unit_price,
-                'unit_of_measure': networking_instance.unit_of_measure,
-                'sku': networking_instance.sku,
-                'provider': networking_instance.provider.name,
-                'cloud_service': networking_instance.cloud_service.service_type
-            }
+    #     if networking_instance:
+    #         computed_data['networking'] = {
+    #             'name': networking_instance.name,
+    #             'unit_price': networking_instance.unit_price,
+    #             'unit_of_measure': networking_instance.unit_of_measure,
+    #             'sku': networking_instance.sku,
+    #             'provider': networking_instance.provider.name,
+    #             'cloud_service': networking_instance.cloud_service.service_type
+    #         }
 
     return computed_data
