@@ -17,45 +17,41 @@ const RecommendedPlans = ({ responseData }) => {
   const [plans, setPlans] = useState([]);
 
   useEffect(() => {
-    if (responseData && responseData.provider) {
-      const { provider, compute, storage, database, networking } = responseData;
-      const newPlan = {
-        provider,
-        compute,
-        storage,
-        database,
-        networking,
-      };
-      console.log(newPlan);
-      setPlans([newPlan]); // Wrap the new plan in an array since plans is an array
+    if (responseData) {
+      console.log("Received Response Data:", responseData);
+  
+      let newPlans = [];
+      if (responseData.AWS) {
+        newPlans.push({ provider: "AWS", ...responseData.AWS });
+      }
+      if (responseData.Azure) {
+        newPlans.push({ provider: "Microsoft Azure", ...responseData.Azure });
+      }
+      if (responseData.Google) {
+        newPlans.push({ provider: "Google Cloud", ...responseData.Google });
+      }
+      if (responseData.Oracle) {
+        newPlans.push({ provider: "Oracle", ...responseData.Oracle });
+      }
+
+      console.log("New Plans:", newPlans);
+      setPlans(newPlans);
       setLoading(false);
     }
   }, [responseData]);
-
-  useEffect(() => {
-    console.log("loading:", loading);
-  }, [loading]);
-
-  useEffect(() => {
-    console.log("plans:", plans);
-  }, [plans]);
-
+  
   if (loading) {
     return <div>Loading...</div>;
   }
 
-  console.log(responseData);
-  console.log(plans);
-
   return (
     <Box sx={{ display: "flex", justifyContent: "center", p: 4, flexWrap: "wrap" }}>
-      {Array.isArray(plans) &&
-        plans.map((plan, index) => {
-          const name = plan.provider;
+      {plans.map((plan, index) => {
+        const name = plan.provider;
           return (
             <Card
               key={index}
-              sx={{ maxWidth: 345, m: 2, display: "flex", flexDirection: "column" }}
+              sx={{ maxWidth: 305, m: 2, display: "flex", flexDirection: "column" }}
             >
               <Box
                 sx={{
@@ -215,14 +211,13 @@ const RecommendedPlans = ({ responseData }) => {
           );
         })}
       {/* Add additional placeholder cards if plans array is empty */}
-      {!Array.isArray(plans) ||
-        (plans.length === 0 && (
-          <Card sx={{ maxWidth: 345, m: 2, display: "flex", flexDirection: "column" }}>
-            <CardContent>
-              <Typography align="center">No data available</Typography>
-            </CardContent>
-          </Card>
-        ))}
+      {!Array.isArray(plans) || (plans.length === 0 && (
+        <Card sx={{ maxWidth: 345, m: 2, display: "flex", flexDirection: "column" }}>
+          <CardContent>
+            <Typography align="center">No data available</Typography>
+          </CardContent>
+        </Card>
+      ))}
     </Box>
   );
 };
