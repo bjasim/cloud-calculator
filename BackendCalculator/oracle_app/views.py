@@ -12,6 +12,133 @@ import os
 from django.db import transaction
 import logging
 
+#Questions & Answers:
+
+#ADVANCED FORM
+#-------------
+    #Question #1: Monthly Budget
+    #Answer Options: budget prices
+    #Oracle Options: check price is under/over budget
+
+    #Question #2: vCPU and RAM
+    #--Answer Options--:
+    #
+    # 1vCPU-2RAM
+    # 2vCPU-4RAM
+    # 4vCPU-16RAM
+    # 8vCPU-32RAM
+    # 12vCPU-48RAM
+    # 16vCPU-64RAM
+    #
+    #--Oracle Options--:
+    #
+    # sku:B93121 (1 ocpu) - sku:B93122 (1 ram)
+    # multiply by # of ram/ocpu
+    # 1oCPU-2RAM
+    # 1oCPU-4RAM
+    # 2oCPU-16RAM
+    # 4oCPU-32RAM
+    # 6oCPU-48RAM
+    # 8oCPU-64RAM
+    #
+
+    #Question #3: DB Type
+    #--Answer Options--:
+    #
+    # NoSQL
+    # PostgreSQL
+    # SQL
+    # noDB
+    #
+    #--Oracle Options--:
+    #
+    # NoSQL = B89739
+    # PostgreSQL = B99062
+    # SQL = B92426
+    # " "
+    #
+
+    #Question #4: DB Size
+    #--Answer Options--:
+    #
+    # small
+    # med
+    # large
+    # v large
+    # unsure
+    #
+    #--Oracle Options--:
+    #
+    # Multiply Q3 by this answer
+    # 
+
+    #Question #5: Cloud Storage
+    #--Answer Options--:
+    #
+    # Object
+    # File
+    # Block
+    #
+    #--Oracle Options--:
+    #
+    # Object: B96625
+    # File: B89057
+    # Block: B91961
+    #
+
+    #Question #6: Storage Size
+    #--Answer Options--:
+    #
+    # small
+    # med
+    # large
+    # v large
+    #
+    #--Oracle Options--:
+    #
+    # Multiply Q5 by this answer
+    #
+
+    #Question #7: DNS
+    #--Answer Options--:
+    #
+    # Yes or no
+    #
+    #--Oracle Options--:
+    #
+    #Include DNS pricing?
+    #
+
+    #Question #8: CDN
+    #--Answer Options--:
+    #
+    # Yes or no
+    #
+    #--Oracle Options--:
+    #
+    # NOT SURE
+    #
+
+    #Question #9:
+    #--Answer Options--:
+    #
+    # Important or not important
+    #
+    #--Oracle Options--:
+    #
+    # Include or not include auto scaling
+    #
+
+    #Question #10:
+    #--Answer Options--:
+    #
+    # Various Regions
+    #
+    #--Oracle Options--:
+    #
+    # Answer makes NO difference in price
+    #
+
 #----------------Add this to: [MainCalculator -> Settings.py] to enable LOGGING----------------------: 
 # LOGGING = {
 #     'version': 1,
@@ -44,12 +171,18 @@ def main():
             json_data = response.json()
             items = json_data['items']
 
+
+
+            #------------DOUBLE CHECK THIS----------------------------
             #Clear info
             CloudService.objects.all().delete()
             ComputeSpecifications.objects.all().delete()
             StorageSpecifications.objects.all().delete()
             DatabaseSpecifications.objects.all().delete()
             NetworkingSpecifications.objects.all().delete()
+            #---------------------------------------------------------
+
+
 
             #Transaction ensures atomicity of the database operations
             with transaction.atomic():
