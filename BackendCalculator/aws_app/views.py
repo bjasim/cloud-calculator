@@ -1071,11 +1071,25 @@ def calculated_data_AWS(monthly_budget, expected_cpu, database_service, database
             storage_sku = 'HY3BZPP2B6K8MSJF'
         # elif cloud_storage == "No Storage":
         #     storage_sku = '3K59PVQYWBTWXEHT'
-       
-        # Query for the first storage instance based on the keyword "File"
+    if storage_size:
+        if storage_size == "small":
+            str_size = 1000
+        elif storage_size == "medium":
+            str_size = 5000
+        elif storage_size == "large":
+            str_size = 10000
+        elif storage_size == "veryLarge":
+            str_size = 100000
+        # elif storage_size == "notSure":
+        #     str_size = 10000
+
+
+
+            
         storage_instance = StorageSpecifications.objects.get(sku=storage_sku, provider__name='AWS')
         storage_unit_price = float(storage_instance.unit_price)# Convert unit price to float
-        # db_storage_total_price = db_storage_unit_price * db_size
+        storage_total_price = storage_unit_price * str_size  # Calculate total price
+
 
         if storage_instance:
             computed_data['storage'] = {
@@ -1088,7 +1102,7 @@ def calculated_data_AWS(monthly_budget, expected_cpu, database_service, database
             }
         print("-------------------------------------------------------------")
         print(f"Storage unit price is:  {storage_unit_price}")
-        # print(f"Storage total price is:  {storage_total_price}")
+        print(f"Storage total price is:  {storage_total_price}")
 
         
     if database_service:
@@ -1159,6 +1173,8 @@ def calculated_data_AWS(monthly_budget, expected_cpu, database_service, database
     # Combine total prices if both instance and storage are used
     if database_service == 'sql':
         total_db_price = db_instance_total_price + db_storage_total_price
+        print("Total storage cost: ", db_storage_total_price)
+        print("Total instance cost: ", db_instance_total_price)
         print("Total database cost (instance + storage): ", total_db_price)
     else:
         total_db_price = db_storage_total_price
@@ -1204,7 +1220,7 @@ def calculated_data_AWS(monthly_budget, expected_cpu, database_service, database
     #             'provider': networking_instance.provider.name,
     #             'cloud_service': networking_instance.cloud_service.service_type
     #         }
-    plan_monthly_price = compute_total_price + storage_unit_price + total_db_price
+    plan_monthly_price = compute_total_price + storage_total_price + total_db_price
     # plan_monthly_price = compute_total_price + storage_unit_price
 
     plan_annual_price = float(plan_monthly_price) * 12
