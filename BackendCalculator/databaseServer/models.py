@@ -15,7 +15,7 @@ class CloudService(models.Model):
     description = models.TextField()
 
     def __str__(self):
-        return self.service_type
+        return f"{self.provider.name} {self.service_type}"
 
 
 # Compute Specifications Table
@@ -51,6 +51,11 @@ class StorageSpecifications(models.Model):
     unit_price = models.CharField(max_length=50)
     unit_of_storage = models.CharField(max_length=50)
     region = models.CharField(max_length=50, default='No region provided')
+    description = models.TextField(blank=True, default='')
+    durability = models.CharField(max_length=50, default='No durability provided.')
+    service_code = models.CharField(max_length=50, default='No code provided.')
+    storage_class = models.CharField(max_length=50, default='No class provided.')
+    volume_type = models.CharField(max_length=50, default='No type provided.')  # e.g., General Purpose SSD, Provisioned IOPS SSD
     price_monthly = models.CharField(max_length=50,default='0.0')
 
 
@@ -82,6 +87,15 @@ class DatabaseSpecifications(models.Model):
     unit_price = models.CharField(max_length=50, default='0.0')
     unit_of_storage = models.CharField(max_length=50, default ='0.0')
     region = models.CharField(max_length=50, default='No region provided')
+    description = models.TextField(blank=True, default='')
+    volume_type = models.CharField(max_length=100, blank=True, default='')
+    storage_capacity = models.CharField(max_length=100, blank=True, default='')
+    product = models.CharField(max_length=50, default='No product provided.')  # e.g., MySQL, PostgreSQL, MongoDB
+    instance_type = models.CharField(max_length=50, default='No type provided.')
+    db_engine = models.CharField(max_length=50, default='No engine used')  # e.g., MySQL, PostgreSQL, MongoDB
+    cpu = models.CharField(max_length=50, default='No cpu provided.')  
+    memory = models.CharField(max_length=50, default='No memory provided.')
+    network_performance = models.CharField(max_length=50, default='No network provided.')
     price_monthly = models.CharField(max_length=50,default='0.0')
 
 
