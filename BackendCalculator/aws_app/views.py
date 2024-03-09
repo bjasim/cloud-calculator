@@ -326,7 +326,7 @@ def process_to_database_storage_specification(sku, pricing_data):
 
 
 
-def process_to_database_specifications(sku, pricing_data):
+def process_to_database_specifications(sku, pricing_data, region, service_code):
     provider_name = 'AWS'
     provider, _ = Provider.objects.get_or_create(name=provider_name)
 
@@ -340,12 +340,16 @@ def process_to_database_specifications(sku, pricing_data):
     product = pricing_data.get('product', {}).get('productFamily', {})
     attributes = pricing_data.get('product', {}).get('attributes', {})
     instance_type = attributes.get('instanceType', 'Not specified')
-    database_engine = attributes.get('databaseEngine')
+
+    # Set database engine based on the service code
+    database_engine = attributes.get('databaseEngine', 'Not specified')
+    if service_code == 'AmazonDynamoDB':
+        database_engine = 'DynamoDB'  # Set default value for DynamoDB
+
     cpu = attributes.get('vcpu', 'Not specified')
     memory = attributes.get('memory', 'Not specified')
     network_performance = attributes.get('networkPerformance', 'Not specified')
 
-    # Default values
     description = ''
     price_per_unit = '0.0'
 
@@ -360,8 +364,8 @@ def process_to_database_specifications(sku, pricing_data):
         created = False
     except DatabaseSpecifications.DoesNotExist:
         database_specifications = DatabaseSpecifications(
-            provider=provider,  # Assign the AWS provider
-            cloud_service=cloud_service,  # Assign the AWS Database service
+            provider=provider,
+            cloud_service=cloud_service,
             product=product,
             sku=sku,
             instance_type=instance_type,
@@ -374,23 +378,8 @@ def process_to_database_specifications(sku, pricing_data):
         )
         created = True
 
-
-    database_specifications.product = product
-    database_specifications.sku = sku
-    database_specifications.db_engine = database_engine
-    database_specifications.cpu = cpu
-    database_specifications.memory = memory
-    database_specifications.network_performance = network_performance
-    database_specifications.description = description
-    database_specifications.instance_type = instance_type
-
-    # Safely convert price_per_unit to float
-    try:
-        formatted_price = "{:.4f}".format(float(price_per_unit))
-    except ValueError:
-        formatted_price = "0.0000"
-
-    database_specifications.instance_price = formatted_price
+    # Update existing or newly created database specifications
+    database_specifications.instance_price = "{:.4f}".format(float(price_per_unit or '0.0'))
     database_specifications.save()
 
     print(f"Data {'created' if created else 'updated'} for SKU: {sku}")
@@ -398,10 +387,9 @@ def process_to_database_specifications(sku, pricing_data):
     # Verification Query
     try:
         verify_volume = DatabaseSpecifications.objects.get(sku=sku)
-        print(f"Verification: Found SKU: {database_specifications.sku}, Price: {database_specifications.unit_price}, Volume Type: {database_specifications.volume_type}")
+        print(f"Verification: Found SKU: {sku}, Price: {verify_volume.unit_price}, Volume Type: {verify_volume.volume_type}")
     except DatabaseSpecifications.DoesNotExist:
         print(f"Verification Failed: SKU {sku} not found in database.")
-
 
 def process_to_storage_specifications(sku, pricing_data):
     # Extracting initial attributes
@@ -481,12 +469,12 @@ def process_to_storage_specifications(sku, pricing_data):
 def process_and_save_data(sku, service_code, pricing_data):
     # Check if SKU is part of AmazonEC2 and not "HY3BZPP2B6K8MSJF"
     if service_code == "AmazonEC2" and sku != "HY3BZPP2B6K8MSJF":
-        process_ec2_data(sku, pricing_data)
+        process_ec2_data(sku, pricing_data, 'us-east-1')
     elif service_code == "AmazonDynamoDB" or sku == "QVD35TA7MPS92RBC":
         # Call the process_dynamodb_data function for DynamoDB SKUs
         process_to_database_storage_specification(sku, pricing_data)
     elif sku == "MV3A7KKN6HB749EA":
-        process_to_database_specifications(sku, pricing_data)
+        process_to_database_specifications(sku, pricing_data, 'us-east-1', service_code)
     elif service_code == "AmazonS3" or service_code == "AmazonEFS" or sku == "HY3BZPP2B6K8MSJF":
         process_to_storage_specifications(sku, pricing_data)
     else:
@@ -503,9 +491,12 @@ def aws_compute_fetch(request):
     client = boto3.client('pricing', region_name='us-east-1')
     # max_records = 500
     regions = [
-        'us-east-1', 'us-east-2', 'us-west-1', 'us-west-2', 'af-south-1',
+        'us-east-1', 'us-east-2', 'us-west-1', 'us-west-2', 'af-south-1', 'ap-east-1', 'ap-south-2', 'ap-southeast-3', 
+        'ap-southeast-4', 'ap-south-1', 'ap-northeast-3', 'ap-northeast-2', 'ap-southeast-1', 'ap-southeast-2', 'ap-northeast-1', 
+        'ca-central-1', 'ca-west-1', 'eu-central-1', 'eu-west-1', 'eu-west-2', 'eu-south-1', 'eu-west-3', 'eu-south-2', 
+        'eu-north-1', 'eu-central-2', 'me-south-1', 'me-central-1', 'sa-east-1', 'us-gov-east-1', 'us-gov-west-1', 'me-central-1',  
     ]
-    
+ 
     records_processed = 0
 
     for region in regions:
@@ -584,57 +575,54 @@ def aws_compute_fetch(request):
 #----------------------------------------------------------------------------------------------------------------------
 def aws_storage_fetch(request):
     client = boto3.client('pricing', region_name='us-east-1')
-    max_records = 500
-    records_processed = 0
+    storage_services = ['AmazonEFS', 'AmazonS3']
+    total_records_processed = 0
 
-    response = client.get_products(
-        ServiceCode='AmazonS3',  # change as needed for other services
-        Filters=[
-            {'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'us-east-1'}
-        ],
-        MaxResults=100
-    )
-
-    records_processed += process_aws_pricing_data(response, process_to_storage_specifications)
-
-    # Handle pagination
-    while 'NextToken' in response and records_processed < max_records:
+    for service_code in storage_services:
         response = client.get_products(
-            ServiceCode='AmazonS3',  
-            Filters=[
-                {'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'us-east-1'}
-            ],
-            MaxResults=100,
-            NextToken=response['NextToken']
+            ServiceCode=service_code,
+            Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'us-east-1'}],
+            MaxResults=100
         )
-        records_processed += process_aws_pricing_data(response, process_to_storage_specifications)
 
-    return JsonResponse({"message": f"AWS Storage data processed. Total records: {records_processed}"}, safe=False)
+        records_processed = process_aws_pricing_data(response, process_to_storage_specifications)
+        total_records_processed += records_processed
+
+        while 'NextToken' in response:
+            response = client.get_products(
+                ServiceCode=service_code,
+                Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'us-east-1'}],
+                MaxResults=100,
+                NextToken=response['NextToken']
+            )
+            records_processed = process_aws_pricing_data(response, process_to_storage_specifications)
+            total_records_processed += records_processed
+
+    return JsonResponse({"message": f"AWS Storage data processed. Total records: {total_records_processed}"}, safe=False)
 #--------------------------------------------------------------------------------------------------------------------------
 def aws_rds_fetch(request):
     client = boto3.client('pricing', region_name='us-east-1')
-    max_records = 500
-    records_processed = 0
+    databases = ['AmazonRDS' ,'AmazonDynamoDB']
 
-    response = client.get_products(
-        ServiceCode='AmazonRDS',
-        Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'us-east-1'}],
-        MaxResults=100
-    )
-
-    records_processed += process_aws_pricing_data(response, process_to_database_specifications)
-
-    while 'NextToken' in response and records_processed < max_records:
+    for database_service in databases:
         response = client.get_products(
-            ServiceCode='AmazonRDS',
+            ServiceCode=database_service,
             Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'us-east-1'}],
-            MaxResults=100,
-            NextToken=response['NextToken']
+            MaxResults=100
         )
-        records_processed += process_aws_pricing_data(response, process_to_database_specifications)
 
-    return JsonResponse({"message": f"AWS RDS data processed. Total records: {records_processed}"}, safe=False)
+        records_processed = process_aws_pricing_data(response, process_to_database_specifications, 'us-east-1', database_service)
 
+        while 'NextToken' in response:
+            response = client.get_products(
+                ServiceCode=database_service,
+                Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'us-east-1'}],
+                MaxResults=100,
+                NextToken=response['NextToken']
+            )
+            records_processed += process_aws_pricing_data(response, process_to_database_specifications, 'us-east-1', database_service)
+
+    return JsonResponse({"message": f"AWS database data processed. Total records: {records_processed}"}, safe=False)
 
 
 #---------------------------------------------------------------------------------------------------------------------------
@@ -675,6 +663,15 @@ def process_networking_data(sku, pricing_data):
     )
     service_code = pricing_data.get('product', {}).get('attributes', {}).get('servicecode', 'Not specified')
     price_per_unit = '0.0'
+    if service_code == 'AmazonRoute53':
+        name = 'AmazonRoute53'  # Set default value for DynamoDB
+    elif service_code == 'AWSDirectConnect':
+        name = 'AWSDirectConnect'  # Set default value for DynamoDB
+    elif service_code == 'AmazonCloudFront':
+        name = 'AmazonCloudFront'  # Set default value for DynamoDB
+    elif service_code == 'AmazonVPC':
+        name = 'AmazonVPC'  # Set default value for DynamoDB
+
 
     price_list = pricing_data.get('terms', {}).get('OnDemand', {})
     for sku_details in price_list.values():
@@ -687,6 +684,7 @@ def process_networking_data(sku, pricing_data):
         networking_spec = NetworkingSpecifications(
             provider=provider,
             cloud_service=cloud_service,
+            name=name,
             sku=sku,
             # service_code=service_code,
             unit_price=price_per_unit or 0.0,
@@ -721,14 +719,14 @@ def aws_vpc_fetch(request):
 #             print(f"JSON parsing error: {e}")
 #     return processed
 
-def process_aws_pricing_data(response, process_function, region):
+def process_aws_pricing_data(response, process_function):
     processed = 0
     for price_str in response['PriceList']:
         try:
             pricing_data = json.loads(price_str)
             sku = pricing_data.get('product', {}).get('sku')
             if sku:
-                process_function(sku, pricing_data, region)  # Pass the region to the processing function
+                process_function(sku, pricing_data)
                 processed += 1
         except json.JSONDecodeError as e:
             print(f"JSON parsing error: {e}")
