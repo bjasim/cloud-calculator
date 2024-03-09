@@ -738,15 +738,294 @@ def calculated_data_AWS(monthly_budget, expected_cpu, database_service, database
     # print(f"database size is:  {database_size}")
     if expected_cpu:
         if expected_cpu == "1vCPU":
-            compute_sku = "3DG6WFZ5QW4JAAHJ"
+            if location == "us-east-1": # Virginia
+                compute_sku = "TRA7PTVEJVQKCP4S"
+            elif location == "us-east-2": #Ohio
+                compute_sku = "TRA7PTVEJVQKCP4S"
+            elif location == "us-west-1":   # California
+                compute_sku = "ZYU3DJATRUWSY3JP"
+            elif location == "us-west-2": # Oregon
+                compute_sku = "U7958F68RYJ58KTG"    
+            elif location == "ap-east-1": # Hong Kong
+                compute_sku = "KA7V3NDRQ93YB2TU" 
+            elif location == "ap-south-1": # Mumbai
+                compute_sku = "FC2J7R2YJJRVMC5C"
+            elif location == "ap-northeast-3": # Osaka
+                compute_sku = "XC5KUBT9PC2AF5FX"
+            elif location == "ap-northeast-2": # Seoul
+                compute_sku = "NTRGN3U6F4VGTHS7"
+            elif location == "ap-southeast-1": # Singapore
+                compute_sku = "F5ZRJYM277794AQ6"
+            elif location == "ap-southeast-2":  # Sydney
+                compute_sku = "UGYXPVB2PRPZDGHB"
+            elif location == "ap-northeast-1":  # Tokyo
+                compute_sku = "X7QR4YZ756X4R88M"
+            elif location == "ca-central-1":  # Canada central, may we should add calgary region as well
+                compute_sku = "ZJRR3TDYXRW4KT2W"
+            elif location == "cn-north-1":    # Chine not available in this api calls
+                compute_sku = ""
+            elif location == "cn-northwest-1":  # Not available 
+                compute_sku = "3DG6WFZ5QW4JAAHJ"
+            elif location == "eu-central-1": # Frankfurt
+                compute_sku = "3DG6WFZ5QW4JAAHJ" # keep thisssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+            elif location == "eu-west-1":  # Ireland
+                compute_sku = "HZXG5A8JF66Q56EG"
+            elif location == "eu-west-2":   # London
+                compute_sku = "A64VFHU7JPNG5B96"
+            elif location == "eu-south-1":   # Milan
+                compute_sku = "V8WSYF86JEFGDE7X"
+            elif location == "eu-west-3":  # Paris
+                compute_sku = "NF8Q8XQYYTPQ9Y2Q"
+            elif location == "eu-north-1":   # Stockholm
+                compute_sku = "NGA3WYAKBQCKSMH4"
+            elif location == "me-south-1":  # Bahrain
+                compute_sku = "36RQDKEV7N7DFNC6"
+            elif location == "sa-east-1":   # São Paulo
+                compute_sku = "5C37YTXFG3U6MFME"
+            elif location == "af-south-1":   # Cape Town
+                compute_sku = "F3N4RX7TVEA3NSFV"
+
         elif expected_cpu == "2vCPUs":
-            compute_sku = '3K59PVQYWBTWXEHT'
+            if location == "us-east-1": # Virginia
+                compute_sku = "ZARW2CVKAGDA9CH7"
+            elif location == "us-east-2": # Ohio
+                compute_sku = "G3MWKTTASN4YDV9G"
+            elif location == "us-west-1":   # California
+                compute_sku = "2YBVU66CE3ZCB3MN"
+            elif location == "us-west-2": # Oregon
+                compute_sku = "95AQPMX9Z2Q79CUA"    
+            elif location == "ap-east-1": # Hong Kong
+                compute_sku = "YPN5EFDYK7EWBYFS" 
+            elif location == "ap-south-1": # Mumbai
+                compute_sku = "8EJHB83R33SUFQ6N"
+            elif location == "ap-northeast-3": # Osaka
+                compute_sku = "DTJZW7BSSC22H47Y"
+            elif location == "ap-northeast-2": # Seoul
+                compute_sku = "8JC7KPKJGZQW9XE8"
+            elif location == "ap-southeast-1": # Singapore
+                compute_sku = "25QKCHCQ2X6PQ4SK"
+            elif location == "ap-southeast-2":  # Sydney
+                compute_sku = "D7Y7SA65JHNJ8TVK"
+            elif location == "ap-northeast-1":  # Tokyo
+                compute_sku = "39XEARFEZ6AR38HF"
+            elif location == "ca-central-1":  # Canada central, may we should add calgary region as well
+                compute_sku = "9D4UM5M4CKKUMC7F"
+            elif location == "cn-north-1":    # Chine not available in this api calls
+                compute_sku = ""
+            elif location == "cn-northwest-1":  # Not available 
+                compute_sku = "3DG6WFZ5QW4JAAHJ"
+            elif location == "eu-central-1": # Frankfurt
+                compute_sku = "3K59PVQYWBTWXEHT" # keep thisssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+            elif location == "eu-west-1":  # Ireland
+                compute_sku = "HTENM5U4FF46JJX4"
+            elif location == "eu-west-2":   # London
+                compute_sku = "SWBFZA9T9TPE7BTW"
+            elif location == "eu-south-1":   # Milan
+                compute_sku = "3SNYTU7RS77EZVEV"
+            elif location == "eu-west-3":  # Paris
+                compute_sku = "GUCTAJJ2UBWCYGBV"
+            elif location == "eu-north-1":   # Stockholm
+                compute_sku = "42YK6425MDNNXXYK"
+            elif location == "me-south-1":  # Bahrain
+                compute_sku = "2R36JA9UAT77F3QS"
+            elif location == "sa-east-1":   # São Paulo
+                compute_sku = "WJYZVWCTJV8GR994"
+            elif location == "af-south-1":   # Cape Town
+                compute_sku = "5S6YRHGH44SE49ND"
+
+                
         elif expected_cpu == "4vCPUs":
-            compute_sku = '7WVK4XHSDKCTP5FX'
+            if location == "us-east-1": # Virginia
+                compute_sku = "NX93MRPARN4BNZB3"
+            elif location == "us-east-2": # Ohio
+                compute_sku = "F6EP448JAPXAJH3C"
+            elif location == "us-west-1":   # California
+                compute_sku = "D95TVMK2QRETXJRD"
+            elif location == "us-west-2": # Oregon
+                compute_sku = "7WVK4XHSDKCTP5FX"    
+            elif location == "ap-east-1": # Hong Kong
+                compute_sku = "AHYPQ2ZMAMJPWEAF" 
+            elif location == "ap-south-1": # Mumbai
+                compute_sku = "F24BUQQWM54MWK6M"
+            elif location == "ap-northeast-3": # Osaka
+                compute_sku = "ZBNZW4PVZFHAPSK2"
+            elif location == "ap-northeast-2": # Seoul
+                compute_sku = "32WSSSHCG7J7YPJF"
+            elif location == "ap-southeast-1": # Singapore
+                compute_sku = "CKRY6X69QHGSEZY4"
+            elif location == "ap-southeast-2":  # Sydney
+                compute_sku = "PAHJK42PZPEUG3CP"
+            elif location == "ap-northeast-1":  # Tokyo
+                compute_sku = "RP4FBZ6CSC25PSBU"
+            elif location == "ca-central-1":  # Canada central, may we should add calgary region as well
+                compute_sku = "BVJUTKEM4PVV7SWJ"
+            elif location == "cn-north-1":    # Chine not available in this api calls
+                compute_sku = ""
+            elif location == "cn-northwest-1":  # Not available 
+                compute_sku = "3DG6WFZ5QW4JAAHJ"
+            elif location == "eu-central-1": # Frankfurt
+                compute_sku = "37W67QR78D2YXMS9" # keep thisssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+            elif location == "eu-west-1":  # Ireland
+                compute_sku = "QK5BBBTQJTBKF66K"
+            elif location == "eu-west-2":   # London
+                compute_sku = "4DEP2JYTXWPVZWXH"
+            elif location == "eu-south-1":   # Milan
+                compute_sku = "3W4GYVT2GDGEKC3J"
+            elif location == "eu-west-3":  # Paris
+                compute_sku = "QSSSFFEJ5CBBZFGP"
+            elif location == "eu-north-1":   # Stockholm
+                compute_sku = "ZGHU7JVDXSW26XE7"
+            elif location == "me-south-1":  # Bahrain
+                compute_sku = "U73F4AAR7CHEFDXV"
+            elif location == "sa-east-1":   # São Paulo
+                compute_sku = "ZQPHCSTDQEK6TZCF"
+            elif location == "af-south-1":   # Cape Town
+                compute_sku = "3HTHMVA46DUVMPKP"
+                
         elif expected_cpu == "8vCPUs":
-            compute_sku = '4QB2537CEAFFV88T'
-        # else:
-        #     compute_sku = '4QB2537CEAFFV88T'
+            if location == "us-east-1": # Virginia
+                compute_sku = "P37Q5U4XP3NAK2W5"
+            elif location == "us-east-2": # Ohio
+                compute_sku = "4QB2537CEAFFV88T"
+            elif location == "us-west-1":   # California
+                compute_sku = "9ADVHZJRUPF5J82B"
+            elif location == "us-west-2": # Oregon
+                compute_sku = "EB4NSNHN8RZWNQ9A"    
+            elif location == "ap-east-1": # Hong Kong
+                compute_sku = "5ZA9M9B4FYCU8WF4" 
+            elif location == "ap-south-1": # Mumbai
+                compute_sku = "DAQPRJYRW62BPP7E"
+            elif location == "ap-northeast-3": # Osaka
+                compute_sku = "VNC3YEB9P8E6Z5JY"
+            elif location == "ap-northeast-2": # Seoul
+                compute_sku = "P8XRUVFG33JR4PK4"
+            elif location == "ap-southeast-1": # Singapore
+                compute_sku = "QYCDQVDKVPX7T5FQ"
+            elif location == "ap-southeast-2":  # Sydney
+                compute_sku = "KCQSMEZWEQ6BAHRC"
+            elif location == "ap-northeast-1":  # Tokyo
+                compute_sku = "EKN7XE2H44U8E8NC"
+            elif location == "ca-central-1":  # Canada central, may we should add calgary region as well
+                compute_sku = "XSJ4F6YSZ5TMX3ZV"
+            elif location == "cn-north-1":    # Chine not available in this api calls
+                compute_sku = ""
+            elif location == "cn-northwest-1":  # Not available 
+                compute_sku = "3DG6WFZ5QW4JAAHJ"
+            elif location == "eu-central-1": # Frankfurt
+                compute_sku = "N4HZ49HZM3XYD2U5" # keep thisssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+            elif location == "eu-west-1":  # Ireland
+                compute_sku = "UQZYXZ3XSGNKGCZE"
+            elif location == "eu-west-2":   # London
+                compute_sku = "C3HTATWN6KJN775T"
+            elif location == "eu-south-1":   # Milan
+                compute_sku = "BPSU5UBW7WWXGUCJ"
+            elif location == "eu-west-3":  # Paris
+                compute_sku = "XN9FQ9WYKTPB2YSA"
+            elif location == "eu-north-1":   # Stockholm
+                compute_sku = "3UZ4XBKSANQ7KPR7"
+            elif location == "me-south-1":  # Bahrain
+                compute_sku = "7GB2W3ARTW8WNZE8"
+            elif location == "sa-east-1":   # São Paulo
+                compute_sku = "WWRX68SGEEHPB7NZ"
+            elif location == "af-south-1":   # Cape Town
+                compute_sku = "NBMYQQ4T7RUGXKGV"
+                
+        elif expected_cpu == "12vCPUs":
+            if location == "us-east-1": # Virginia
+                compute_sku = "VK86JGUHZDKPDQ5H"
+            elif location == "us-east-2": # Ohio
+                compute_sku = "MNT8E9UPH9UED9CH"
+            elif location == "us-west-1":   # California
+                compute_sku = "5JDCGRWQKGBF2BMZ"
+            elif location == "us-west-2": # Oregon
+                compute_sku = "JDPBT3HK3VYY5GDZ"    
+            elif location == "ap-east-1": # Hong Kong
+                compute_sku = ""  # NA
+            elif location == "ap-south-1": # Mumbai
+                compute_sku = "" # NA
+            elif location == "ap-northeast-3": # Osaka
+                compute_sku = "" # NA
+            elif location == "ap-northeast-2": # Seoul
+                compute_sku = "4AN7U3MT6PTQEWPX"
+            elif location == "ap-southeast-1": # Singapore
+                compute_sku = "F8S9V4AFZWV8D3GZ"
+            elif location == "ap-southeast-2":  # Sydney
+                compute_sku = "FWYVFG3F58THURK8"
+            elif location == "ap-northeast-1":  # Tokyo
+                compute_sku = "U96QB8APJGH8DHWZ"
+            elif location == "ca-central-1":  # Canada central, may we should add calgary region as well
+                compute_sku = "" # NA
+            elif location == "cn-north-1":    # Chine not available in this api calls
+                compute_sku = ""
+            elif location == "cn-northwest-1":  # Not available 
+                compute_sku = ""
+            elif location == "eu-central-1": # Frankfurt
+                compute_sku = "9CJASSHCPRCXRSXF" # keep thisssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+            elif location == "eu-west-1":  # Ireland
+                compute_sku = "6PUNFSDQQS9GWQWQ"
+            elif location == "eu-west-2":   # London
+                compute_sku = "" # NA
+            elif location == "eu-south-1":   # Milan
+                compute_sku = "" # NA
+            elif location == "eu-west-3":  # Paris
+                compute_sku = "" # NA
+            elif location == "eu-north-1":   # Stockholm
+                compute_sku = "" # NA   
+            elif location == "me-south-1":  # Bahrain
+                compute_sku = "" # NA
+            elif location == "sa-east-1":   # São Paulo
+                compute_sku = "7VNFXSHAQYW7AQHC"
+            elif location == "af-south-1":   # Cape Town
+                compute_sku = "" # NA
+                
+        elif expected_cpu == "16vCPUs":
+            if location == "us-east-1": # Virginia
+                compute_sku = "Q9BFE6EA4544M38X"
+            elif location == "us-east-2": # Ohio
+                compute_sku = "2D6MD5K8FY3WJ8FZ"
+            elif location == "us-west-1":   # California
+                compute_sku = "GNUB6XWN2VHXGFKR"
+            elif location == "us-west-2": # Oregon
+                compute_sku = "R2Z2U7QW2959AQTN"    
+            elif location == "ap-east-1": # Hong Kong
+                compute_sku = "E94TGFKCTYWVDGTR"  
+            elif location == "ap-south-1": # Mumbai
+                compute_sku = "GUTY5ZHF27FQNDY6" 
+            elif location == "ap-northeast-3": # Osaka
+                compute_sku = "9V8KU27YTW9M56YP" 
+            elif location == "ap-northeast-2": # Seoul
+                compute_sku = "XPU62JHUXR6YGHM7"
+            elif location == "ap-southeast-1": # Singapore
+                compute_sku = "UK4G6YTCGUXQ95FV"
+            elif location == "ap-southeast-2":  # Sydney
+                compute_sku = "84X58QT58C94M9S4"
+            elif location == "ap-northeast-1":  # Tokyo
+                compute_sku = "QWP5HGDJCPK7M5HX"
+            elif location == "ca-central-1":  # Canada central, may we should add calgary region as well
+                compute_sku = "2EY9Q93X25CP4JPH" 
+            elif location == "cn-north-1":    # Chine not available in this api calls
+                compute_sku = ""
+            elif location == "cn-northwest-1":  # Not available 
+                compute_sku = ""
+            elif location == "eu-central-1": # Frankfurt
+                compute_sku = "MHVW6ECJ79TE8898" # keep thisssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+            elif location == "eu-west-1":  # Ireland
+                compute_sku = "2W2HPS86C3XU5Z5N"
+            elif location == "eu-west-2":   # London
+                compute_sku = "9G5PTTCAG64KWYW3" 
+            elif location == "eu-south-1":   # Milan
+                compute_sku = "7DK3DEGTAJSARFB3" 
+            elif location == "eu-west-3":  # Paris
+                compute_sku = "XZ3QNZ72MHT2FCNN" 
+            elif location == "eu-north-1":   # Stockholm
+                compute_sku = "MBE4DX6V4944MUSG" 
+            elif location == "me-south-1":  # Bahrain
+                compute_sku = "NKSRA2MGJ26488D9" 
+            elif location == "sa-east-1":   # São Paulo
+                compute_sku = "FTKRMY28NATVFRT8"
+            elif location == "af-south-1":   # Cape Town
+                compute_sku = "U4DM5KKKH38Q93SY" 
+
 
 
 
