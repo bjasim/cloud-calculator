@@ -38,9 +38,9 @@ def main():
     # Create a new function to combine the information from the two json files based on skuid and insert into the db
     combine_json_data(output_file_path, output_file_path2,combined_info)
     #Getting storage specs
-    get_storage_specs(endpoint_url,API_KEY,service_filter,output_file_path)
+    #get_storage_specs(endpoint_url,API_KEY,service_filter,output_file_path)
     #getting prices and inserting into db--
-    retrieve_prices_from_json(output_file_path,API_KEY,output_file_Storage)
+    #retrieve_prices_from_json(output_file_path,API_KEY,output_file_Storage)
     
 def get_authenticated_service():
     # Check if credentials file exists
@@ -361,7 +361,7 @@ print(f'All SKUs saved to {output_file_path}')
 
 #THE CODE BELOW IS LOGIC 
     
-def calculated_data_Azure(database_service, expected_cpu, cloud_storage, networking_feature):
+def calculated_data_gcp(database_service, expected_cpu, cloud_storage, networking_feature):
     computed_data = {'provider': 'Google Cloud',}  # Initialize dictionary to store computed data
 
     # Retrieve data from the database based on the provided keyword

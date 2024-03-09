@@ -390,10 +390,10 @@ const AdvancedForm = () => {
                   error={validationErrors.location}
                 >
                   <MenuItem value="">Select...</MenuItem>
-                  <MenuItem value="us-east-1">US East (N. Virginia)</MenuItem>
-                  <MenuItem value="us-east-2">US East (Ohio)</MenuItem>
-                  <MenuItem value="us-west-1">US West (N. California)</MenuItem>
-                  <MenuItem value="us-west-2">US West (Oregon)</MenuItem>
+                  <MenuItem value="us-east-1">US East</MenuItem>
+                  <MenuItem value="us-east-2">US East</MenuItem>
+                  <MenuItem value="us-west-1">US West</MenuItem>
+                  <MenuItem value="us-west-2">US West</MenuItem>
                   <MenuItem value="ap-east-1">Asia Pacific (Hong Kong)</MenuItem>
                   <MenuItem value="ap-south-1">Asia Pacific (Mumbai)</MenuItem>
                   <MenuItem value="ap-northeast-3">Asia Pacific (Osaka-Local)</MenuItem>
@@ -413,6 +413,7 @@ const AdvancedForm = () => {
                   <MenuItem value="me-south-1">Middle East (Bahrain)</MenuItem>
                   <MenuItem value="sa-east-1">South America (Sao Paulo)</MenuItem>
                   <MenuItem value="af-south-1">Africa (Cape Town)</MenuItem>
+
                 </Select>
                 {validationErrors.location && (
                   <FormHelperText error>Please select a location</FormHelperText>
