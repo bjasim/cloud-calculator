@@ -32,7 +32,7 @@ import logging
     #
     #--Oracle Options--:
     #
-    # sku:B93121 (1 ocpu) - sku:B93122 (1 ram)
+    # sku:B93113 (1 ocpu) - sku:B93114 (1 ram)
     # multiply by # of ram/ocpu
     # 1oCPU-2RAM
     # 1oCPU-4RAM
