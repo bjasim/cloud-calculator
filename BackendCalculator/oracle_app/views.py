@@ -1,18 +1,145 @@
 #
-#   BudgetCloud - Oracle Service Pricing/Details
+#   BudgetCloud - Oracle
 #
+from django.shortcuts import render
 from rest_framework import viewsets
 import requests
+import logging
 from rest_framework.response import Response
 from django.http import HttpResponse
-from databaseServer.models import Provider, CloudService, ComputeSpecifications, StorageSpecifications, NetworkingSpecifications, DatabaseSpecifications
-from django.shortcuts import render
-import sqlite3
-import os
 from django.db import transaction
-import logging
+from databaseServer.models import Provider, CloudService, StorageSpecifications, NetworkingSpecifications, DatabaseSpecifications, ComputeSpecifications
 
-#Questions & Answers:
+#Configure logging
+logger = logging.getLogger(__name__)
+
+#----------------Add this to: [MainCalculator -> Settings.py] to enable LOGGING----------------------: 
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'handlers': {
+#         'console': {
+#             'level': 'INFO',  # Set to 'DEBUG' to see all log messages
+#             'class': 'logging.StreamHandler',
+#         },
+#     },
+#     'loggers': {
+#         '': {  # This is the root logger
+#             'handlers': ['console'],
+#             'level': 'INFO',  # Adjust as needed; 'DEBUG' shows everything
+#             'propagate': True,
+#         },
+#     },
+# }
+
+def get_oracle_pricing(request):
+
+    #API url
+    url = "https://apexapps.oracle.com/pls/apex/cetools/api/v1/products/"
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            json_data = response.json()
+            items = json_data['items']
+
+            #Deletes ONLY oracle data.
+            CloudService.objects.filter(provider__name="Oracle").delete()
+            ComputeSpecifications.objects.filter(provider__name="Oracle").delete()
+            StorageSpecifications.objects.filter(provider__name="Oracle").delete()
+            DatabaseSpecifications.objects.filter(provider__name="Oracle").delete()
+            NetworkingSpecifications.objects.filter(provider__name="Oracle").delete()
+
+
+            #Transaction ensures atomicity of the database operations
+            with transaction.atomic():
+                for product in items:
+                    
+                    #Initialize usd_price as None
+                    usd_price = None
+
+                    #Iterate through currencyCodeLocalizations to find USD prices
+                    for currencyLocalization in product.get('currencyCodeLocalizations', []):
+                        if currencyLocalization['currencyCode'] == 'USD':
+
+                            usd_price = next((price['value'] for price in currencyLocalization.get('prices', []) if price['model'] == 'PAY_AS_YOU_GO'), None)
+                            
+                            #Exit loop once USD price is found
+                            break  
+                    
+                    if not usd_price:
+                        logger.info(f"Skipping product due to missing USD price: {product.get('displayName')}")
+                        
+                        #Skip if no USD price found
+                        continue 
+
+                    #Filters
+                    service_category = product.get('serviceCategory', '')
+                    if any(service_category.startswith(prefix) for prefix in ["Database -", "Storage -", "Database with", "Networking -", "MySQL", "Object Storage"]) or service_category in ["Compute - Virtual Machine", "Storage", "Database", "Networking", "Object Storage"]:
+                        provider, created = Provider.objects.get_or_create(name='Oracle')
+                        if created:
+                            logger.info(f"Created new provider: Oracle")
+
+                        cloud_service, created = CloudService.objects.get_or_create(
+                            service_type=service_category, 
+                            provider=provider
+                        )
+                        if created:
+                            logger.info(f"Created new cloud service: {service_category}")
+
+                        #Compute data.
+                        if "Compute" in service_category:
+                            ComputeSpecifications.objects.create(
+                                name=product.get('displayName'),
+                                provider=provider,
+                                cloud_service=cloud_service,
+                                sku=product.get('partNumber'),
+                                unit_price=usd_price,
+                            )
+
+                        #Storage data.
+                        elif "Storage" in service_category:
+                            StorageSpecifications.objects.create(
+                                name=product.get('displayName'),
+                                provider=provider,
+                                cloud_service=cloud_service,
+                                sku=product.get('partNumber'),
+                                unit_price=usd_price,
+                                unit_of_storage=product.get('metricName'),
+                            )
+                        #Networking data.
+                        elif "Networking" in service_category:
+                            NetworkingSpecifications.objects.create(
+                                name=product.get('displayName'),
+                                provider=provider,
+                                cloud_service=cloud_service,
+                                sku=product.get('partNumber'),
+                                unit_price=usd_price,
+                                unit_of_measure=product.get('metricName'),
+                            )
+                        #Database data.
+                        elif "Database" in service_category or "MySQL" in service_category:
+                            DatabaseSpecifications.objects.create(
+                                name=product.get('displayName'),
+                                provider=provider,
+                                cloud_service=cloud_service,
+                                sku=product.get('partNumber'),
+                                unit_price=usd_price,
+                                unit_of_storage=product.get('metricName'),
+                            )
+                        logger.info(f"Inserted product into database: {product.get('displayName')}")
+                return HttpResponse("Data fetched and stored successfully.")
+        else:
+            return HttpResponse(f"Failed to fetch data. Status code: {response.status_code}")
+    except requests.RequestException as e:
+        logger.error(f"Failed to fetch data due to an error: {e}")
+        return HttpResponse(f"Failed to fetch data due to an error: {e}", status=500)
+    except Exception as e:
+        logger.error(f"An unexpected error occurred: {e}")
+        return HttpResponse(f"An unexpected error occurred: {e}", status=500)
+
+# Create your views here.
+def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location):
+    computed_data = {'provider': 'Oracle',}  # Initialize dictionary to store computed data
 
 #ADVANCED FORM
 #-------------
@@ -138,144 +265,113 @@ import logging
     #
     # Answer makes NO difference in price
     #
+    
+    
 
-#----------------Add this to: [MainCalculator -> Settings.py] to enable LOGGING----------------------: 
-# LOGGING = {
-#     'version': 1,
-#     'disable_existing_loggers': False,
-#     'handlers': {
-#         'console': {
-#             'level': 'INFO',  # Set to 'DEBUG' to see all log messages
-#             'class': 'logging.StreamHandler',
-#         },
-#     },
-#     'loggers': {
-#         '': {  # This is the root logger
-#             'handlers': ['console'],
-#             'level': 'INFO',  # Adjust as needed; 'DEBUG' shows everything
-#             'propagate': True,
-#         },
-#     },
-# }
+#BASIC FORM
+#----------
+    #Question #1:
+    #--Answer Options--:
+    #--Oracle Options--:
 
-#Configure logging
-logger = logging.getLogger(__name__)
+    #Question #2:
+    #--Answer Options--:
+    #--Oracle Options--:
 
-def main():
+    #Question #3:
+    #--Answer Options--:
+    #--Oracle Options--:
 
-    #API url
-    url = "https://apexapps.oracle.com/pls/apex/cetools/api/v1/products/"
-    try:
-        response = requests.get(url)
-        if response.status_code == 200:
-            json_data = response.json()
-            items = json_data['items']
+    #Question #4:
+    #--Answer Options--:
+    #--Oracle Options--:
 
+    #Question #5:
+    #--Answer Options--:
+    #--Oracle Options--:
 
+    #Question #6:
+    #--Answer Options--:
+    #--Oracle Options--:
 
-            #------------DOUBLE CHECK THIS----------------------------
-            #Clear info
-            CloudService.objects.all().delete()
-            ComputeSpecifications.objects.all().delete()
-            StorageSpecifications.objects.all().delete()
-            DatabaseSpecifications.objects.all().delete()
-            NetworkingSpecifications.objects.all().delete()
-            #---------------------------------------------------------
+    #Question #7:
+    #--Answer Options--:
+    #--Oracle Options--:
 
+    #Question #8:
+    #--Answer Options--:
+    #
+    # Various Regions
+    #
+    #--Oracle Options--:
+    #
+    # Answer makes NO difference in price
+    #
 
+    # Retrieve data from the database based on the provided keyword
+    # if expected_cpu:
+    #     # Query for the first compute instance
+    #     compute_instance = ComputeSpecifications.objects.filter(cpu=expected_cpu).first()
+    #     if compute_instance:
+    #         computed_data['compute'] = {
+    #             'name': compute_instance.name,
+    #             'unit_price': compute_instance.unit_price,
+    #             'cpu': compute_instance.cpu,
+    #             'memory': compute_instance.memory,
+    #             'sku': compute_instance.sku,
+    #             'provider': compute_instance.provider.name,
+    #             'cloud_service': compute_instance.cloud_service.service_type
+    #         }
 
-            #Transaction ensures atomicity of the database operations
-            with transaction.atomic():
-                for product in items:
-                    
-                    #Initialize usd_price as None
-                    usd_price = None
+    # if cloud_storage:
+    #     # Query for the first storage instance based on the keyword "File"
+    #     storage_instance = StorageSpecifications.objects.filter(name__icontains='File').first()
+    #     if storage_instance:
+    #         computed_data['storage'] = {
+    #             'name': storage_instance.name,
+    #             'unit_price': storage_instance.unit_price,
+    #             'unit_of_storage': storage_instance.unit_of_storage,
+    #             'sku': storage_instance.sku,
+    #             'provider': storage_instance.provider.name,
+    #             'cloud_service': storage_instance.cloud_service.service_type
+    #         }
 
-                    #Iterate through currencyCodeLocalizations to find USD prices
-                    for currencyLocalization in product.get('currencyCodeLocalizations', []):
-                        if currencyLocalization['currencyCode'] == 'USD':
+    # if database_service:
+    #     # Query for the first database instance
+    #     database_instance = DatabaseSpecifications.objects.filter(name__icontains=database_service).first()
+    #     if database_instance:
+    #         computed_data['database'] = {
+    #             'name': database_instance.name,
+    #             'unit_price': database_instance.unit_price,
+    #             'unit_of_storage': database_instance.unit_of_storage,
+    #             'sku': database_instance.sku,
+    #             'data_type': database_instance.data_type,
+    #             'provider': database_instance.provider.name,
+    #             'cloud_service': database_instance.cloud_service.service_type
+    #         }
+    #     else:
+    #         computed_data['database'] = None
 
-                            usd_price = next((price['value'] for price in currencyLocalization.get('prices', []) if price['model'] == 'PAY_AS_YOU_GO'), None)
-                            
-                            #Exit loop once USD price is found
-                            break  
-                    
-                    if not usd_price:
-                        logger.info(f"Skipping product due to missing USD price: {product.get('displayName')}")
-                        
-                        #Skip if no USD price found
-                        continue 
+    # if networking_feature:
+    #     if 'Content' in networking_feature:
+    #         # Query for the first networking instance based on the keyword "CDN"
+    #         networking_instance = NetworkingSpecifications.objects.filter(name__icontains='CDN').first()
+    #     else:
+    #         # Query for the first networking instance based on the first word
+    #         first_word = networking_feature.split()[0]
+    #         networking_instance = NetworkingSpecifications.objects.filter(name__icontains=first_word).first()
 
-                    #Filters
-                    service_category = product.get('serviceCategory', '')
-                    if any(service_category.startswith(prefix) for prefix in ["Database -", "Storage -", "Database with", "Networking -"]) or service_category in ["Compute - Virtual Machine", "Storage", "Database", "Networking"]:
-                        provider, created = Provider.objects.get_or_create(name='Oracle')
-                        if created:
-                            logger.info(f"Created new provider: Oracle")
+    #     if networking_instance:
+    #         computed_data['networking'] = {
+    #             'name': networking_instance.name,
+    #             'unit_price': networking_instance.unit_price,
+    #             'unit_of_measure': networking_instance.unit_of_measure,
+    #             'sku': networking_instance.sku,
+    #             'provider': networking_instance.provider.name,
+    #             'cloud_service': networking_instance.cloud_service.service_type
+    #         }
 
-                        cloud_service, created = CloudService.objects.get_or_create(
-                            service_type=service_category, 
-                            provider=provider
-                        )
-                        if created:
-                            logger.info(f"Created new cloud service: {service_category}")
-
-                        #Compute data.
-                        if "Compute" in service_category:
-                            ComputeSpecifications.objects.create(
-                                name=product.get('displayName'),
-                                provider=provider,
-                                cloud_service=cloud_service,
-                                sku=product.get('partNumber'),
-                                unit_price=usd_price,
-                            )
-
-                        #Storage data.
-                        elif "Storage" in service_category:
-                            StorageSpecifications.objects.create(
-                                name=product.get('displayName'),
-                                provider=provider,
-                                cloud_service=cloud_service,
-                                sku=product.get('partNumber'),
-                                unit_price=usd_price,
-                                unit_of_storage=product.get('metricName'),
-                            )
-                        #Networking data.
-                        elif "Networking" in service_category:
-                            NetworkingSpecifications.objects.create(
-                                name=product.get('displayName'),
-                                provider=provider,
-                                cloud_service=cloud_service,
-                                sku=product.get('partNumber'),
-                                unit_price=usd_price,
-                                unit_of_measure=product.get('metricName'),
-                            )
-                        #Database data.
-                        elif "Database" in service_category:
-                            DatabaseSpecifications.objects.create(
-                                name=product.get('displayName'),
-                                provider=provider,
-                                cloud_service=cloud_service,
-                                sku=product.get('partNumber'),
-                                unit_price=usd_price,
-                                unit_of_storage=product.get('metricName'),
-                            )
-                        logger.info(f"Inserted product into database: {product.get('displayName')}")
-                return HttpResponse("Data fetched and stored successfully.")
-        else:
-            return HttpResponse(f"Failed to fetch data. Status code: {response.status_code}")
-    except requests.RequestException as e:
-        logger.error(f"Failed to fetch data due to an error: {e}")
-        return HttpResponse(f"Failed to fetch data due to an error: {e}", status=500)
-    except Exception as e:
-        logger.error(f"An unexpected error occurred: {e}")
-        return HttpResponse(f"An unexpected error occurred: {e}", status=500)
-
-#View function that is mapped to the URL for triggering the data fetch.
-def fetch_pricing_data(request):
-    return main()
-
-
+    return computed_data
 
 # ======================== Third Party Components ========================
 # certifi
