@@ -10,6 +10,8 @@ from azure_app.views import database_fetch_view
 from databaseServer.views import handle_advanced_form_submission
 from databaseServer.views import handle_basic_form_submission
 
+#Oracle
+from oracle_app.views import get_oracle_pricing
 
 router = DefaultRouter()
 router.register("api/results", ViewHello, basename="ViewHello")
@@ -28,4 +30,8 @@ urlpatterns = [
     path('storage-fetch/', storage_fetch_view, name='fetch-storage'),
     path('networking-fetch/', networking_fetch_view, name='fetch-networking'),
     path('database-fetch/', database_fetch_view, name='fetch-database'),
+
+    #ORACLE
+    path('oracle/', get_oracle_pricing, name='oracle-price-fetch'),   
+
 ] + router.urls
