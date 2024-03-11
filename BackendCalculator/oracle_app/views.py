@@ -169,6 +169,58 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     # 8oCPU-64RAM
     #
 
+
+    ##COMPUTE
+    # sku = sku_mapping.get(expected_cpu)
+
+    # # Proceed only if a matching SKU was found
+    # if sku:
+    #     # Query for the storage instance based on the part number
+    #     compute_instance = ComputeSpecifications.objects.filter(sku=sku).first()
+    #     if compute_instance:
+
+            ##Multiply RAM and OCPU values 
+    #         if expected_cpu:
+                # if expected_cpu == "1vCPU":
+                #     #[RAM] (B93114) * 2
+                    
+                # elif expected_cpu == "2vCPUs":
+                #     #[RAM] (B93114) * 4
+
+                # elif expected_cpu == "4vCPUs":
+                #     #[RAM] (B93114) * 16
+                #     #[OCPU] (B93113) * 2
+                    
+                # elif expected_cpu == "8vCPUs":
+                #     #[RAM] (B93114) * 32
+                #     #[OCPU] (B93113) * 4
+                    
+                # elif expected_cpu == "12vCPUs":
+                #     #[RAM] (B93114) * 48
+                #     #[OCPU] (B93113) * 6
+
+                # elif expected_cpu == "16vCPUs":
+                #     #[RAM] (B93114) * 64
+                #     #[OCPU] (B93113) * 8
+
+            #--------------NOT DONE BELOW ---------------
+                    
+            # compute_instance = ComputeSpecifications.objects.get(sku=compute_sku, provider__name='Oracle')
+            # # unit_price = float(compute_instance.unit_price) * 720 # Convert unit price to float
+            # compute_unit_price = float(compute_instance.unit_price)# Convert unit price to float
+
+            # computed_data['compute'] = {
+            #     'name': compute_instance.name,
+            #     'unit_price': compute_unit_price,
+            #     'cpu': compute_instance.cpu,
+            #     'memory': compute_instance.memory,
+            #     'sku': compute_instance.sku,
+            #     'provider': compute_instance.provider.name,
+            #     'cloud_service': compute_instance.cloud_service.service_type,
+            #     'description': compute_instance.description  # Assuming there's a description field
+            # }        
+        
+
     #Question #3: DB Type
     #--Answer Options--:
     #
@@ -184,6 +236,52 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     # SQL = B92426
     # " "
     #
+    # Check for the "No Storage" option first
+    if database_service == "noDatabase":
+        computed_data['database'] = {
+            'name': "No Database",  # Set name to "No Storage"
+            # Set other fields to None or appropriate defaults
+            'unit_price': "N/A",
+            'unit_of_storage': None,
+            'sku': "N/A",
+            'provider': None,
+            'cloud_service': None
+        }
+    else:
+        # Map cloud storage types to their corresponding SKU
+        sku_mapping = {
+            "noSQL": "B89739",
+            "postgreSQL": "B99062",
+            "sql": "B92426",
+        }
+
+        # Get the SKU for the current cloud_storage type
+        sku = sku_mapping.get(database_service)
+
+        # Proceed only if a matching SKU was found
+        if sku:
+            # Query for the storage instance based on the part number
+            database_instance = DatabaseSpecifications.objects.filter(sku=sku).first()
+            if database_instance:
+
+                #change names
+                if sku == "B89739":
+                    name_override = "Oracle NoSQL"
+                elif sku == "B99062":
+                    name_override = "DB with PostgreSQL"
+                elif sku == "B92426":
+                    name_override = "Oracle MySQL"
+                else:
+                    name_override = database_instance.name
+
+                computed_data['database'] = {
+                    'name': name_override,
+                    'unit_price': database_instance.unit_price,
+                    'unit_of_storage': database_instance.unit_of_storage,
+                    'sku': database_instance.sku,
+                    'provider': database_instance.provider.name,
+                    'cloud_service': database_instance.cloud_service.service_type
+                }
 
     #Question #4: DB Size
     #--Answer Options--:
@@ -240,9 +338,16 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
             storage_instance = StorageSpecifications.objects.filter(sku=sku).first()
             if storage_instance:
 
-                # Check if the SKU is "B96625" and set the name accordingly
-                name_override = "Object Storage" if sku == "B96625" else storage_instance.name
-            
+                #Change names
+                if sku == "B96625":
+                    name_override = "Object Storage"
+                elif sku == "B89057":
+                    name_override = "File Storage"
+                elif sku == "B91961":
+                    name_override = "Block Storage"
+                else:
+                    name_override = storage_instance.name
+
                 computed_data['storage'] = {
                     'name': name_override,
                     'unit_price': storage_instance.unit_price,
