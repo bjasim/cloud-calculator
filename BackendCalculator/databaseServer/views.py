@@ -4,6 +4,8 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from azure_app.views import calculated_data_Azure
 from aws_app.views import calculated_data_AWS
+from aws_app.views import calculated_data_AWS_basic
+
 from google_app.views import calculated_data_Google
 from oracle_app.views import calculated_data_Oracle
 
@@ -55,12 +57,28 @@ def handle_advanced_form_submission(request):
 def handle_basic_form_submission(request):
     if request.method == 'POST':
         form_data = json.loads(request.body)
+        print("Received form data:", form_data)
+        
+        computeComplexity = form_data.get('computeComplexity')
+        dataStorageType = form_data.get('dataStorageType')
+        databaseService = form_data.get('databaseService')
+        monthlyBudget = form_data.get('monthlyBudget')
+        expectedUsers = form_data.get('expectedUsers')
+        dnsFeature = form_data.get('dnsFeature')
+        cdnNetworking = form_data.get('cdnNetworking')
+        region = form_data.get('region')
+        
+        aws_data_basic = calculated_data_AWS_basic(computeComplexity, dataStorageType, databaseService, monthlyBudget, expectedUsers, dnsFeature, cdnNetworking, region)
+
+        print(aws_data_basic)
+        # Return computed data as JSON response
+        return JsonResponse(aws_data_basic)
 
         # Print form data to console
-        print("Received form data:", form_data)
+        # print("Received form data:", form_data)
 
-        # Return success response
-        return JsonResponse({'success': True})
+        # # Return success response
+        # return JsonResponse({'success': True})
     else:
         # Return error response if the request method is not POST
         return JsonResponse({'success': False, 'error': 'Only POST requests are allowed'})

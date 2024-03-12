@@ -68,11 +68,12 @@ from django.http import HttpResponse
 def testing(request):
     client = boto3.client('pricing', region_name='us-east-1')
     response = client.get_products(
-        ServiceCode='AmazonDynamoDB',
+        # ServiceCode='AmazonDynamoDB',
         # ServiceCode='AmazonS3',
         # ServiceCode='AmazonEFS',
         # ServiceCode='AmazonEC2',  
-        # ServiceCode='AmazonEC2',
+        ServiceCode='AmazonCloudFront',
+        
 
         Filters=[
             # {'Type': 'TERM_MATCH', 'Field': 'productFamily', 'Value': 'Storage'},
