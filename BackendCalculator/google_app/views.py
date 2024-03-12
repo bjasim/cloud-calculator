@@ -16,11 +16,13 @@ SCOPES = ['https://www.googleapis.com/auth/cloud-billing.readonly']
 endpoint_url = "https://cloudbilling.googleapis.com/v2beta/skus"
 
 API_KEY = "AIzaSyB6TLXAdnJCDoCBX_tPm8zU_PBA-jj7MG8"
-service_filter = "service=\"services/9662-B51E-5089\""
+service_filter = "service=\"services/9662-B51E-5089\"" #cloud sql
+service_filter_storage="service=\"services/95FF-2EF5-5EA1\"" #cloud storage
 desired_categories = ['MySQL', 'Postgres', 'SQL Server']
 output_file_path = 'C:/Users/Joseph/cloud-calculator/cloud-calculator/BackendCalculator/google_app/specs_info.json'
 output_file_path2 = 'C:/Users/Joseph/cloud-calculator/cloud-calculator/BackendCalculator/google_app/price_info.json'
-output_file_Storage = ""
+storage_combined = "C:/Users/Joseph/Documents/storageprice.json"
+output_file_Storage="C:/Users/Joseph/Documents/storageinfo.json"
 combined_info= 'C:/Users/Joseph/cloud-calculator/cloud-calculator/BackendCalculator/google_app/combined_info.json'
 
 
@@ -30,17 +32,17 @@ def main():
     # Get SKUs for a specific service
     service_name = "services/9662-B51E-5089"  # CloudSQL service name
     #Getting the price for all skus with above parent service
-    get_prices(service,service_name)
+    #get_prices(service,service_name)
     #Getting all parent service sku information (getting specifications about each sku)
-    get_specs(endpoint_url, API_KEY, service_filter, desired_categories, output_file_path)
+    #get_specs(endpoint_url, API_KEY, service_filter, desired_categories, output_file_path)
     #compute info
-    computeinfo()
+    #computeinfo()
     # Create a new function to combine the information from the two json files based on skuid and insert into the db
-    combine_json_data(output_file_path, output_file_path2,combined_info)
+    #combine_json_data(output_file_path, output_file_path2,combined_info)
     #Getting storage specs
-    #get_storage_specs(endpoint_url,API_KEY,service_filter,output_file_path)
+    get_storage_specs(endpoint_url,API_KEY,service_filter_storage,output_file_Storage)
     #getting prices and inserting into db--
-    #retrieve_prices_from_json(output_file_path,API_KEY,output_file_Storage)
+    retrieve_prices_from_json(output_file_Storage,API_KEY,storage_combined)
     
 def get_authenticated_service():
     # Check if credentials file exists

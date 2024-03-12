@@ -2,14 +2,10 @@ from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 
 import json
-<<<<<<< HEAD
-from google_app.views import calculated_data_Azure
-=======
 from azure_app.views import calculated_data_Azure
 from aws_app.views import calculated_data_AWS
-from google_app.views import calculated_data_Google
+from google_app.views import calculated_data_gcp
 from oracle_app.views import calculated_data_Oracle
->>>>>>> origin/aws
 
 
 
@@ -31,15 +27,12 @@ def handle_advanced_form_submission(request):
         location = form_data.get('location')
         # networking_feature = form_data.get('networkingFeature')
 
-<<<<<<< HEAD
-        calculated_data = calculated_data_Azure(database_service_Azure, expected_cpu_Azure, cloud_storage_Azure, networking_feature_Azure)
+        #calculated_data = calculated_data_Azure(database_service_Azure, expected_cpu_Azure, cloud_storage_Azure, networking_feature_Azure)
         #Write the code for dealing with logic in here GCP
-=======
         azure_data = calculated_data_Azure(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location)
         aws_data = calculated_data_AWS(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location)
-        google_data = calculated_data_Google(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location)
+        google_data = calculated_data_gcp(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location)
         Oracle_data = calculated_data_Oracle(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location)
->>>>>>> origin/aws
 
         combined_data = {
             'Azure': azure_data,
