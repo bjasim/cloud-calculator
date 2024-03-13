@@ -395,20 +395,18 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
         compute_name="n1-standard-16"
         # Query for the first compute instance
         
-        # Hardcode the instance type and region
+        # the instance type and region
     compute_instance = ComputeSpecifications.objects.filter(provider__name='GCP', name=compute_name, region=location).first()
-
-    if compute_instance:
-        computed_data['compute'] = {
-            'name': compute_instance.name,
-            'unit_price': compute_instance.unit_price,
-            'cpu': compute_instance.cpu,
-            'memory': compute_instance.memory,
-            'sku': compute_instance.sku,
-            'provider': compute_instance.provider.name,
-            'cloud_service': compute_instance.cloud_service.service_type
-        }
-        
+    computed_data['compute'] = {
+        'name': compute_instance.name,
+        'unit_price': compute_instance.unit_price,
+        'cpu': compute_instance.cpu,
+        'memory': compute_instance.memory,
+        'sku': compute_instance.sku,
+        'provider': compute_instance.provider.name,
+        'cloud_service': compute_instance.cloud_service.service_type
+    }
+    
     if cloud_storage:
         # Query for the first storage instance based on the keyword "File"
         storage_instance = StorageSpecifications.objects.filter(name__icontains="")
@@ -423,10 +421,95 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
             }
         else:
             computed_data['storage']= None
-
-    if database_service:
+            
+    # #Database Logic
+    db_type=None
+    if database_service== 'postgreSQL':
+        db_type= "PostgreSQL"
+    elif database_service == 'sql':
+        db_type= "SQL Server"
+    elif database_service == 'NoSql':
+        db_type= "NoSQL"
+    
+    #Going through the region to set the location for query
+    city=None
+    if location == "us-central1":
+        city= "Iowa"
+    elif location == "us-east1":
+        city= "South Carolina"
+    elif location == "us-east4":
+        city="Northern Virginia"
+    elif location == "us-east5":
+        city= "Columbus"
+    elif location == "us-south1":
+        city= "Dallas"
+    elif location == "us-west1":
+        city= "Oregon"
+    elif location == 'us-west2':
+        city= "Los Angeles"
+    elif location == "us-west3":
+        city="Salt Lake City"
+    elif location == "us-west4":
+        city= "Las Vegas"
+    elif location == "asia-east2":
+        city="Hong Kong"
+    elif location == "asia-east1":
+        city="Taiwan"
+    elif location == "asia-northeast1":
+        city= "Tokyo"
+    elif location == "asia-northeast2":
+        city= "Osaka"
+    elif location == "asia-northeast3":
+        city= "Seoul"
+    elif location == "asia-south1":
+        city= "Mumbai"
+    elif location == "asia-south2":
+        city= "Delhi"
+    elif location == "asia-southeast1":
+        city= "Singapore"
+    elif location == "asia-southeast2":
+        city= "Jakarta"
+    elif location == "australia-southeast1":
+        city= "Sydney"
+    elif location == "australia-southeast2":
+        city= "Melbourne"
+    elif location == "europe-central2":
+        city= "Warsaw"
+    elif location == "europe-north1":
+        city= "Finland"
+    elif location == "europe-southwest1":
+        city= "Madrid"
+    elif location == "europe-west1":
+        city= "Belgium"
+    elif location == "europe-west2":
+        city= "London"
+    elif location == "europe-west3":
+        city= "Frankfurt"
+    elif location == "europe-west4":
+        city= "Netherlands"
+    elif location == "europe-west6":
+        city= "Zurich"
+    elif location == "europe-west8":
+        city= "Milan"
+    elif location == "europe-west9":
+        city= "Paris"
+    elif location == "me-west1":
+        city= "Tel Aviv"
+    elif location == "northamerica-northeast1":
+        city= "Montréal"
+    elif location == "northamerica-northeast2":
+        city= "Toronto"
+    elif location == "southamerica-east1":
+        city= "São Paulo"
+    elif location == "southamerica-west1":
+        city= "Santiago"
+    # db_type="PostgreSQL"
+    # city="Dallas"
+    if db_type and city:
+        query_template = "Cloud SQL for %s: Regional - Standard storage in %s"
+        query= query_template % (db_type, city)
         # Query for the first database instance
-        database_instance = DatabaseSpecifications.objects.filter(name__icontains=database_service).first()
+        database_instance = DatabaseSpecifications.objects.filter(name=query).first()
         if database_instance:
             computed_data['database'] = {
                 'name': database_instance.name,
