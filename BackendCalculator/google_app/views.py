@@ -36,13 +36,13 @@ def main():
     #Getting all parent service sku information (getting specifications about each sku)
     #get_specs(endpoint_url, API_KEY, service_filter, desired_categories, output_file_path)
     #compute info
-    #computeinfo()
+    computeinfo()
     # Create a new function to combine the information from the two json files based on skuid and insert into the db
     #combine_json_data(output_file_path, output_file_path2,combined_info)
     #Getting storage specs
-    get_storage_specs(endpoint_url,API_KEY,service_filter_storage,output_file_Storage)
+    #get_storage_specs(endpoint_url,API_KEY,service_filter_storage,output_file_Storage)
     #getting prices and inserting into db--
-    retrieve_prices_from_json(output_file_Storage,API_KEY,storage_combined)
+    #retrieve_prices_from_json(output_file_Storage,API_KEY,storage_combined)
     
 def get_authenticated_service():
     # Check if credentials file exists
@@ -273,18 +273,17 @@ def computeinfo():
     
     # Iterate over instance data
     for instance, instance_details in compute_data['instance'].items():
-        # Create a new ComputeSpecifications object for each instance
-        compute_spec = ComputeSpecifications()
-        compute_spec.name = instance
-        compute_spec.provider=provider
-        compute_spec.cloud_service=cloud_service
-        compute_spec.sku = str(uuid.uuid4())
-        compute_spec.cpu = instance_details['cpu']
-        compute_spec.memory = instance_details['ram']
-        
+        # Create a new ComputeSpecifications object for each instance       
         # Iterate over cost details for each region
         for region, region_details in instance_details['cost'].items():
             # Populate the fields for each region
+            compute_spec = ComputeSpecifications()
+            compute_spec.name = instance
+            compute_spec.provider=provider
+            compute_spec.cloud_service=cloud_service
+            compute_spec.sku = str(uuid.uuid4())
+            compute_spec.cpu = instance_details['cpu']
+            compute_spec.memory = instance_details['ram']
             compute_spec.region = region
             compute_spec.unit_price = region_details['hour']  #Change this to month to avoid calculation at the end
             
@@ -364,86 +363,105 @@ print(f'All SKUs saved to {output_file_path}')
 #THE CODE BELOW IS LOGIC 
 
 
-def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location):
-    # Query Compute Specifications based on expected CPU and location
-    compute_services = ComputeSpecifications.objects.filter(provider__name='GCP', cpu__gte=expected_cpu, region=location)
+# def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location):
+#     # Query Compute Specifications based on expected CPU and location
+#     compute_services = ComputeSpecifications.objects.filter(provider__name='GCP', cpu__gte=expected_cpu, region=location)
 
-    totalprice=0.0
-    for compute_service in compute_services:
-        total_price += float(compute_service.price_monthly)
-
-# def calculated_data_gcp(database_service, expected_cpu, cloud_storage, networking_feature):
-#     computed_data = {'provider': 'Google Cloud',}  # Initialize dictionary to store computed data
-
-#     # Retrieve data from the database based on the provided keyword
-#     if expected_cpu:
-#         # Query for the first compute instance
-#         compute_instance = ComputeSpecifications.objects.filter(cpu=expected_cpu).first()
-#         if compute_instance:
-#             computed_data['compute'] = {
-#                 'name': compute_instance.name,
-#                 'unit_price': compute_instance.unit_price,
-#                 'cpu': compute_instance.cpu,
-#                 'memory': compute_instance.memory,
-#                 'sku': compute_instance.sku,
-#                 'provider': compute_instance.provider.name,
-#                 'cloud_service': compute_instance.cloud_service.service_type
-#             }
+#     totalprice=0.0
+#     for compute_service in compute_services:
+#         total_price += float(compute_service.unit_price)
         
+#     gcp_data = {
+#         "compute_services" : list(compute_services.values())
+#     }
+#     return gcp_data
 
-#     if cloud_storage:
-#         # Query for the first storage instance based on the keyword "File"
-#         storage_instance = StorageSpecifications.objects.filter(name__icontains='File').first()
-#         if storage_instance:
-#             computed_data['storage'] = {
-#                 'name': storage_instance.name,
-#                 'unit_price': storage_instance.unit_price,
-#                 'unit_of_storage': storage_instance.unit_of_storage,
-#                 'sku': storage_instance.sku,
-#                 'provider': storage_instance.provider.name,
-#                 'cloud_service': storage_instance.cloud_service.service_type
-#             }
-#         else:
-#             computed_data['storage']= None
+def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location):
+    
+    computed_data = {'provider': 'Google Cloud',}  # Initialize dictionary to store computed data
+    # Retrieve data from the database based on the provided keyword
+    compute_name=None
+    if expected_cpu == "1vCPUs":
+        compute_name="n1-standard-1"
+    elif expected_cpu == "2vCPUs":
+        compute_name="n1-standard-2"
+    elif expected_cpu == "4vCPUs":
+        compute_name="n1-standard-4"
+    elif expected_cpu == "8vCPUs":
+        compute_name="n2-standard-8"
+    elif expected_cpu == "12vCPUs":
+        compute_name="g2-standard-12"
+    elif expected_cpu == "16vCPUs":
+        compute_name="n1-standard-16"
+        # Query for the first compute instance
+        
+        # Hardcode the instance type and region
+    compute_instance = ComputeSpecifications.objects.filter(provider__name='GCP', name=compute_name, region=location).first()
 
-#     if database_service:
-#         # Query for the first database instance
-#         database_instance = DatabaseSpecifications.objects.filter(name__icontains=database_service).first()
-#         if database_instance:
-#             computed_data['database'] = {
-#                 'name': database_instance.name,
-#                 'unit_price': database_instance.unit_price,
-#                 'unit_of_storage': database_instance.unit_of_storage,
-#                 'sku': database_instance.sku,
-#                 'data_type': database_instance.data_type,
-#                 'provider': database_instance.provider.name,
-#                 'cloud_service': database_instance.cloud_service.service_type
-#             }
-#         else:
-#             computed_data['database'] = None
+    if compute_instance:
+        computed_data['compute'] = {
+            'name': compute_instance.name,
+            'unit_price': compute_instance.unit_price,
+            'cpu': compute_instance.cpu,
+            'memory': compute_instance.memory,
+            'sku': compute_instance.sku,
+            'provider': compute_instance.provider.name,
+            'cloud_service': compute_instance.cloud_service.service_type
+        }
+        
+    if cloud_storage:
+        # Query for the first storage instance based on the keyword "File"
+        storage_instance = StorageSpecifications.objects.filter(name__icontains="")
+        if storage_instance:
+            computed_data['storage'] = {
+                'name': storage_instance.name,
+                'unit_price': storage_instance.unit_price,
+                'unit_of_storage': storage_instance.unit_of_storage,
+                'sku': storage_instance.sku,
+                'provider': storage_instance.provider.name,
+                'cloud_service': storage_instance.cloud_service.service_type
+            }
+        else:
+            computed_data['storage']= None
 
-#     if networking_feature:
-#         if 'Content' in networking_feature:
-#             # Query for the first networking instance based on the keyword "CDN"
-#             networking_instance = NetworkingSpecifications.objects.filter(name__icontains='CDN').first()
-#         else:
-#             # Query for the first networking instance based on the first word
-#             first_word = networking_feature.split()[0]
-#             networking_instance = NetworkingSpecifications.objects.filter(name__icontains=first_word).first()
+    if database_service:
+        # Query for the first database instance
+        database_instance = DatabaseSpecifications.objects.filter(name__icontains=database_service).first()
+        if database_instance:
+            computed_data['database'] = {
+                'name': database_instance.name,
+                'unit_price': database_instance.unit_price,
+                'unit_of_storage': database_instance.unit_of_storage,
+                'sku': database_instance.sku,
+                'data_type': database_instance.data_type,
+                'provider': database_instance.provider.name,
+                'cloud_service': database_instance.cloud_service.service_type
+            }
+        else:
+            computed_data['database'] = None
 
-#         if networking_instance:
-#             computed_data['networking'] = {
-#                 'name': networking_instance.name,
-#                 'unit_price': networking_instance.unit_price,
-#                 'unit_of_measure': networking_instance.unit_of_measure,
-#                 'sku': networking_instance.sku,
-#                 'provider': networking_instance.provider.name,
-#                 'cloud_service': networking_instance.cloud_service.service_type
-#             }
-#         else:
-#             computed_data['networking']= None
+    # if networking_feature:
+    #     if 'Content' in networking_feature:
+    #         # Query for the first networking instance based on the keyword "CDN"
+    #         networking_instance = NetworkingSpecifications.objects.filter(name__icontains='CDN').first()
+    #     else:
+    #         # Query for the first networking instance based on the first word
+    #         first_word = networking_feature.split()[0]
+    #         networking_instance = NetworkingSpecifications.objects.filter(name__icontains=first_word).first()
 
-#     return computed_data
+    #     if networking_instance:
+    #         computed_data['networking'] = {
+    #             'name': networking_instance.name,
+    #             'unit_price': networking_instance.unit_price,
+    #             'unit_of_measure': networking_instance.unit_of_measure,
+    #             'sku': networking_instance.sku,
+    #             'provider': networking_instance.provider.name,
+    #             'cloud_service': networking_instance.cloud_service.service_type
+    #         }
+    #     else:
+    #         computed_data['networking']= None
+
+    return computed_data
 
 def callmain(request):
     main()
