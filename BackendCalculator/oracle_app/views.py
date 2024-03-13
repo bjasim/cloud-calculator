@@ -169,7 +169,36 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     # 8oCPU-64RAM
     #
 
+#-------------------------------------------------------------------------------------
+    # # SKUs for OCPU and RAM
+    # cpu_sku = "B93113"
+    # ram_sku = "B93114"
 
+    # # Initial multipliers for CPUs and RAMs based on expected configurations
+    # cpu_ram_configurations = {
+    #     "1vCPU": {"cpu_multiplier": 0, "ram_multiplier": 2},
+    #     "2vCPUs": {"cpu_multiplier": 0, "ram_multiplier": 4},
+    #     "4vCPUs": {"cpu_multiplier": 2, "ram_multiplier": 16},
+    #     "8vCPUs": {"cpu_multiplier": 4, "ram_multiplier": 32},
+    #     "12vCPUs": {"cpu_multiplier": 6, "ram_multiplier": 48},
+    #     "16vCPUs": {"cpu_multiplier": 8, "ram_multiplier": 64},
+    # }
+
+    # # Retrieve multipliers
+    # multipliers = cpu_ram_configurations.get(expected_cpu, None)
+    # if multipliers is None:
+    #     return None  # or handle error as appropriate
+
+    # # Assuming ComputeSpecifications and sku_mapping are defined
+    # # Retrieve the unit prices for CPU and RAM
+    # cpu_price = ComputeSpecifications.objects.filter(sku=cpu_sku).first().unit_price if multipliers["cpu_multiplier"] > 0 else 0
+    # ram_price = ComputeSpecifications.objects.filter(sku=ram_sku).first().unit_price
+
+    # # Calculate total cost
+    # total_cost = (cpu_price * multipliers["cpu_multiplier"]) + (ram_price * multipliers["ram_multiplier"])
+#------------------------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------------------------
     ##COMPUTE
     # sku = sku_mapping.get(expected_cpu)
 
@@ -202,8 +231,6 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
                 # elif expected_cpu == "16vCPUs":
                 #     #[RAM] (B93114) * 64
                 #     #[OCPU] (B93113) * 8
-
-            #--------------NOT DONE BELOW ---------------
                     
             # compute_instance = ComputeSpecifications.objects.get(sku=compute_sku, provider__name='Oracle')
             # # unit_price = float(compute_instance.unit_price) * 720 # Convert unit price to float
@@ -219,7 +246,7 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
             #     'cloud_service': compute_instance.cloud_service.service_type,
             #     'description': compute_instance.description  # Assuming there's a description field
             # }        
-        
+#---------------------------------------------------------------------------------------------------- 
 
     #Question #3: DB Type
     #--Answer Options--:
@@ -303,13 +330,13 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     # Object
     # File
     # Block
-    #
+    # 
     #--Oracle Options--:
-    #
+    # 
     # Object: B96625
     # File: B89057
     # Block: B91961
-    #
+    # 
         # Check for the "No Storage" option first
     if cloud_storage == "No Storage":
         computed_data['storage'] = {
@@ -356,7 +383,7 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
                     'provider': storage_instance.provider.name,
                     'cloud_service': storage_instance.cloud_service.service_type
                 }
-                
+
     #Question #6: Storage Size
     #--Answer Options--:
     #
@@ -377,7 +404,7 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     #
     #--Oracle Options--:
     #
-    #Include DNS pricing?
+    # SKU: B88525 (say per 1,000,000 queries)
     #
 
     #Question #8: CDN
@@ -387,17 +414,18 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     #
     #--Oracle Options--:
     #
-    # NOT SURE
+    # Inbound: Free
+    # Outbound: < 10 TB free 
     #
 
     #Question #9:
     #--Answer Options--:
-    #
+    # 
     # Important or not important
     #
     #--Oracle Options--:
     #
-    # Include or not include auto scaling
+    # Include or not include auto scaling [ADD TO COMPUTE NAME]
     #
 
     #Question #10:
@@ -406,41 +434,96 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     # Various Regions
     #
     #--Oracle Options--:
-    #
-    # Answer makes NO difference in price
+    #   
+    # Answer: Enter region but NO difference in price
     #
     
     
 
 #BASIC FORM
 #----------
-    #Question #1:
+    #Question #1: Compute complexity
     #--Answer Options--:
+    #
+    # basic 2vcpu-4ram
+    # moderate 8vcpu-32ram
+    # intensive 16vcpu-64ram
+    #
     #--Oracle Options--:
+    # 
+    # sku:B93113 (1 ocpu) - sku:B93114 (1 ram)
+    # multiply by # of ram/ocpu
+    # 
+    # Basic: 1ocpu-4ram
+    # Moderate: 4ocpu-32ram
+    # Intensive: 8ocpu-64ram
+    # 
 
-    #Question #2:
+    #Question #2: Expected Users
     #--Answer Options--:
+    # 
+    # <1000 = 50gb db storage
+    # 5000 = 200gb
+    # 10000+ = 1TB (add auto scaling to compute name)
+    #            
     #--Oracle Options--:
-
-    #Question #3:
+    #
+    # multiply DB size by this
+    # 
+                            
+    #Question #3: Type of data
     #--Answer Options--:
+    #   
+    # files
+    # database
+    # multimedia
+    #
     #--Oracle Options--:
+    #   
+    # File: B89057
+    # Block: B91961
+    # Object: B96625
+    #
 
     #Question #4:
     #--Answer Options--:
+    #
+    #
+    #
     #--Oracle Options--:
+    #
+    #
+    #
 
     #Question #5:
     #--Answer Options--:
+    #
+    #
+    #
     #--Oracle Options--:
-
+    #
+    #
+    #
+                
     #Question #6:
     #--Answer Options--:
+    #
+    #
+    #
     #--Oracle Options--:
+    #
+    #
+    #
 
     #Question #7:
     #--Answer Options--:
+    #
+    #
+    #
     #--Oracle Options--:
+    #
+    #
+    #
 
     #Question #8:
     #--Answer Options--:
@@ -449,7 +532,7 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     #
     #--Oracle Options--:
     #
-    # Answer makes NO difference in price
+    # Enter region but NO difference in price
     #
 
 
