@@ -45,7 +45,7 @@ sku_to_category = {
     'B97385': 'compute',
 
     #Object
-    'B96625': 'storage',
+    'B91628': 'storage',
     #File
     'B89057': 'storage',
     #Block
@@ -70,7 +70,7 @@ def get_oracle_pricing(request):
             json_data = response.json()
             items = json_data['items']
 
-            # Deletes ONLY oracle data.
+            #Deletes ONLY oracle data.
             CloudService.objects.filter(provider__name="Oracle").delete()
             ComputeSpecifications.objects.filter(provider__name="Oracle").delete()
             StorageSpecifications.objects.filter(provider__name="Oracle").delete()
@@ -86,8 +86,24 @@ def get_oracle_pricing(request):
                         usd_price = None
                         for currencyLocalization in product.get('currencyCodeLocalizations', []):
                             if currencyLocalization['currencyCode'] == 'USD':
-                                usd_price = next((price['value'] for price in currencyLocalization.get('prices', []) if price['model'] == 'PAY_AS_YOU_GO'), None)
-                                break
+
+                                #Find all prices with the 'PAY_AS_YOU_GO' model
+                                pay_as_you_go_prices = [price for price in currencyLocalization.get('prices', []) if price['model'] == 'PAY_AS_YOU_GO']
+                                
+                                #Initialize usd_price as None
+                                usd_price = None
+
+                                #Apply special logic only for part number B91628
+                                if sku == "B91628":
+
+                                    #Further filter to find a non-free tier for B91628
+                                    usd_price = next((price['value'] for price in pay_as_you_go_prices if 'rangeMax' in price and price.get('value', 0) > 0 and price.get('rangeMax', 0) > 10), None)
+                                else:
+                                    #Default behavior for all other part numbers
+                                    usd_price = next((price['value'] for price in pay_as_you_go_prices if price.get('value', 0) > 0), None)
+
+                                if usd_price is not None:
+                                    break
                         
                         if usd_price is None:
                             logger.info(f"Skipping product due to missing USD price: {product.get('displayName')}")
@@ -355,7 +371,7 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     # 
     #--Oracle Options--:
     # 
-    # Object: B96625
+    # Object: B91628
     # File: B89057
     # Block: B91961
     # 
@@ -373,7 +389,7 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     else:
         # Map cloud storage types to their corresponding SKU
         sku_mapping = {
-            "Object Storage": "B96625",
+            "Object Storage": "B91628",
             "Block Storage": "B91961",
             "File Storage": "B89057",
         }
@@ -388,7 +404,7 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
             if storage_instance:
 
                 #Change names
-                if sku == "B96625":
+                if sku == "B91628":
                     name_override = "Object Storage"
                 elif sku == "B89057":
                     name_override = "File Storage"
