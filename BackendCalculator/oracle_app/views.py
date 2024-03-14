@@ -145,13 +145,19 @@ def get_oracle_pricing(request):
 
 # Create your views here.
 def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location):
-    computed_data = {'provider': 'Oracle',}  
+    computed_data = {'provider': 'Oracle',}
 
 #ADVANCED FORM
 #-------------
     #Question #1: Monthly Budget
-    #Answer Options: budget prices
-    #Oracle Options: check price is under/over budget
+    #Answer Options: 
+    # 
+    # budget prices
+    # 
+    #Oracle Options: 
+    #
+    # ???????????????????????????????????????????  
+    #
 
     #Question #2: vCPU and RAM
     #--Answer Options--:
@@ -175,8 +181,11 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     # 8oCPU-64RAM
     #
 
-#-------------------------------------------------------------------------------------
-    # # SKUs for OCPU and RAM
+    # ------------------------- INCLUDE SCALABILITY IN NAME IF SELECTED ---------------------------------------------
+    #--------------------------MEDIUM DB = E4 compute-----------------------------
+    #--------------------------LARGE DB = E5 compute-------------------------------
+    
+    # #SKUs for OCPU and RAM (e3 standard)
     # cpu_sku = "B93113"
     # ram_sku = "B93114"
 
@@ -208,9 +217,13 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     ##COMPUTE
     # sku = sku_mapping.get(expected_cpu)
 
+ 
+
     # # Proceed only if a matching SKU was found
     # if sku:
+
     #     # Query for the storage instance based on the part number
+
     #     compute_instance = ComputeSpecifications.objects.filter(sku=sku).first()
     #     if compute_instance:
 
@@ -308,8 +321,11 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
                     name_override = database_instance.name
 
                 computed_data['database'] = {
-                    'name': name_override,
-                    'unit_price': database_instance.unit_price,
+                    'name': f"{name_override} - {location}",
+
+                    # CHANGE TO MONTHLY
+
+                    'unit_price': f"{database_instance.unit_price} USD Per GB",
                     'unit_of_storage': database_instance.unit_of_storage,
                     'sku': database_instance.sku,
                     'provider': database_instance.provider.name,
@@ -382,8 +398,11 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
                     name_override = storage_instance.name
 
                 computed_data['storage'] = {
-                    'name': name_override,
-                    'unit_price': storage_instance.unit_price,
+                    'name': f"{name_override} - {location}",
+
+                    #CHANGE TO MONTHLY PRICE
+
+                    'unit_price': f"{storage_instance.unit_price} USD Per GB",
                     'unit_of_storage': storage_instance.unit_of_storage,
                     'sku': storage_instance.sku,
                     'provider': storage_instance.provider.name,
@@ -423,7 +442,51 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     # Inbound: Free
     # Outbound: < 10 TB free 
     #
+    #-----------------------CDN-------------------------            
+    computed_data['networking'] = {
+        'name': "",  # Name set to "CDN" to indicate the service being considered
+        'SKU': "",   # Initialize SKU as "N/A"; will remain if CDN is not enabled
+        'unit_price': "",  # Initialize a placeholder for unit price
+        
+    }
+    # Check if the CDN option is enabled by the user
+    if cdn_connection == "Yes":
+        computed_data['networking'] = {
+            'name': "CDN",  # Confirm the service name as "CDN"
+            'SKU': "CDN-SKU",  # Update with a specific SKU if available/applicable
+            'unit_price': "| CDN Inbound: Free | CDN Outbound: < 10 TB Free |",  # Update this as per your CDN pricing model
+            }
+        
+    #---------------------DNS--------------------------    
+    if dns_connection == "Yes":
+        # Fetch DNS service details from the database
+        # Assuming DNSSpecifications is your model name and it contains the DNS service details
+        dns_service = NetworkingSpecifications.objects.first()  # Adjust the query as needed to get the correct DNS service details
+        
+        if dns_service:
+            # Update the DNS section within the networking part of computed_data with the fetched details
+            computed_data['networking'] = {
+                'name': "DNS",
+                'sku': dns_service.sku,  # Use the SKU from the database
+                'unit_price': f"| {dns_service.unit_price} USD Per 1,000,000 queries"  # Use the unit price from the database
+            }          
 
+    #-----------------IF DNS AND CDN SELECTED---------------------------------------
+    if dns_connection == "Yes" and cdn_connection == "Yes":
+
+        # Fetch DNS service details from the database
+        # Assuming DNSSpecifications is your model name and it contains the DNS service details
+        dns_service = NetworkingSpecifications.objects.first()  # Adjust the query as needed to get the correct DNS service details
+        
+        if dns_service:
+            # Update the DNS section within the networking part of computed_data with the fetched details
+            computed_data['networking'] = {
+                'name': "CDN & DNS",
+                'sku': f" DNS:{dns_service.sku} CDN: N/A",  # Use the SKU from the database
+                'unit_price': f"| DNS = {dns_service.unit_price} USD Per 1,000,000 queries | CDN Inbound: Free | CDN Outbound: < 10 TB Free |"  # Use the unit price from the database
+            }          
+
+    
     #Question #9:
     #--Answer Options--:
     # 
@@ -512,19 +575,19 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     #
                 
     #Question #6:
-    #--Answer Options--:
+    #--Answer Options--: DNS
     #
-    #
+    # "Yes" or "No"
     #
     #--Oracle Options--:
     #
-    #
+    # 
     #
 
     #Question #7:
-    #--Answer Options--:
+    #--Answer Options--: CDN
     #
-    #
+    # "Yes" or "No"
     #
     #--Oracle Options--:
     #
@@ -541,26 +604,12 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     # Enter region but NO difference in price
     #
 
-
-    # if cloud_storage == "Object Storage":
-    #     # Query for the storage instance based on the part number "B96625"
-    #     storage_instance = StorageSpecifications.objects.filter(sku='B96625').first()
-    #     if storage_instance:
-    #         computed_data['storage'] = {
-    #             'name': storage_instance.name,
-    #             'unit_price': storage_instance.unit_price,
-    #             'unit_of_storage': storage_instance.unit_of_storage,
-    #             'sku': storage_instance.sku,  # This will be "B96625" for your specific query
-    #             'provider': storage_instance.provider.name,
-    #             'cloud_service': storage_instance.cloud_service.service_type
-    #         }
-
     # plan_monthly_price = compute_total_price + storage_unit_price + total_db_price
     # # plan_monthly_price = compute_total_price + storage_unit_price
 
     # plan_annual_price = float(plan_monthly_price) * 12
     # print("Total Monthly Plan Cost: ", plan_monthly_price)
-    # print("Total Annual Plan Cost: ", plan_annual_price)
+    # print("Total Monthly Plan Cost: ", plan_annual_price)
 
     # computed_data['monthly'] = plan_monthly_price
     # computed_data['annual'] = plan_annual_price
