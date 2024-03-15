@@ -207,85 +207,60 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     # 8oCPU-64RAM
     #
  
-    #Multiply RAM and OCPU values 
-    # if expected_cpu:
-        # if expected_cpu == "1vCPU":
-        #             #[RAM] (B93114) * 2
- 
-        # elif expected_cpu == "2vCPUs":
-        #             #[RAM] (B93114) * 4
 
-        # elif expected_cpu == "4vCPUs":
-        #             #[RAM] (B93114) * 16
-        #             #[OCPU] (B93113) * 2
-                    
-        # elif expected_cpu == "8vCPUs":
-        #             #[RAM] (B93114) * 32
-        #             #[OCPU] (B93113) * 4
-                    
-        # elif expected_cpu == "12vCPUs":
-        #             #[RAM] (B93114) * 48
-        #             #[OCPU] (B93113) * 6
+    # #IF SCALIABILITY IS SELECTED 
+    # #Add auto scaling to name
+    # #Add load balancer price: B96485 * 744 [MIGHT BE FREE]
 
-        # elif expected_cpu == "16vCPUs":
-        #             #[RAM] (B93114) * 64
-        #             #[OCPU] (B93113) * 8
-
-   
-        # "cpu-E4": "B93113",
-        # "ram-E4": "B93114",
-        # "cpu-E5": "B97384",
-        # "ram-E5": "B97385",
-  
-
-    #Initial multipliers for CPUs and RAMs based on expected configurations
-    cpu_ram_configurations = {
-        "1vCPU": {"cpu_multiplier": 0, "ram_multiplier": 2},
-        "2vCPUs": {"cpu_multiplier": 0, "ram_multiplier": 4},
-        "4vCPUs": {"cpu_multiplier": 2, "ram_multiplier": 16},
-        "8vCPUs": {"cpu_multiplier": 4, "ram_multiplier": 32},
-        "12vCPUs": {"cpu_multiplier": 6, "ram_multiplier": 48},
-        "16vCPUs": {"cpu_multiplier": 8, "ram_multiplier": 64},
+    #Configuration for compute types.
+    cpu_configurations = {
+        "1vCPU": {"multiplier": 1, "ram_cost_multiplier": 2, "ram_cost_per_unit": 0.015, "name_override": "1oCPU(1vCPU)-2RAM"},
+        "2vCPUs": {"multiplier": 1, "ram_cost_multiplier": 4, "ram_cost_per_unit": 0.015, "name_override": "1oCPU(2vCPU)-4RAM"},
+        "4vCPUs": {"multiplier": 2, "ram_cost_multiplier": 16, "ram_cost_per_unit": 0.015, "name_override": "2oCPU(4vCPU)-16RAM"},
+        "8vCPUs": {"multiplier": 4, "ram_cost_multiplier": 32, "ram_cost_per_unit": 0.015, "name_override": "4oCPU(8vCPU)-32RAM"},
+        "12vCPUs": {"multiplier": 6, "ram_cost_multiplier": 48, "ram_cost_per_unit": 0.015, "name_override": "6oCPU(12vCPU)-48RAM"},
+        "16vCPUs": {"multiplier": 8, "ram_cost_multiplier": 64, "ram_cost_per_unit": 0.015, "name_override": "8oCPU(16vCPU)-64RAM"},
     }
 
-    #Retrieve multipliers
-    multipliers = cpu_ram_configurations.get(expected_cpu, None)
-    if multipliers is None:
-        return None 
+    #Calculate cpu.
+    if expected_cpu in cpu_configurations:
+        config = cpu_configurations[expected_cpu]
 
-    #E4 COMPUTE
-    cpu_sku = "B93113"
-    ram_sku = "B93114"
+        #Initialize
+        name_override = ""  
 
-    #Retrieve the unit prices for CPU and RAM
-    cpu_price = ComputeSpecifications.objects.filter(sku=cpu_sku).first().unit_price if multipliers["cpu_multiplier"] > 0 else 0
-    ram_price = ComputeSpecifications.objects.filter(sku=ram_sku).first().unit_price
+        #Check database size and select compute instance based off that.
+        if database_size in ["small", "medium"]:
+            compute_sku = "B93113"
+            name_override = "Compute - Standard - E4 - "  
+            ram_sku = "B93114"
 
-    #Calculate total cost
-    total_cost = (cpu_price * multipliers["cpu_multiplier"]) + (ram_price * multipliers["ram_multiplier"])
-
-    #MEDIUM DB = E4 compute
-    #LARGE DB = E5 compute
-
-    #IF SCALIABILITY IS SELECTED 
-    #Add auto scaling to name
-    #Add load balancer price: B96485 * 744 [MIGHT BE FREE]
+        elif database_size == "large":
+            compute_sku = "B97384"
+            name_override = "Compute - Standard - E5 - "
+            ram_sku = "B97385"
 
 
-    computed_data['database'] = {
+        #Fetch RAM pricing details using the selected RAM SKU.
+        ram_service = ComputeSpecifications.objects.filter(sku=ram_sku).first()
+        if ram_service:
+            #Adjust ram_cost_per_unit based on the fetched RAM service details.
+            config["ram_cost_per_unit"] = float(ram_service.unit_price)
 
-        #
-        #OVERRIDE NAMES BASED OFF OF IF STATEMENT, PRICE IS ALSO OVERRIDDEN BY THE CALCULATED RAM + CPU
-        #
+        #Fetch compute service details from the database using compute_sku.
+        compute_service = ComputeSpecifications.objects.filter(sku=compute_sku).first()
 
-        # 'name': f"{name_override} - {location}",
-        # 'unit_price': f"{database_instance.unit_price} USD Per GB",
-        # # 'unit_price': f"{float(database_instance.unit_price) * 744} USD Per GB",
-        # 'unit_of_storage': database_instance.unit_of_storage,
-        # 'sku': database_instance.sku,
-        # 'provider': database_instance.provider.name,
-        # 'cloud_service': database_instance.cloud_service.service_type
-    }
+        if compute_service:
+
+            #Calculate the unit price based on the configuration.
+            unit_price = round(((float(compute_service.unit_price) * config["multiplier"]) * 744) + (config["ram_cost_per_unit"] * config["ram_cost_multiplier"] * 744))
+
+            #Update computed_data with the fetched details.
+            computed_data['compute'] = {
+                'name': name_override + config["name_override"],
+                'sku': compute_service.sku,
+                'unit_price': f"{unit_price} USD Monthly",
+            }
 
 #------------------------------------------------------------------------------------------------
 
@@ -476,8 +451,7 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     if cdn_connection == "Yes":
         computed_data['networking'] = {
             'name': "CDN",  
-            'SKU': "CDN-SKU",  
-            'unit_price': "| CDN Inbound: Free | CDN Outbound: < 10 TB Free |",  
+            'unit_price': "Varnish-Enterprise-6 for OCI",  
             }
         
     #---------------------DNS--------------------------    
@@ -507,7 +481,7 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
             computed_data['networking'] = {
                 'name': "CDN & DNS",
                 'sku': f" DNS:{dns_service.sku} CDN: N/A",
-                'unit_price': f"| DNS = {dns_service.unit_price} USD Per 1,000,000 queries |CDN Inbound: Free | CDN Outbound: < 10 TB Free |" 
+                'unit_price': f"| DNS = {dns_service.unit_price} USD Per 1,000,000 queries |CDN: Varnish-Enterprise-6 for OCI |" 
             }          
 
     
