@@ -1,8 +1,12 @@
 from rest_framework import viewsets
 import requests
+from azure.identity import DefaultAzureCredential
+from azure.mgmt.compute import ComputeManagementClient
+from azure.mgmt.resource import SubscriptionClient
 from rest_framework.response import Response
 from django.http import HttpResponse
 from databaseServer.models import Provider, CloudService, StorageSpecifications, NetworkingSpecifications, DatabaseSpecifications, ComputeSpecifications
+
 
 class ViewHello(viewsets.ViewSet):
 
@@ -10,15 +14,92 @@ class ViewHello(viewsets.ViewSet):
     def list(self, request):
         return Response("hello")
 
-# Azure compute fetch
+
 def compute_fetch_view(request):
+    # Get the Provider object for 'Azure'
+    azure_provider = Provider.objects.get(name='Azure')
+
+    # Get CloudService objects for 'Compute' type under 'Azure'
+    compute_services = CloudService.objects.filter(service_type='Compute', provider=azure_provider)
+
+    # Delete only ComputeSpecifications entries that are related to the 'Compute' CloudService under 'Azure'
+    ComputeSpecifications.objects.filter(cloud_service__in=compute_services).delete()
+
+    subscription_id = "677918b9-22da-46ac-abd1-1fb1807ebaef"  # Replace with your actual subscription ID
+    credential = DefaultAzureCredential()
+    compute_client = ComputeManagementClient(credential, subscription_id)
+    subscription_client = SubscriptionClient(credential)
+    prices_api_url = "https://prices.azure.com/api/retail/prices"
+
+    # Fetch retail prices
+    def get_retail_prices():
+        filter_query = "serviceName eq 'Virtual Machines'"
+        prices_response = requests.get(prices_api_url, params={'$filter': filter_query})
+        if prices_response.status_code == 200:
+            return {item['armSkuName']: item for item in prices_response.json()['Items']}
+        else:
+            raise Exception(f"Failed to fetch prices: {prices_response.status_code}")
+
+    supported_regions = [
+        'eastus', 'eastus2', 'westus', 'centralus', 'northcentralus', 'southcentralus',
+        'northeurope', 'westeurope', 'eastasia', 'southeastasia', 'japaneast', 'japanwest',
+        'australiaeast', 'australiasoutheast', 'australiacentral', 'brazilsouth',
+        'southindia', 'centralindia', 'westindia', 'canadacentral', 'canadaeast',
+        'westus2', 'westcentralus', 'uksouth', 'ukwest', 'koreacentral', 'koreasouth',
+        'francecentral', 'southafricanorth', 'uaenorth', 'switzerlandnorth',
+        'germanywestcentral', 'norwayeast', 'jioindiawest', 'westus3', 'swedencentral',
+        'qatarcentral', 'polandcentral', 'italynorth', 'israelcentral'
+    ]
+    regions = [location.name for location in subscription_client.subscriptions.list_locations(subscription_id)]
+    retail_prices = get_retail_prices()
+
+    provider, _ = Provider.objects.get_or_create(name="Azure")
+    cloud_service, _ = CloudService.objects.get_or_create(provider=provider, service_type="Compute", defaults={'description': 'Azure Compute Service'})
+
+    for region in regions:
+        if region not in supported_regions:
+            continue  # Skip unsupported regions
+
+        vm_sizes = compute_client.virtual_machine_sizes.list(location=region)
+        for vm_size in vm_sizes:
+            price_info = retail_prices.get(vm_size.name)
+
+            if price_info and 'retailPrice' in price_info:
+                unit_price = price_info['retailPrice']
+                monthly_price = round(unit_price * 730, 2)  # Assuming 730 hours in a month for price calculation
+
+                ComputeSpecifications.objects.update_or_create(
+                    sku=vm_size.name,
+                    defaults={
+                        'name': vm_size.name,
+                        'provider': provider,
+                        'cloud_service': cloud_service,
+                        'instance_type': vm_size.name,
+                        'operating_system': 'Not specified',  # Set your desired default value
+                        'cpu': str(vm_size.number_of_cores),
+                        'memory': f"{vm_size.memory_in_mb / 1024} GiB",
+                        'network_performance': 'Not specified',  # Set your desired default value
+                        'region': region,
+                        'unit_price': str(unit_price),
+                        'currency': 'USD',  # Assuming USD, change if necessary
+                        'price_monthly': str(monthly_price)
+                    }
+                )
+
     return HttpResponse("Data fetched and stored successfully")
 
 
 # Azure storage fetch
 def storage_fetch_view(request):
-     # Clear existing storage data from the database
-    StorageSpecifications.objects.all().delete()
+    # Get the Provider object for 'Azure'
+    azure_provider = Provider.objects.get(name='Azure')
+
+    # Get CloudService objects for 'Storage' type under 'Azure'
+    storage_services = CloudService.objects.filter(service_type='Storage', provider=azure_provider)
+
+    # Delete only StorageSpecifications entries that are related to the 'Storage' CloudService under 'Azure'
+    StorageSpecifications.objects.filter(cloud_service__in=storage_services).delete()
+
     api_url = "https://prices.azure.com/api/retail/prices"
     query_params = {
         '$filter': "serviceName eq 'Storage'",
@@ -55,8 +136,14 @@ def storage_fetch_view(request):
 
 # Azure networking fetch
 def networking_fetch_view(request):
-    # Clear existing networking data from the database
-    NetworkingSpecifications.objects.all().delete()
+    # Get the Provider object for 'Azure'
+    azure_provider = Provider.objects.get(name='Azure')
+
+    # Get CloudService objects for 'Networking' type under 'Azure'
+    networking_services = CloudService.objects.filter(service_type='Networking', provider=azure_provider)
+
+    # Delete only NetworkingSpecifications entries that are related to the 'Networking' CloudService under 'Azure'
+    NetworkingSpecifications.objects.filter(cloud_service__in=networking_services).delete()
 
     # Function to fetch Azure pricing data for a specific service name
     def fetch_azure_pricing(service_name):
@@ -118,8 +205,15 @@ def networking_fetch_view(request):
 
 # Azure database fetch
 def database_fetch_view(request):
-    # Clear existing database data from the database
-    DatabaseSpecifications.objects.all().delete()
+    # Get the Provider object for 'Azure'
+    azure_provider = Provider.objects.get(name='Azure')
+
+    # Get CloudService objects for 'Database' type under 'Azure'
+    database_services = CloudService.objects.filter(service_type='Database', provider=azure_provider)
+
+    # Delete only DatabaseSpecifications entries that are related to the 'Database' CloudService under 'Azure'
+    DatabaseSpecifications.objects.filter(cloud_service__in=database_services).delete()
+
 
     def fetch_azure_database_pricing(region='eastus'):
         api_url = "https://prices.azure.com/api/retail/prices"

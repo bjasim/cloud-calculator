@@ -15,15 +15,25 @@ def handle_advanced_form_submission(request):
         cloud_storage_Azure = form_data.get('cloudStorage')
         networking_feature_Azure = form_data.get('networkingFeature')
 
-        calculated_data = calculated_data_Azure(database_service_Azure, expected_cpu_Azure, cloud_storage_Azure, networking_feature_Azure)
-        calculated_data1 = calculated_data_Oracle(database_service_Azure, expected_cpu_Azure, cloud_storage_Azure, networking_feature_Azure)
+        azure_data = calculated_data_Oracle(database_service_Azure, expected_cpu_Azure, cloud_storage_Azure, networking_feature_Azure)
+        aws_data = calculated_data_Azure(database_service_Azure, expected_cpu_Azure, cloud_storage_Azure, networking_feature_Azure)
+        google_data = calculated_data_Azure(database_service_Azure, expected_cpu_Azure, cloud_storage_Azure, networking_feature_Azure)
+        Oracle_data = calculated_data_Azure(database_service_Azure, expected_cpu_Azure, cloud_storage_Azure, networking_feature_Azure)
 
-         # Merge the dictionaries
-        merged_data = {**calculated_data, **calculated_data1}
+        combined_data = {
+            'Azure': azure_data,
+            'AWS': aws_data,
+            'Google': google_data,
+            'Oracle': Oracle_data
+        }
 
-        print(calculated_data)
+        # print(calculated_data)
+        # # Return computed data as JSON response
+        # return JsonResponse(calculated_data)
+        print(combined_data)
         # Return computed data as JSON response
-        return JsonResponse(calculated_data)
+        return JsonResponse(combined_data)
+
     else:
         # Return HTTP 400 Bad Request for unsupported request methods
         return HttpResponseBadRequest("Unsupported request method")
@@ -39,11 +49,24 @@ def handle_basic_form_submission(request):
         cloud_storage_Azure = form_data.get('cloudStorage')
         networking_feature_Azure = form_data.get('networkingFeature')
 
-        calculated_data1 = calculated_data_Azure(database_service_Azure, expected_cpu_Azure, cloud_storage_Azure, networking_feature_Azure)
+        azure_data = calculated_data_Oracle(database_service_Azure, expected_cpu_Azure, cloud_storage_Azure, networking_feature_Azure)
+        aws_data = calculated_data_Azure(database_service_Azure, expected_cpu_Azure, cloud_storage_Azure, networking_feature_Azure)
+        google_data = calculated_data_Azure(database_service_Azure, expected_cpu_Azure, cloud_storage_Azure, networking_feature_Azure)
+        Oracle_data = calculated_data_Azure(database_service_Azure, expected_cpu_Azure, cloud_storage_Azure, networking_feature_Azure)
 
-        print(calculated_data1)
+        combined_data = {
+            'Azure': azure_data,
+            'AWS': aws_data,
+            'Google': google_data,
+            'Oracle': Oracle_data
+        }
+
+        # print(calculated_data)
+        # # Return computed data as JSON response
+        # return JsonResponse(calculated_data)
+        print(combined_data)
         # Return computed data as JSON response
-        return JsonResponse(calculated_data1)
+        return JsonResponse(combined_data)
     else:
         # Return error response if the request method is not POST
         return JsonResponse({'success': False, 'error': 'Only POST requests are allowed'})
