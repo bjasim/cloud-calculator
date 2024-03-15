@@ -53,6 +53,14 @@ sku_to_category = {
 
     #DNS 1,000,000 Queries
     'B88525': 'networking',
+    #North America, Europe, and UK Outbound per GB
+    'B88327': 'networking',
+    #APAC, Japan, and South America Outbound per GB
+    'B93455': 'networking',
+    #Middle East and Africa Outbound per GB
+    'B93456': 'networking',
+    #Load Balancer per hour
+    'B96485': 'networking',
 
     #NoSQL
     'B89739': 'database',
@@ -196,92 +204,88 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     # 6oCPU-48RAM
     # 8oCPU-64RAM
     #
-
-    # ------------------------- INCLUDE SCALABILITY IN NAME IF SELECTED ---------------------------------------------
-    #--------------------------MEDIUM DB = E4 compute-----------------------------
-    #--------------------------LARGE DB = E5 compute-------------------------------
-    
-    # #SKUs for OCPU and RAM (e3 standard)
-    # cpu_sku = "B93113"
-    # ram_sku = "B93114"
-
-    # # Initial multipliers for CPUs and RAMs based on expected configurations
-    # cpu_ram_configurations = {
-    #     "1vCPU": {"cpu_multiplier": 0, "ram_multiplier": 2},
-    #     "2vCPUs": {"cpu_multiplier": 0, "ram_multiplier": 4},
-    #     "4vCPUs": {"cpu_multiplier": 2, "ram_multiplier": 16},
-    #     "8vCPUs": {"cpu_multiplier": 4, "ram_multiplier": 32},
-    #     "12vCPUs": {"cpu_multiplier": 6, "ram_multiplier": 48},
-    #     "16vCPUs": {"cpu_multiplier": 8, "ram_multiplier": 64},
-    # }
-
-    # # Retrieve multipliers
-    # multipliers = cpu_ram_configurations.get(expected_cpu, None)
-    # if multipliers is None:
-    #     return None  # or handle error as appropriate
-
-    # # Assuming ComputeSpecifications and sku_mapping are defined
-    # # Retrieve the unit prices for CPU and RAM
-    # cpu_price = ComputeSpecifications.objects.filter(sku=cpu_sku).first().unit_price if multipliers["cpu_multiplier"] > 0 else 0
-    # ram_price = ComputeSpecifications.objects.filter(sku=ram_sku).first().unit_price
-
-    # # Calculate total cost
-    # total_cost = (cpu_price * multipliers["cpu_multiplier"]) + (ram_price * multipliers["ram_multiplier"])
-#------------------------------------------------------------------------------------------------
-
-#------------------------------------------------------------------------------------------------
-    ##COMPUTE
-    # sku = sku_mapping.get(expected_cpu)
-
  
+    #Multiply RAM and OCPU values 
+    # if expected_cpu:
+        # if expected_cpu == "1vCPU":
+        #             #[RAM] (B93114) * 2
+ 
+        # elif expected_cpu == "2vCPUs":
+        #             #[RAM] (B93114) * 4
 
-    # # Proceed only if a matching SKU was found
-    # if sku:
-
-    #     # Query for the storage instance based on the part number
-
-    #     compute_instance = ComputeSpecifications.objects.filter(sku=sku).first()
-    #     if compute_instance:
-
-            ##Multiply RAM and OCPU values 
-    #         if expected_cpu:
-                # if expected_cpu == "1vCPU":
-                #     #[RAM] (B93114) * 2
+        # elif expected_cpu == "4vCPUs":
+        #             #[RAM] (B93114) * 16
+        #             #[OCPU] (B93113) * 2
                     
-                # elif expected_cpu == "2vCPUs":
-                #     #[RAM] (B93114) * 4
-
-                # elif expected_cpu == "4vCPUs":
-                #     #[RAM] (B93114) * 16
-                #     #[OCPU] (B93113) * 2
+        # elif expected_cpu == "8vCPUs":
+        #             #[RAM] (B93114) * 32
+        #             #[OCPU] (B93113) * 4
                     
-                # elif expected_cpu == "8vCPUs":
-                #     #[RAM] (B93114) * 32
-                #     #[OCPU] (B93113) * 4
-                    
-                # elif expected_cpu == "12vCPUs":
-                #     #[RAM] (B93114) * 48
-                #     #[OCPU] (B93113) * 6
+        # elif expected_cpu == "12vCPUs":
+        #             #[RAM] (B93114) * 48
+        #             #[OCPU] (B93113) * 6
 
-                # elif expected_cpu == "16vCPUs":
-                #     #[RAM] (B93114) * 64
-                #     #[OCPU] (B93113) * 8
-                    
-            # compute_instance = ComputeSpecifications.objects.get(sku=compute_sku, provider__name='Oracle')
-            # # unit_price = float(compute_instance.unit_price) * 720 # Convert unit price to float
-            # compute_unit_price = float(compute_instance.unit_price)# Convert unit price to float
+        # elif expected_cpu == "16vCPUs":
+        #             #[RAM] (B93114) * 64
+        #             #[OCPU] (B93113) * 8
 
-            # computed_data['compute'] = {
-            #     'name': compute_instance.name,
-            #     'unit_price': compute_unit_price,
-            #     'cpu': compute_instance.cpu,
-            #     'memory': compute_instance.memory,
-            #     'sku': compute_instance.sku,
-            #     'provider': compute_instance.provider.name,
-            #     'cloud_service': compute_instance.cloud_service.service_type,
-            #     'description': compute_instance.description  # Assuming there's a description field
-            # }        
-#---------------------------------------------------------------------------------------------------- 
+   
+        # "cpu-E4": "B93113",
+        # "ram-E4": "B93114",
+        # "cpu-E5": "B97384",
+        # "ram-E5": "B97385",
+  
+
+    # Initial multipliers for CPUs and RAMs based on expected configurations
+    cpu_ram_configurations = {
+        "1vCPU": {"cpu_multiplier": 0, "ram_multiplier": 2},
+        "2vCPUs": {"cpu_multiplier": 0, "ram_multiplier": 4},
+        "4vCPUs": {"cpu_multiplier": 2, "ram_multiplier": 16},
+        "8vCPUs": {"cpu_multiplier": 4, "ram_multiplier": 32},
+        "12vCPUs": {"cpu_multiplier": 6, "ram_multiplier": 48},
+        "16vCPUs": {"cpu_multiplier": 8, "ram_multiplier": 64},
+    }
+
+    # Retrieve multipliers
+    multipliers = cpu_ram_configurations.get(expected_cpu, None)
+    if multipliers is None:
+        return None  # or handle error as appropriate
+
+    #E4 COMPUTE
+    cpu_sku = "B93113"
+    ram_sku = "B93114"
+
+    # Retrieve the unit prices for CPU and RAM
+    cpu_price = ComputeSpecifications.objects.filter(sku=cpu_sku).first().unit_price if multipliers["cpu_multiplier"] > 0 else 0
+    ram_price = ComputeSpecifications.objects.filter(sku=ram_sku).first().unit_price
+
+    # Calculate total cost
+    total_cost = (cpu_price * multipliers["cpu_multiplier"]) + (ram_price * multipliers["ram_multiplier"])
+
+    #MEDIUM DB = E4 compute
+    #LARGE DB = E5 compute
+
+    #IF SCALIABILITY IS SELECTED 
+    #Add auto scaling to name
+    #Add load balancer price: B96485 * 744 [MIGHT BE FREE]
+
+
+    computed_data['database'] = {
+
+        #
+        #OVERRIDE NAMES BASED OFF OF IF STATMENT, PRICE IS ALSO OVERRIDDEN BY THE CALCULATED RAM + CPU
+        #
+
+        # 'name': f"{name_override} - {location}",
+        # 'unit_price': f"{database_instance.unit_price} USD Per GB",
+        # # 'unit_price': f"{float(database_instance.unit_price) * 744} USD Per GB",
+        # 'unit_of_storage': database_instance.unit_of_storage,
+        # 'sku': database_instance.sku,
+        # 'provider': database_instance.provider.name,
+        # 'cloud_service': database_instance.cloud_service.service_type
+    }
+
+#------------------------------------------------------------------------------------------------
 
     #Question #3: DB Type
     #--Answer Options--:
@@ -342,6 +346,7 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
                     # CHANGE TO MONTHLY
 
                     'unit_price': f"{database_instance.unit_price} USD Per GB",
+                    # 'unit_price': f"{float(database_instance.unit_price) * 744} USD Per GB",
                     'unit_of_storage': database_instance.unit_of_storage,
                     'sku': database_instance.sku,
                     'provider': database_instance.provider.name,
@@ -438,26 +443,26 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     # Multiply Q5 by this answer
     #
 
-    #Question #7: DNS
+    #Question #7 & #8: DNS and CDN
     #--Answer Options--:
     #
     # Yes or no
     #
     #--Oracle Options--:
     #
-    # SKU: B88525 (say per 1,000,000 queries)
+    # DNS = SKU: B88525 (say per 1,000,000 queries)
     #
+    # CDN = Inbound: Free, Outbound: < 10 TB free (> 10tb depends on region)
+    #
+                
 
-    #Question #8: CDN
-    #--Answer Options--:
-    #
-    # Yes or no
-    #
-    #--Oracle Options--:
-    #
-    # Inbound: Free
-    # Outbound: < 10 TB free 
-    #
+#ADD OUT BOUND CDN PER GB DATA DEPENDING ON LOCATION SELECTED BY USER
+#
+#   North America, Europe, and UK = B88327
+#   APAC, Japan, and South America = B93455
+#   Middle East and Africa = B93456
+#
+
     #-----------------------CDN-------------------------            
     computed_data['networking'] = {
         'name': "",  # Name set to "CDN" to indicate the service being considered
@@ -631,129 +636,3 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     # computed_data['annual'] = plan_annual_price
 
     return computed_data
-
-# ======================== Third Party Components ========================
-# certifi
-# * Copyright 2022, Kenneth Reitz
-# * License: Mozilla Public License 2.0 (MPL 2.0)
-# * Source code: https://github.com/certifi/python-certifi
-# * Project home: https://certifi.io
-
-# cryptography
-# * Copyright (c) Individual contributors.
-# * License: Apache License, BSD License, PSF License
-# * Source code: https://github.com/pyca/cryptography
-# * Project home: https://github.com/pyca/cryptography
-
-# pyOpenSSL
-# * Copyright 2001 The pyOpenSSL developers
-# * License: Apache License 2.0
-# * Source code: https://github.com/pyca/pyopenssl
-# * Project home: https://www.pyopenssl.org/
-
-# python-dateutil
-# * Copyright 2017- Paul Ganssle <paul@ganssle.io> 2017- dateutil contributors (see AUTHORS file)
-# * License: Apache License 2.0
-# * Source code: https://github.com/dateutil/dateutil
-# * Project home: https://dateutil.readthedocs.io/
-
-# pytz
-# * Copyright (c) 2003-2019 Stuart Bishop <stuart@stuartbishop.net>
-# * License: The MIT License (MIT)
-# * Source code: https://github.com/stub42/pytz
-# * Project home: https://pythonhosted.org/pytz
-
-# six
-# * Copyright (c) 2010-2020 Benjamin Peterson
-# * License: The MIT License (MIT)
-# * Source code: https://github.com/benjaminp/six
-# * Project home: https://github.com/benjaminp/six
-
-# vendorize
-# * Copyright (c) 2015, Michael Williamson All rights reserved
-# * License: BSD 2-Clause "Simplified" License
-# * Source code: https://github.com/mwilliamson/python-vendorize
-# * Project home: https://github.com/mwilliamson/python-vendorize
-
-# chardet
-# * Copyright 2015, Mark Pilgrim, Dan Blanchard, Ian Cordasco
-# * License: GNU Lesser General Public License v2.1
-# * Source code: https://github.com/chardet/chardet
-# * Project home: https://github.com/chardet/chardet
-
-# httpsig_cffi
-# * Copyright (c) 2014 Adam Knight 2012 Adam T. Lindsay (original author)
-# * License: The MIT License (MIT)
-# * Source code: https://github.com/hawkowl/httpsig_cffi
-# * Project home: https://github.com/hawkowl/httpsig_cffi
-
-# idna
-# * Copyright (c) 2013-2021, Kim Davies All rights reserved
-# * License: BSD 3-Clause "New" or "Revised" License
-# * Source code: https://github.com/kjd/idna
-# * Project home: https://github.com/kjd/idna
-
-# jwt
-# * Copyright 2017 Gehirn Inc
-# * License: Apache License 2.0
-# * Source code: https://github.com/GehirnInc/python-jwt
-# * Project home: https://github.com/GehirnInc/python-jwt
-
-# requests
-# * Copyright 2019 Kenneth Reitz
-# * License: Apache License 2.0
-# * Source code: https://github.com/psf/requests
-# * Project home: https://requests.readthedocs.io
-
-# urllib3
-# * Copyright (c) 2008-2020 Andrey Petrov and contributors (see CONTRIBUTORS.txt)
-# * License: MIT License
-# * Source code: https://github.com/urllib3/urllib3
-# * Project home: https://urllib3.readthedocs.io
-
-# circuitbreaker
-# * Copyright (c) 2016-2020, Fabian Fuelling opensource@fabfuel.de. All rights reserved.
-# * License: MIT License
-# * Source code: https://github.com/fabfuel/circuitbreaker
-# * Project home: https://pypi.org/project/circuitbreaker
-
-# pycparser
-# * Copyright (c) 2008-2020, Eli Bendersky All rights reserved.
-# * License: BSD-3-Clause New License
-# * Source code: https://github.com/eliben/pycparser
-# * Project home: https://pypi.org/project/pycparser
-
-# cffi
-# * Copyright (C) 2005-2007, James Bielman  <jamesjb@jamesjb.com>
-# * License: The MIT License
-# * Source code: https://pypi.org/project/cffi/#files
-# * Project home: https://cffi.readthedocs.io/en/latest
-
-# sseclient
-# * Copyright 2024 Maxime Petazzoni maxime.petazzoni@bulix.org
-# * License: Apache License 2.0
-# * Source code: https://github.com/mpetazzoni/sseclient
-# * Project home: https://github.com/mpetazzoni/sseclient
-
-# =============================== Licenses ===============================
-
-# ------------------------------ MIT License -----------------------------
-
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to
-# deal in the Software without restriction, including without limitation the
-# rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
-# sell copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-# IN THE SOFTWARE.
-# ------------------------------------------------------------------------
