@@ -70,7 +70,9 @@ sku_to_category = {
     'B92426': 'database',
 }
 
+#Specific Pricing data retrieved in JSON file from Oracle product Api.
 def get_oracle_pricing(request):
+
     url = "https://apexapps.oracle.com/pls/apex/cetools/api/v1/products/"
     try:
         response = requests.get(url)
@@ -167,7 +169,7 @@ def get_oracle_pricing(request):
         logger.error(f"An unexpected error occurred: {e}")
         return HttpResponse(f"An unexpected error occurred: {e}", status=500)
 
-# Create your views here.
+#Handles form submission for Oracle.
 def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location):
     computed_data = {'provider': 'Oracle',}
 
@@ -236,7 +238,7 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
         # "ram-E5": "B97385",
   
 
-    # Initial multipliers for CPUs and RAMs based on expected configurations
+    #Initial multipliers for CPUs and RAMs based on expected configurations
     cpu_ram_configurations = {
         "1vCPU": {"cpu_multiplier": 0, "ram_multiplier": 2},
         "2vCPUs": {"cpu_multiplier": 0, "ram_multiplier": 4},
@@ -246,20 +248,20 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
         "16vCPUs": {"cpu_multiplier": 8, "ram_multiplier": 64},
     }
 
-    # Retrieve multipliers
+    #Retrieve multipliers
     multipliers = cpu_ram_configurations.get(expected_cpu, None)
     if multipliers is None:
-        return None  # or handle error as appropriate
+        return None 
 
     #E4 COMPUTE
     cpu_sku = "B93113"
     ram_sku = "B93114"
 
-    # Retrieve the unit prices for CPU and RAM
+    #Retrieve the unit prices for CPU and RAM
     cpu_price = ComputeSpecifications.objects.filter(sku=cpu_sku).first().unit_price if multipliers["cpu_multiplier"] > 0 else 0
     ram_price = ComputeSpecifications.objects.filter(sku=ram_sku).first().unit_price
 
-    # Calculate total cost
+    #Calculate total cost
     total_cost = (cpu_price * multipliers["cpu_multiplier"]) + (ram_price * multipliers["ram_multiplier"])
 
     #MEDIUM DB = E4 compute
@@ -273,7 +275,7 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     computed_data['database'] = {
 
         #
-        #OVERRIDE NAMES BASED OFF OF IF STATMENT, PRICE IS ALSO OVERRIDDEN BY THE CALCULATED RAM + CPU
+        #OVERRIDE NAMES BASED OFF OF IF STATEMENT, PRICE IS ALSO OVERRIDDEN BY THE CALCULATED RAM + CPU
         #
 
         # 'name': f"{name_override} - {location}",
@@ -302,11 +304,10 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     # SQL = B92426
     # " "
     #
-    # Check for the "No Storage" option first
+    #Check for the "No Storage" option first.
     if database_service == "noDatabase":
         computed_data['database'] = {
-            'name': "No Database",  # Set name to "No Storage"
-            # Set other fields to None or appropriate defaults
+            'name': "No Database",
             'unit_price': "N/A",
             'unit_of_storage': None,
             'sku': "N/A",
@@ -314,23 +315,24 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
             'cloud_service': None
         }
     else:
-        # Map cloud storage types to their corresponding SKU
+        #Map cloud storage types to their corresponding SKU.
         sku_mapping = {
             "noSQL": "B89739",
             "postgreSQL": "B99062",
             "sql": "B92426",
         }
 
-        # Get the SKU for the current cloud_storage type
+        #Get the SKU for the current cloud_storage type.
         sku = sku_mapping.get(database_service)
 
-        # Proceed only if a matching SKU was found
+        #Proceed only if a matching SKU was found.
         if sku:
-            # Query for the storage instance based on the part number
+
+            #Query for the storage instance based on the part number.
             database_instance = DatabaseSpecifications.objects.filter(sku=sku).first()
             if database_instance:
 
-                #change names
+                #Change names
                 if sku == "B89739":
                     name_override = "Oracle NoSQL"
                 elif sku == "B99062":
@@ -342,11 +344,11 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
 
                 computed_data['database'] = {
                     'name': f"{name_override} - {location}",
-
-                    # CHANGE TO MONTHLY
-
                     'unit_price': f"{database_instance.unit_price} USD Per GB",
+
+                    #Change to multiply by database_size.
                     # 'unit_price': f"{float(database_instance.unit_price) * 744} USD Per GB",
+
                     'unit_of_storage': database_instance.unit_of_storage,
                     'sku': database_instance.sku,
                     'provider': database_instance.provider.name,
@@ -356,7 +358,7 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     #Question #4: DB Size
     #--Answer Options--:
     #
-    # small
+    # small 
     # med
     # large
     # v large
@@ -380,11 +382,10 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     # File: B89057
     # Block: B91961
     # 
-        # Check for the "No Storage" option first
+    #Check for the "No Storage" option first
     if cloud_storage == "No Storage":
         computed_data['storage'] = {
-            'name': "No Storage",  # Set name to "No Storage"
-            # Set other fields to None or appropriate defaults
+            'name': "No Storage",
             'unit_price': "N/A",
             'unit_of_storage': None,
             'sku': "N/A",
@@ -392,19 +393,19 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
             'cloud_service': None
         }
     else:
-        # Map cloud storage types to their corresponding SKU
+        #Map cloud storage types to their corresponding SKU
         sku_mapping = {
             "Object Storage": "B91628",
             "Block Storage": "B91961",
             "File Storage": "B89057",
         }
 
-        # Get the SKU for the current cloud_storage type
+        #Get the SKU for the current cloud_storage type
         sku = sku_mapping.get(cloud_storage)
 
-        # Proceed only if a matching SKU was found
+        #Proceed only if a matching SKU was found
         if sku:
-            # Query for the storage instance based on the part number
+            #Query for the storage instance based on the part number
             storage_instance = StorageSpecifications.objects.filter(sku=sku).first()
             if storage_instance:
 
@@ -421,7 +422,8 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
                 computed_data['storage'] = {
                     'name': f"{name_override} - {location}",
 
-                    #CHANGE TO MONTHLY PRICE
+                    #Change to multiply by storage_size.
+                    # 'unit_price': f"{float(storage_instance.unit_price) * 744} USD Monthly",
 
                     'unit_price': f"{storage_instance.unit_price} USD Per GB",
                     'unit_of_storage': storage_instance.unit_of_storage,
@@ -465,46 +467,47 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
 
     #-----------------------CDN-------------------------            
     computed_data['networking'] = {
-        'name': "",  # Name set to "CDN" to indicate the service being considered
-        'SKU': "",   # Initialize SKU as "N/A"; will remain if CDN is not enabled
-        'unit_price': "",  # Initialize a placeholder for unit price
+        'name': "", 
+        'SKU': "", 
+        'unit_price': "", 
         
     }
-    # Check if the CDN option is enabled by the user
+    #Check if the CDN option is enabled by the user.
     if cdn_connection == "Yes":
         computed_data['networking'] = {
-            'name': "CDN",  # Confirm the service name as "CDN"
-            'SKU': "CDN-SKU",  # Update with a specific SKU if available/applicable
-            'unit_price': "| CDN Inbound: Free | CDN Outbound: < 10 TB Free |",  # Update this as per your CDN pricing model
+            'name': "CDN",  
+            'SKU': "CDN-SKU",  
+            'unit_price': "| CDN Inbound: Free | CDN Outbound: < 10 TB Free |",  
             }
         
     #---------------------DNS--------------------------    
     if dns_connection == "Yes":
-        # Fetch DNS service details from the database
-        # Assuming DNSSpecifications is your model name and it contains the DNS service details
-        dns_service = NetworkingSpecifications.objects.first()  # Adjust the query as needed to get the correct DNS service details
+
+        #Fetch DNS service details from the database.
+        dns_service = NetworkingSpecifications.objects.first()
         
         if dns_service:
-            # Update the DNS section within the networking part of computed_data with the fetched details
+            
+            #Update the DNS section within the networking part of computed_data with the fetched details.
             computed_data['networking'] = {
                 'name': "DNS",
-                'sku': dns_service.sku,  # Use the SKU from the database
-                'unit_price': f"| {dns_service.unit_price} USD Per 1,000,000 queries"  # Use the unit price from the database
+                'sku': dns_service.sku,
+                'unit_price': f"| {dns_service.unit_price} USD Per 1,000,000 queries"
             }          
 
     #-----------------IF DNS AND CDN SELECTED---------------------------------------
     if dns_connection == "Yes" and cdn_connection == "Yes":
 
-        # Fetch DNS service details from the database
-        # Assuming DNSSpecifications is your model name and it contains the DNS service details
-        dns_service = NetworkingSpecifications.objects.first()  # Adjust the query as needed to get the correct DNS service details
+        #Fetch DNS service details from the database.
+        dns_service = NetworkingSpecifications.objects.first()
         
         if dns_service:
-            # Update the DNS section within the networking part of computed_data with the fetched details
+
+            #Update the DNS section within the networking part of computed_data with the fetched details.
             computed_data['networking'] = {
                 'name': "CDN & DNS",
-                'sku': f" DNS:{dns_service.sku} CDN: N/A",  # Use the SKU from the database
-                'unit_price': f"| DNS = {dns_service.unit_price} USD Per 1,000,000 queries | CDN Inbound: Free | CDN Outbound: < 10 TB Free |"  # Use the unit price from the database
+                'sku': f" DNS:{dns_service.sku} CDN: N/A",
+                'unit_price': f"| DNS = {dns_service.unit_price} USD Per 1,000,000 queries |CDN Inbound: Free | CDN Outbound: < 10 TB Free |" 
             }          
 
     
