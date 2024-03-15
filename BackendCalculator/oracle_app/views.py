@@ -253,13 +253,13 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
         if compute_service:
 
             #Calculate the unit price based on the configuration.
-            unit_price = round(((float(compute_service.unit_price) * config["multiplier"]) * 744) + (config["ram_cost_per_unit"] * config["ram_cost_multiplier"] * 744))
+            compute_total_price = round(((float(compute_service.unit_price) * config["multiplier"]) * 744) + (config["ram_cost_per_unit"] * config["ram_cost_multiplier"] * 744))
 
             #Update computed_data with the fetched details.
             computed_data['compute'] = {
-                'name': name_override + config["name_override"],
-                'sku': compute_service.sku,
-                'unit_price': f"{unit_price} USD Monthly",
+                'name': f"{name_override + config["name_override"]} - {location}",
+                'sku': f"{compute_service.sku}CPU - {ram_sku}RAM",
+                'unit_price': f"{compute_total_price} USD Monthly",
             }
 
 #------------------------------------------------------------------------------------------------
@@ -317,13 +317,19 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
                 else:
                     name_override = database_instance.name
 
+                #DB Size
+                if database_size == "small":
+                    db_size = 10
+                elif database_size == "medium":
+                    db_size = 100
+                elif database_size == "large":
+                    db_size = 1000
+
+                database_total_price = round(float(database_instance.unit_price) * db_size)
+
                 computed_data['database'] = {
-                    'name': f"{name_override} - {location}",
-                    'unit_price': f"{database_instance.unit_price} USD Per GB",
-
-                    #Change to multiply by database_size.
-                    # 'unit_price': f"{float(database_instance.unit_price) * 744} USD Per GB",
-
+                    'name': f"{name_override} - {db_size}GB - {location}",
+                    'unit_price': f"{database_total_price} USD Monthly",
                     'unit_of_storage': database_instance.unit_of_storage,
                     'sku': database_instance.sku,
                     'provider': database_instance.provider.name,
@@ -384,7 +390,7 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
             storage_instance = StorageSpecifications.objects.filter(sku=sku).first()
             if storage_instance:
 
-                #Change names
+                #Change names.
                 if sku == "B91628":
                     name_override = "Object Storage"
                 elif sku == "B89057":
@@ -394,13 +400,23 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
                 else:
                     name_override = storage_instance.name
 
+                #Storage Size.
+                if database_size == "small":
+                    st_size = 1000
+                    st_name = "1TB"
+                elif database_size == "medium":
+                    st_size = 10000
+                    st_name = "10TB"
+                elif database_size == "large":
+                    st_size = 100000
+                    st_name = "100TB"
+
+                storage_total_price = round(float(storage_instance.unit_price) * st_size)
+
+                #Display to frontend.
                 computed_data['storage'] = {
-                    'name': f"{name_override} - {location}",
-
-                    #Change to multiply by storage_size.
-                    # 'unit_price': f"{float(storage_instance.unit_price) * 744} USD Monthly",
-
-                    'unit_price': f"{storage_instance.unit_price} USD Per GB",
+                    'name': f"{name_override} - {st_name} - {location}",
+                    'unit_price': f"{storage_total_price} USD Monthly",
                     'unit_of_storage': storage_instance.unit_of_storage,
                     'sku': storage_instance.sku,
                     'provider': storage_instance.provider.name,
@@ -482,7 +498,7 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
             computed_data['networking'] = {
                 'name': "CDN & DNS",
                 'sku': f" DNS:{dns_service.sku} CDN: Varnish-Enterprise-6",
-                'unit_price': f"| DNS = {dns_service.unit_price} USD Per 1,000,000 queries |CDN: OCI Marketplace|" 
+                'unit_price': f"| DNS = {dns_service.unit_price} USD Per 1,000,000 queries | CDN = OCI Marketplace |" 
             }          
 
     
@@ -603,14 +619,13 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     # Enter region but NO difference in price
     #
 
-    # plan_monthly_price = compute_total_price + storage_unit_price + total_db_price
-    # # plan_monthly_price = compute_total_price + storage_unit_price
+    plan_monthly_price = compute_total_price + storage_total_price + database_total_price
 
-    # plan_annual_price = float(plan_monthly_price) * 12
-    # print("Total Monthly Plan Cost: ", plan_monthly_price)
-    # print("Total Monthly Plan Cost: ", plan_annual_price)
+    plan_annual_price = round(float(plan_monthly_price) * 12)
+    print("Total Monthly Plan Cost: ", plan_monthly_price)
+    print("Total Monthly Plan Cost: ", plan_annual_price)
 
-    # computed_data['monthly'] = plan_monthly_price
-    # computed_data['annual'] = plan_annual_price
+    computed_data['monthly'] = plan_monthly_price
+    computed_data['annual'] = plan_annual_price
 
     return computed_data
