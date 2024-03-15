@@ -232,12 +232,12 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
         #Check database size and select compute instance based off that.
         if database_size in ["small", "medium"]:
             compute_sku = "B93113"
-            name_override = "Compute - Standard - E4 - "  
+            name_override = "AMD - Standard - E4 - "  
             ram_sku = "B93114"
 
         elif database_size == "large":
             compute_sku = "B97384"
-            name_override = "Compute - Standard - E5 - "
+            name_override = "AMD - Standard - E5 - "
             ram_sku = "B97385"
 
 
@@ -451,7 +451,8 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     if cdn_connection == "Yes":
         computed_data['networking'] = {
             'name': "CDN",  
-            'unit_price': "Varnish-Enterprise-6 for OCI",  
+            'sku': "Varnish-Enterprise-6 for OCI",
+            'unit_price': "OCI Marketplace",  
             }
         
     #---------------------DNS--------------------------    
@@ -480,8 +481,8 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
             #Update the DNS section within the networking part of computed_data with the fetched details.
             computed_data['networking'] = {
                 'name': "CDN & DNS",
-                'sku': f" DNS:{dns_service.sku} CDN: N/A",
-                'unit_price': f"| DNS = {dns_service.unit_price} USD Per 1,000,000 queries |CDN: Varnish-Enterprise-6 for OCI |" 
+                'sku': f" DNS:{dns_service.sku} CDN: Varnish-Enterprise-6",
+                'unit_price': f"| DNS = {dns_service.unit_price} USD Per 1,000,000 queries |CDN: OCI Marketplace|" 
             }          
 
     
