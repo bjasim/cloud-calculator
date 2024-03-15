@@ -206,11 +206,6 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     # 6oCPU-48RAM
     # 8oCPU-64RAM
     #
- 
-
-    # #IF SCALIABILITY IS SELECTED 
-    # #Add auto scaling to name
-    # #Add load balancer price: B96485 * 744 [MIGHT BE FREE]
 
     #Configuration for compute types.
     cpu_configurations = {
@@ -228,18 +223,22 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
 
         #Initialize
         name_override = ""  
+        name_scalability = ""
+
+        # Check if scalability is essential and modify name_override accordingly
+        if scalability == "essential":
+            name_scalability = "Auto-scaling & Load-balancer"
 
         #Check database size and select compute instance based off that.
         if database_size in ["small", "medium"]:
             compute_sku = "B93113"
-            name_override = "AMD - Standard - E4 - "  
+            name_override = "AMD Standard E4 - "  
             ram_sku = "B93114"
 
         elif database_size == "large":
             compute_sku = "B97384"
-            name_override = "AMD - Standard - E5 - "
+            name_override = "AMD Standard E5 - "
             ram_sku = "B97385"
-
 
         #Fetch RAM pricing details using the selected RAM SKU.
         ram_service = ComputeSpecifications.objects.filter(sku=ram_sku).first()
@@ -257,8 +256,8 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
 
             #Update computed_data with the fetched details.
             computed_data['compute'] = {
-                'name': f"{name_override + config["name_override"]} - {location}",
-                'sku': f"{compute_service.sku}CPU - {ram_sku}RAM",
+                'name': f"{name_override + config["name_override"]} - {name_scalability} - {location}",
+                'sku': f"{compute_service.sku} CPU - {ram_sku} RAM",
                 'unit_price': f"{compute_total_price} USD Monthly",
             }
 
@@ -401,13 +400,13 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
                     name_override = storage_instance.name
 
                 #Storage Size.
-                if database_size == "small":
+                if storage_size == "small":
                     st_size = 1000
                     st_name = "1TB"
-                elif database_size == "medium":
+                elif storage_size == "medium":
                     st_size = 10000
                     st_name = "10TB"
-                elif database_size == "large":
+                elif storage_size == "large":
                     st_size = 100000
                     st_name = "100TB"
 
@@ -490,7 +489,7 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     if dns_connection == "Yes" and cdn_connection == "Yes":
 
         #Fetch DNS service details from the database.
-        dns_service = NetworkingSpecifications.objects.first()
+        dns_service = NetworkingSpecifications.objects.filter(sku="B88525").first()
         
         if dns_service:
 
@@ -620,6 +619,7 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     #
 
     plan_monthly_price = compute_total_price + storage_total_price + database_total_price
+    # plan_monthly_price = compute_total_price + storage_unit_price
 
     plan_annual_price = round(float(plan_monthly_price) * 12)
     print("Total Monthly Plan Cost: ", plan_monthly_price)
