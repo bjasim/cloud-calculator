@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import CircularProgress from "@mui/material/CircularProgress";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -15,7 +16,7 @@ import {
 
 const BasicForm = () => {
   const navigate = useNavigate(); // Initialize navigate function
-
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     computeComplexity: "",
     networkReliability: "",
@@ -59,7 +60,9 @@ const BasicForm = () => {
       }
     });
     setValidationErrors(newValidationErrors);
+
     if (isValid) {
+      setLoading(true); // Start loading before the request
       try {
         const response = await fetch("http://localhost:8000/api/submit-basic-form/", {
           method: "POST",
@@ -69,16 +72,24 @@ const BasicForm = () => {
           body: JSON.stringify(formData),
         });
         if (response.ok) {
-          // Handle success
           console.log("Form data submitted successfully");
-          // Redirect to /results URL upon successful form submission
-          navigate("/results"); // Redirect to /results on successful form submission
+          // Handle success
+          const responseData = await response.json(); // Parse response body as JSON
+          console.log("Response from backend:", responseData); // Print the response
+
+          // Delay 5 seconds before navigating to the results page
+          setTimeout(() => {
+            setLoading(false); // Stop loading after the response
+            navigate("/results", { state: { responseData } });
+          }, 3000);
         } else {
           // Handle error
           console.error("Failed to submit form data");
+          setLoading(false); // Stop loading on error
         }
       } catch (error) {
         console.error("Error submitting form data:", error);
+        setLoading(false); // Stop loading on exception
       }
     }
   };
@@ -272,10 +283,13 @@ const BasicForm = () => {
 
             {/* Submit Button */}
             <Grid item xs={10}>
-              <Box mt={3} textAlign="center">
-                <Button variant="contained" color="primary" type="submit">
+              <Box mt={3} textAlign="center" position="relative">
+                <Button variant="contained" color="primary" type="submit" disabled={loading}>
                   Calculate
                 </Button>
+                {loading && (
+                  <CircularProgress size={24} style={{ position: "absolute", top: "5px" }} />
+                )}
               </Box>
             </Grid>
           </Grid>

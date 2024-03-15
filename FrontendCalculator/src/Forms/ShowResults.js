@@ -55,7 +55,7 @@ const RecommendedPlans = ({ responseData }) => {
           return (
             <Card
               key={index}
-              sx={{ maxWidth: 345, m: 2, display: "flex", flexDirection: "column" }}
+              sx={{ maxWidth: 305, m: 2, display: "flex", flexDirection: "column" }}
             >
               <Box
                 sx={{

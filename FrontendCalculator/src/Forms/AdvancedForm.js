@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
+import CircularProgress from "@mui/material/CircularProgress";
 import {
   Box,
   Button,
@@ -15,7 +16,7 @@ import {
 
 const AdvancedForm = () => {
   const navigate = useNavigate(); // Initialize navigate function
-
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     businessSize: "",
     expectedUsers: "",
@@ -66,18 +67,14 @@ const AdvancedForm = () => {
       if (value === "") {
         isValid = false;
         newValidationErrors[key] = true;
-        setTimeout(() => {
-          setValidationErrors((prevErrors) => ({
-            ...prevErrors,
-            [key]: false,
-          }));
-        }, 3000); // Clear error after 3 seconds
       } else {
         newValidationErrors[key] = false;
       }
     });
     setValidationErrors(newValidationErrors);
+
     if (isValid) {
+      setLoading(true); // Start loading before the request
       try {
         const response = await fetch("http://localhost:8000/api/submit-advanced-form/", {
           method: "POST",
@@ -91,13 +88,19 @@ const AdvancedForm = () => {
           // Handle success
           const responseData = await response.json(); // Parse response body as JSON
           console.log("Response from backend:", responseData); // Print the response
-          navigate("/results", { state: { responseData } });
+
+          setTimeout(() => {
+            setLoading(false); // Stop loading after delay
+            navigate("/results", { state: { responseData } });
+          }, 3000); // Delay 5 seconds before navigating
         } else {
           // Handle error
           console.error("Failed to submit form data");
+          setLoading(false); // Stop loading on error
         }
       } catch (error) {
         console.error("Error submitting form data:", error);
+        setLoading(false); // Stop loading on exception
       }
     }
   };
@@ -421,10 +424,13 @@ const AdvancedForm = () => {
             </Grid>
             {/* Submit Button */}
             <Grid item xs={12}>
-              <Box mt={3} textAlign="center">
-                <Button variant="contained" color="primary" type="submit">
+              <Box mt={3} textAlign="center" position="relative">
+                <Button variant="contained" color="primary" type="submit" disabled={loading}>
                   Calculate
                 </Button>
+                {loading && (
+                  <CircularProgress size={24} style={{ position: "absolute", top: "5px" }} />
+                )}
               </Box>
             </Grid>
           </Grid>
