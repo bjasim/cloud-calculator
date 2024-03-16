@@ -1484,10 +1484,10 @@ def calculated_data_AWS(monthly_budget, expected_cpu, database_service, database
 
 #     computed_data['monthly'] = plan_monthly_price
 #     computed_data['annual'] = plan_annual_price
-def calculated_data_AWS_basic(computeComplexity, dataStorageType, databaseService, monthlyBudget, expectedUsers, dnsFeature, cdnNetworking, region):
+def calculated_data_AWS_basic(compute_complexity, expected_users, data_storage_type, database_service, dns_feature, cdn_networking, region):
     computed_data = {'provider': 'AWS',}  # Initialize dictionary to store computed data
    
-    if computeComplexity:
+    if compute_complexity:
         try:
             # compute_instance = ComputeSpecifications.objects.get(sku=compute_sku, provider__name='AWS')
             # # unit_price = float(compute_instance.unit_price) * 720 # Convert unit price to float
@@ -1512,7 +1512,7 @@ def calculated_data_AWS_basic(computeComplexity, dataStorageType, databaseServic
         except ComputeSpecifications.DoesNotExist:
             computed_data['compute'] = 'No compute instance found for SKU 3DG6WFZ5QW4JAAHJ.'
             
-    if dataStorageType:
+    if data_storage_type:
         try:
             # compute_instance = ComputeSpecifications.objects.get(sku=compute_sku, provider__name='AWS')
             # # unit_price = float(compute_instance.unit_price) * 720 # Convert unit price to float

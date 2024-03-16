@@ -5,10 +5,15 @@ import json
 from azure_app.views import calculated_data_Azure
 from aws_app.views import calculated_data_AWS
 from aws_app.views import calculated_data_AWS_basic
+from azure_app.views import calculated_data_Azure_basic
+
 
 from google_app.views import calculated_data_Google
 from oracle_app.views import calculated_data_Oracle
+from oracle_app.views import calculated_data_Oracle
 
+# from azure_app.views import calculated_data_Azure
+#calculated_data_Oracle
 
 
 @csrf_exempt
@@ -59,26 +64,32 @@ def handle_basic_form_submission(request):
         form_data = json.loads(request.body)
         print("Received form data:", form_data)
         
-        computeComplexity = form_data.get('computeComplexity')
-        dataStorageType = form_data.get('dataStorageType')
-        databaseService = form_data.get('databaseService')
-        monthlyBudget = form_data.get('monthlyBudget')
-        expectedUsers = form_data.get('expectedUsers')
-        dnsFeature = form_data.get('dnsFeature')
-        cdnNetworking = form_data.get('cdnNetworking')
+        compute_complexity = form_data.get('computeComplexity')
+        expected_users = form_data.get('expectedUsers')  # Assuming the CPU field stores RAM information
+        data_storage_type = form_data.get('dataStorageType')
+        database_service = form_data.get('databaseService')        
+        dns_feature = form_data.get('dnsFeature')
+        cdn_networking = form_data.get('cdnNetworking')
         region = form_data.get('region')
         
-        aws_data_basic = calculated_data_AWS_basic(computeComplexity, dataStorageType, databaseService, monthlyBudget, expectedUsers, dnsFeature, cdnNetworking, region)
+        azure_data = calculated_data_Azure_basic(compute_complexity, expected_users, data_storage_type, database_service, dns_feature, cdn_networking, region)
+        aws_data = calculated_data_AWS_basic(compute_complexity, expected_users, data_storage_type, database_service, dns_feature, cdn_networking, region)
+        google_data = calculated_data_Azure_basic(compute_complexity, expected_users, data_storage_type, database_service, dns_feature, cdn_networking, region)
+        Oracle_data = calculated_data_Azure_basic(compute_complexity, expected_users, data_storage_type, database_service, dns_feature, cdn_networking, region)
 
-        print(aws_data_basic)
+        combined_data = {
+            'Azure': azure_data,
+            'AWS': aws_data,
+            'Google': google_data,
+            'Oracle': Oracle_data
+        }
+
+        # print(calculated_data)
+        # # Return computed data as JSON response
+        # return JsonResponse(calculated_data)
+        print(combined_data)
         # Return computed data as JSON response
-        return JsonResponse(aws_data_basic)
-
-        # Print form data to console
-        # print("Received form data:", form_data)
-
-        # # Return success response
-        # return JsonResponse({'success': True})
+        return JsonResponse(combined_data)
     else:
         # Return error response if the request method is not POST
         return JsonResponse({'success': False, 'error': 'Only POST requests are allowed'})

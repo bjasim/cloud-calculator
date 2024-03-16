@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
+import CircularProgress from "@mui/material/CircularProgress";
 import {
   Box,
   Button,
@@ -15,7 +16,7 @@ import {
 
 const AdvancedForm = () => {
   const navigate = useNavigate(); // Initialize navigate function
-
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     // businessSize: "",
     // expectedUsers: "",
@@ -68,18 +69,14 @@ const AdvancedForm = () => {
       if (value === "") {
         isValid = false;
         newValidationErrors[key] = true;
-        setTimeout(() => {
-          setValidationErrors((prevErrors) => ({
-            ...prevErrors,
-            [key]: false,
-          }));
-        }, 3000); // Clear error after 3 seconds
       } else {
         newValidationErrors[key] = false;
       }
     });
     setValidationErrors(newValidationErrors);
+
     if (isValid) {
+      setLoading(true); // Start loading before the request
       try {
         const response = await fetch("http://localhost:8000/api/submit-advanced-form/", {
           method: "POST",
@@ -93,13 +90,19 @@ const AdvancedForm = () => {
           // Handle success
           const responseData = await response.json(); // Parse response body as JSON
           console.log("Response from backend:", responseData); // Print the response
-          navigate("/results", { state: { responseData } });
+
+          setTimeout(() => {
+            setLoading(false); // Stop loading after delay
+            navigate("/results", { state: { responseData } });
+          }, 3000); // Delay 5 seconds before navigating
         } else {
           // Handle error
           console.error("Failed to submit form data");
+          setLoading(false); // Stop loading on error
         }
       } catch (error) {
         console.error("Error submitting form data:", error);
+        setLoading(false); // Stop loading on exception
       }
     }
   };
@@ -113,56 +116,6 @@ const AdvancedForm = () => {
         <form onSubmit={handleSubmit}>
           <Grid container spacing={4}>
             {/* Business Size */}
-            {/* <Grid item xs={6}>
-              <FormControl fullWidth>
-                <InputLabel id="business-size-label">Business Size</InputLabel>
-                <Select
-                  labelId="business-size-label"
-                  value={formData.businessSize}
-                  onChange={handleChange}
-                  name="businessSize"
-                  label="Business Size"
-                  error={validationErrors.businessSize}
-                >
-                  <MenuItem value="">Select...</MenuItem>
-                  <MenuItem value="smallBusiness">Small Business / Startup</MenuItem>
-                  <MenuItem value="mediumBusiness">Medium-Sized Business</MenuItem>
-                  <MenuItem value="largeEnterprise">Large Enterprise</MenuItem>
-                  <MenuItem value="creativeAgencies">Creative and Digital Agencies</MenuItem>
-                  <MenuItem value="healthEducationNonProfit">
-                    Healthcare, Education, and Non-Profit Organizations
-                  </MenuItem>
-                </Select>
-                {validationErrors.businessSize && (
-                  <FormHelperText error>Please select business size</FormHelperText>
-                )}
-              </FormControl>
-            </Grid> */}
-            {/* Expected Users
-            <Grid item xs={6}>
-              <FormControl fullWidth>
-                <InputLabel id="user-count-label">Expected users</InputLabel>
-                <Select
-                  labelId="user-count-label"
-                  value={formData.expectedUsers}
-                  onChange={handleChange}
-                  name="expectedUsers"
-                  label="How many concurrent users?"
-                  error={validationErrors.expectedUsers}
-                >
-                  <MenuItem value="">Select...</MenuItem>
-                  <MenuItem value="100-500">100-500 users</MenuItem>
-                  <MenuItem value="500-1000">500-1000 users</MenuItem>
-                  <MenuItem value="1000-5000">1000-5000 users</MenuItem>
-                  <MenuItem value="5000-10000">5000-10000 users</MenuItem>
-                  <MenuItem value="moreThan10000">More than 10000 users</MenuItem>
-                </Select>
-                {validationErrors.expectedUsers && (
-                  <FormHelperText error>Please select expected users</FormHelperText>
-                )}
-              </FormControl>
-            </Grid> */}
-            {/* Monthly Budget */}
             <Grid item xs={6}>
               <FormControl fullWidth>
                 <InputLabel id="monthly-budget-label">Monthly Budget</InputLabel>
@@ -225,7 +178,6 @@ const AdvancedForm = () => {
                 >
                   <MenuItem value="">Select...</MenuItem>
                   <MenuItem value="noSQL">NoSQL</MenuItem>
-                  <MenuItem value="postgreSQL">PostgreSQL</MenuItem>
                   <MenuItem value="sql">SQL</MenuItem>
                   <MenuItem value="noDatabase">No Database Required</MenuItem>
                 </Select>
@@ -248,11 +200,10 @@ const AdvancedForm = () => {
                   error={validationErrors.databaseSize}
                 >
                   <MenuItem value="">Select...</MenuItem>
-                  <MenuItem value="small">Small (under 1 TB)</MenuItem>
-                  <MenuItem value="medium">Medium (1-10 TB)</MenuItem>
-                  <MenuItem value="large">Large (10-100 TB)</MenuItem>
-                  <MenuItem value="veryLarge">Very Large (over 100 TB)</MenuItem>
-                  <MenuItem value="notSure">Not Sure/No Specific Requirements</MenuItem>
+                  <MenuItem value="small">10GB</MenuItem>
+                  <MenuItem value="medium">100GB</MenuItem>
+                  <MenuItem value="large">1TB</MenuItem>
+                  <MenuItem value="noDatabase">Not database required</MenuItem>
                 </Select>
                 {validationErrors.databaseSize && (
                   <FormHelperText error>Please select database size</FormHelperText>
@@ -297,11 +248,10 @@ const AdvancedForm = () => {
                   error={validationErrors.storageSize}
                 >
                   <MenuItem value="">Select...</MenuItem>
-                  <MenuItem value="small">Small (under 1 TB)</MenuItem>
-                  <MenuItem value="medium">Medium (1-10 TB)</MenuItem>
-                  <MenuItem value="large">Large (10-100 TB)</MenuItem>
-                  <MenuItem value="veryLarge">Very Large (over 100 TB)</MenuItem>
-                  <MenuItem value="notSure">Not Sure/No Specific Requirements</MenuItem>
+                  <MenuItem value="small">1TB</MenuItem>
+                  <MenuItem value="medium">10TB</MenuItem>
+                  <MenuItem value="large">100TB</MenuItem>
+                  <MenuItem value="notSure">No storage required</MenuItem>
                 </Select>
                 {validationErrors.storageSize && (
                   <FormHelperText error>Please select storage size</FormHelperText>
@@ -445,10 +395,13 @@ const AdvancedForm = () => {
             </Grid>
             {/* Submit Button */}
             <Grid item xs={12}>
-              <Box mt={3} textAlign="center">
-                <Button variant="contained" color="primary" type="submit">
+              <Box mt={3} textAlign="center" position="relative">
+                <Button variant="contained" color="primary" type="submit" disabled={loading}>
                   Calculate
                 </Button>
+                {loading && (
+                  <CircularProgress size={24} style={{ position: "absolute", top: "5px" }} />
+                )}
               </Box>
             </Grid>
           </Grid>
