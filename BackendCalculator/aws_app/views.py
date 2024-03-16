@@ -611,7 +611,7 @@ def aws_rds_fetch(request):
             MaxResults=100
         )
 
-        records_processed = process_aws_pricing_data(response, process_to_database_specifications, 'us-east-1', database_service)
+        records_processed = process_aws_pricing_data(response, process_to_database_specifications)
 
         while 'NextToken' in response:
             response = client.get_products(
@@ -620,7 +620,7 @@ def aws_rds_fetch(request):
                 MaxResults=100,
                 NextToken=response['NextToken']
             )
-            records_processed += process_aws_pricing_data(response, process_to_database_specifications, 'us-east-1', database_service)
+            records_processed += process_aws_pricing_data(response, process_to_database_specifications)
 
     return JsonResponse({"message": f"AWS database data processed. Total records: {records_processed}"}, safe=False)
 
