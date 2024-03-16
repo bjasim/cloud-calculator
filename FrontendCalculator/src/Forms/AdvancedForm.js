@@ -178,7 +178,6 @@ const AdvancedForm = () => {
                 >
                   <MenuItem value="">Select...</MenuItem>
                   <MenuItem value="noSQL">NoSQL</MenuItem>
-                  <MenuItem value="postgreSQL">PostgreSQL</MenuItem>
                   <MenuItem value="sql">SQL</MenuItem>
                   <MenuItem value="noDatabase">No Database Required</MenuItem>
                 </Select>
