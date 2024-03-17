@@ -169,10 +169,14 @@ def get_oracle_pricing(request):
         logger.error(f"An unexpected error occurred: {e}")
         return HttpResponse(f"An unexpected error occurred: {e}", status=500)
 
-#Handles form submission for Oracle.
+#Handles advanced form submission for Oracle.
 def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location):
     computed_data = {'provider': 'Oracle',}
 
+    # Initialize the total prices with a default value of 0
+    compute_total_price = 0
+    database_total_price = 0
+    storage_total_price = 0
 #ADVANCED FORM
 #-------------
     #Question #1: Monthly Budget
@@ -217,6 +221,14 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
         "16vCPUs": {"multiplier": 8, "ram_cost_multiplier": 64, "ram_cost_per_unit": 0.015, "name_override": "8oCPU(16vCPU)-64RAM"},
     }
 
+    #For basic form calculation.
+    if expected_cpu == "simple":
+        expected_cpu = "1vCPU"
+    elif expected_cpu == "moderate":
+        expected_cpu = "4vCPUs"
+    elif expected_cpu == "complex":
+        expected_cpu = "16vCPUs"
+
     #Calculate cpu.
     if expected_cpu in cpu_configurations:
         config = cpu_configurations[expected_cpu]
@@ -227,15 +239,15 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
 
         # Check if scalability is essential and modify name_override accordingly
         if scalability == "essential":
-            name_scalability = "Auto-scaling & Load-balancer"
+            name_scalability = "- Auto-scaling & Load-balancer"
 
         #Check database size and select compute instance based off that.
-        if database_size in ["small", "medium"]:
+        if database_size in ["small", "medium", "1000", "5000"]:
             compute_sku = "B93113"
             name_override = "AMD Standard E4 - "  
             ram_sku = "B93114"
 
-        elif database_size == "large":
+        elif database_size in ["large", "10000"]:
             compute_sku = "B97384"
             name_override = "AMD Standard E5 - "
             ram_sku = "B97385"
@@ -256,7 +268,7 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
 
             #Update computed_data with the fetched details.
             computed_data['compute'] = {
-                'name': f"{name_override + config["name_override"]} - {name_scalability} - {location}",
+                'name': f"{name_override + config["name_override"]} {name_scalability} - {location}",
                 'sku': f"{compute_service.sku} CPU - {ram_sku} RAM",
                 'unit_price': f"{compute_total_price} USD Monthly",
             }
@@ -267,7 +279,6 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     #--Answer Options--:
     #
     # NoSQL
-    # PostgreSQL
     # SQL
     # noDB
     #
@@ -278,8 +289,9 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     # SQL = B92426
     # " "
     #
+
     #Check for the "No Storage" option first.
-    if database_service == "noDatabase":
+    if database_service == "noDatabase" or database_service == "nodatabase":
         computed_data['database'] = {
             'name': "No Database",
             'unit_price': "N/A",
@@ -291,9 +303,15 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     else:
         #Map cloud storage types to their corresponding SKU.
         sku_mapping = {
+
+            #advanced form
             "noSQL": "B89739",
-            "postgreSQL": "B99062",
+            #"postgreSQL": "B99062",
             "sql": "B92426",
+
+            #basic form 
+            "basic": "B92426",
+            "complex": "B89739",
         }
 
         #Get the SKU for the current cloud_storage type.
@@ -306,6 +324,8 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
             database_instance = DatabaseSpecifications.objects.filter(sku=sku).first()
             if database_instance:
 
+              
+
                 #Change names
                 if sku == "B89739":
                     name_override = "Oracle NoSQL"
@@ -317,14 +337,15 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
                     name_override = database_instance.name
 
                 #DB Size
-                if database_size == "small":
+                if database_size in ["small", "1000"]:
                     db_size = 10
-                elif database_size == "medium":
+                elif database_size in ["medium", "5000"]:
                     db_size = 100
-                elif database_size == "large":
+                elif database_size in ["large", "10000"]:
                     db_size = 1000
 
-                database_total_price = round(float(database_instance.unit_price) * db_size)
+                #Trunicated to 2 decimal points 
+                database_total_price = int(float(database_instance.unit_price) * db_size * 100) / 100.0
 
                 computed_data['database'] = {
                     'name': f"{name_override} - {db_size}GB - {location}",
@@ -362,6 +383,7 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     # File: B89057
     # Block: B91961
     # 
+
     #Check for the "No Storage" option first
     if cloud_storage == "No Storage":
         computed_data['storage'] = {
@@ -375,9 +397,16 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     else:
         #Map cloud storage types to their corresponding SKU
         sku_mapping = {
+
+            #Advanced form
             "Object Storage": "B91628",
             "Block Storage": "B91961",
             "File Storage": "B89057",
+
+            #Basic form
+            "multimedia": "B91628",
+            "databases": "B91961",
+            "files": "B89057",
         }
 
         #Get the SKU for the current cloud_storage type
@@ -388,7 +417,7 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
             #Query for the storage instance based on the part number
             storage_instance = StorageSpecifications.objects.filter(sku=sku).first()
             if storage_instance:
-
+            
                 #Change names.
                 if sku == "B91628":
                     name_override = "Object Storage"
@@ -400,17 +429,18 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
                     name_override = storage_instance.name
 
                 #Storage Size.
-                if storage_size == "small":
+                if storage_size in ["small", "1000"]:
                     st_size = 1000
                     st_name = "1TB"
-                elif storage_size == "medium":
+                elif storage_size in ["medium", "5000"]:
                     st_size = 10000
                     st_name = "10TB"
-                elif storage_size == "large":
+                elif storage_size in ["large", "10000"]:
                     st_size = 100000
                     st_name = "100TB"
 
-                storage_total_price = round(float(storage_instance.unit_price) * st_size)
+                #Trunicated to 2 decimal points 
+                storage_total_price = int(float(storage_instance.unit_price) * st_size * 100) / 100.0
 
                 #Display to frontend.
                 computed_data['storage'] = {
@@ -499,7 +529,14 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
                 'sku': f" DNS:{dns_service.sku} CDN: Varnish-Enterprise-6",
                 'unit_price': f"| DNS = {dns_service.unit_price} USD Per 1,000,000 queries | CDN = OCI Marketplace |" 
             }          
+   
+    #-----------------IF NIETHER SELECTED---------------------------------------
+    if dns_connection == "No" and cdn_connection == "No":
 
+        #Update the DNS section within the networking part of computed_data with the fetched details.
+            computed_data['networking'] = {
+                'name': "[none selected]",
+            }
     
     #Question #9:
     #--Answer Options--:
@@ -618,8 +655,7 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     # Enter region but NO difference in price
     #
 
-    plan_monthly_price = compute_total_price + storage_total_price + database_total_price
-    # plan_monthly_price = compute_total_price + storage_unit_price
+    plan_monthly_price = compute_total_price + database_total_price + storage_total_price
 
     plan_annual_price = round(float(plan_monthly_price) * 12)
     print("Total Monthly Plan Cost: ", plan_monthly_price)
@@ -629,3 +665,4 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     computed_data['annual'] = plan_annual_price
 
     return computed_data
+    
