@@ -169,7 +169,7 @@ def get_oracle_pricing(request):
         logger.error(f"An unexpected error occurred: {e}")
         return HttpResponse(f"An unexpected error occurred: {e}", status=500)
 
-#Handles advanced form submission for Oracle.
+#Handles form submission for Oracle.
 def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location):
     computed_data = {'provider': 'Oracle',}
 
@@ -237,8 +237,8 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
         name_override = ""  
         name_scalability = ""
 
-        # Check if scalability is essential and modify name_override accordingly
-        if scalability == "essential":
+        #Check scalability for advanced form and check expected user size for basic form to enable.
+        if scalability == "essential" or database_size == "10000":
             name_scalability = "- Auto-scaling & Load-balancer"
 
         #Check database size and select compute instance based off that.
@@ -558,104 +558,8 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     # Answer: Enter region but NO difference in price
     #
     
-    
 
-#BASIC FORM
-#----------
-    #Question #1: Compute complexity
-    #--Answer Options--:
-    #
-    # basic 2vcpu-4ram
-    # moderate 8vcpu-32ram
-    # intensive 16vcpu-64ram
-    #
-    #--Oracle Options--:
-    # 
-    # sku:B93113 (1 ocpu) - sku:B93114 (1 ram)
-    # multiply by # of ram/ocpu
-    # 
-    # Basic: 1ocpu-4ram
-    # Moderate: 4ocpu-32ram
-    # Intensive: 8ocpu-64ram
-    # 
-
-    #Question #2: Expected Users
-    #--Answer Options--:
-    # 
-    # <1000 = 50gb db storage
-    # 5000 = 200gb
-    # 10000+ = 1TB (add auto scaling to compute name)
-    #            
-    #--Oracle Options--:
-    #
-    # multiply DB size by this
-    # 
-                            
-    #Question #3: Type of data
-    #--Answer Options--:
-    #   
-    # files
-    # database
-    # multimedia
-    #
-    #--Oracle Options--:
-    #   
-    # File: B89057
-    # Block: B91961
-    # Object: B96625
-    #
-
-    #Question #4:
-    #--Answer Options--:
-    #
-    #
-    #
-    #--Oracle Options--:
-    #
-    #
-    #
-
-    #Question #5:
-    #--Answer Options--:
-    #
-    #
-    #
-    #--Oracle Options--:
-    #
-    #
-    #
-                
-    #Question #6:
-    #--Answer Options--: DNS
-    #
-    # "Yes" or "No"
-    #
-    #--Oracle Options--:
-    #
-    # 
-    #
-
-    #Question #7:
-    #--Answer Options--: CDN
-    #
-    # "Yes" or "No"
-    #
-    #--Oracle Options--:
-    #
-    #
-    #
-
-    #Question #8:
-    #--Answer Options--:
-    #
-    # Various Regions
-    #
-    #--Oracle Options--:
-    #
-    # Enter region but NO difference in price
-    #
-
-    plan_monthly_price = compute_total_price + database_total_price + storage_total_price
+    plan_monthly_price = int((compute_total_price + database_total_price + storage_total_price) * 100) / 100.0
 
     plan_annual_price = round(float(plan_monthly_price) * 12)
     print("Total Monthly Plan Cost: ", plan_monthly_price)
