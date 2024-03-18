@@ -736,6 +736,15 @@ def process_aws_pricing_data(response, process_function):
 def calculated_data_AWS(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location):
     computed_data = {'provider': 'AWS',}  # Initialize dictionary to store computed data
     # print(f"database size is:  {database_size}")
+    
+    compute_total_price = 0
+    plan_monthly_price = 0
+    compute_total_price = 0
+    storage_total_price = 0
+    total_db_price = 0
+    network_total_price = 0
+
+    
     if expected_cpu:
         if expected_cpu == "1vCPU":
             if location == "us-east-1": # Virginia

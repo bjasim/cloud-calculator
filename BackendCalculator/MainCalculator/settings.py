@@ -74,7 +74,7 @@ TEMPLATES = [
     },
 ]
 
-# WSGI_APPLICATION = 'MainCalculator.wsgi.application'
+WSGI_APPLICATION = 'MainCalculator.wsgi.application'
 
 
 # Database
