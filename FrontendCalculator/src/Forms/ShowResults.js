@@ -170,7 +170,7 @@ const RecommendedPlans = ({ responseData }) => {
                       <>
                         <div style={{ textAlign: "left" }}>
                           <span style={{ fontSize: "1.1rem" }}>
-                            Name:
+                            DNS Name:
                             {plan.networking.name}
                           </span>{" "}
                         </div>
@@ -179,6 +179,19 @@ const RecommendedPlans = ({ responseData }) => {
                         </div>
                         <div style={{ fontSize: "1.2rem", textAlign: "left" }}>
                           Price/Monthly: {plan.networking.unit_price}
+                        </div>
+                        <div>***********************</div>
+                        <div style={{ textAlign: "left" }}>
+                          <span style={{ fontSize: "1.1rem" }}>
+                            CDN Name:
+                            {plan.cdn_networking.name}
+                          </span>{" "}
+                        </div>
+                        <div style={{ textAlign: "left" }}>
+                          <span style={{ fontSize: "1.1rem" }}>Sku: {plan.cdn_networking.sku}</span>
+                        </div>
+                        <div style={{ fontSize: "1.2rem", textAlign: "left" }}>
+                          Price/Monthly: {plan.cdn_networking.unit_price}
                         </div>
                       </>
                     ) : (

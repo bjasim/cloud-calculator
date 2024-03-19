@@ -420,7 +420,7 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
             if 'gb/month' in unit_of_storage or '1/month' in unit_of_storage:
                 base_price = unit_price  # Already monthly price
             elif '10k/month' in unit_of_storage or '10k' in unit_of_storage:
-                base_price = unit_price * 10000  # Example, adjust according to your pricing model
+                base_price = unit_price * 10  # Example, adjust according to your pricing model
             else:
                 base_price = unit_price  # Default case, adjust as needed
 
@@ -441,6 +441,168 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
             computed_data['storage'] = 'No matching storage found'
 
 
+    # Define networking type to name and SKU mapping
+    networking_to_name_and_sku_mapping = {
+        'CDN': {
+            'primary': {'name': 'Azure CDN from Akamai - Zone 3', 'sku': 'Custom'},
+            'secondary': {'name': 'Azure CDN from Akamai - Zone 5', 'sku': 'Custom'}
+        },
+        'DNS': {
+           'primary': {'name': 'Azure DNS - Zone 3', 'sku': 'Private'},
+            'secondary': {'name': 'Azure DNS - Zone 4', 'sku': 'Azure DNS Private Resolver'}
+        },
+        # Add more mappings as necessary for different networking types
+    }
+
+    # Handle DNS Connection
+    if dns_connection == 'Yes':
+        dns_info = networking_to_name_and_sku_mapping.get('DNS')
+        if dns_info:
+            dns_instance = NetworkingSpecifications.objects.filter(
+                name=dns_info['primary']['name'],
+                sku=dns_info['primary']['sku']
+            ).first() or NetworkingSpecifications.objects.filter(
+                name=dns_info['secondary']['name'],
+                sku=dns_info['secondary']['sku']
+            ).first()
+
+            if dns_instance:
+                computed_data['networking'] = {
+                    'name': dns_instance.name,
+                    'unit_price': f'{unit_price:.2f}',
+                    'sku': dns_instance.sku,
+                    'provider': dns_instance.provider.name,
+                    'cloud_service': dns_instance.cloud_service.service_type,
+                    'unit_of_measure': dns_instance.unit_of_measure
+                }
+
+    # Handle CDN Connection
+    if cdn_connection == 'Yes':
+        cdn_info = networking_to_name_and_sku_mapping.get('CDN')
+        if cdn_info:
+            cdn_instance = NetworkingSpecifications.objects.filter(
+                name=cdn_info['primary']['name'],
+                sku=cdn_info['primary']['sku']
+            ).first() or NetworkingSpecifications.objects.filter(
+                name=cdn_info['secondary']['name'],
+                sku=cdn_info['secondary']['sku']
+            ).first()
+
+            if cdn_instance:
+                computed_data['cdn_networking'] = {
+                    'name': cdn_instance.name,
+                    'unit_price': f'{unit_price:.2f}',
+                    'sku': cdn_instance.sku,
+                    'provider': cdn_instance.provider.name,
+                    'cloud_service': cdn_instance.cloud_service.service_type,
+                    'unit_of_measure': cdn_instance.unit_of_measure
+                }
+
+    return computed_data
+
+
+def calculated_data_Azure_basic(compute_complexity, expected_users, data_storage_type, database_service, dns_feature, cdn_networking, region, budget):
+    computed_data = {'provider': 'Microsoft Azure',}  # Initialize dictionary to store computed data
+
+    # Mapping of user-friendly RAM/CPU options to SKU
+    ram_to_sku_mapping = {
+        'simple': 'Standard_B2als_v2',  # Example mapping, adjust based on actual data
+        'moderate': 'Standard_D8s_v5',  # Example mapping
+        'complex': 'Standard_D16ds_v5',  # Example mapping
+        # add mappings as necessary
+    }
+
+    # Retrieve the SKU from the mapping based on the expected_ram
+    expected_sku = ram_to_sku_mapping.get(compute_complexity)
+
+    # Retrieve data from the database based on the provided SKU and location
+    if expected_sku:
+        compute_instance = ComputeSpecifications.objects.filter(sku=expected_sku).first()
+        if compute_instance:
+            computed_data['compute'] = {
+                'name': compute_instance.name,
+                'unit_price': compute_instance.price_monthly,
+                'cpu': compute_instance.cpu,
+                'memory': compute_instance.memory,
+                'sku': compute_instance.sku,
+                'provider': compute_instance.provider.name,
+                'cloud_service': compute_instance.cloud_service.service_type,
+                'price_monthly': compute_instance.price_monthly
+            }
+
+
+    # Define size to price multiplier mapping
+    size_multiplier_mapping = {
+        'under50': 10,
+        '500to2000': 100,
+        '2000to5000': 1000,
+        'over5000': 10000,
+    }
+
+    # Define name and SKU mapping with primary and secondary options
+    service_to_name_and_sku_mapping = {
+        'basic': {
+            'primary': {'name': 'Azure Cosmos DB for MongoDB vCore', 'sku': 'General Purpose Storage'},
+            'secondary': {'name': 'Azure Cosmos DB', 'sku': 'mRUs'}  # Adjust as needed
+        },
+        'complex': {
+            'primary': {'name': 'SQL Database Standard - Storage', 'sku': 'Standard'},
+            'secondary': {'name': 'SQL Database Premium - Storage', 'sku': 'Premium'}  # Adjust as needed
+        },
+        'nodatabase': {
+           'primary': {'name': 'Azure Cosmos DB for MongoDB vCore', 'sku': 'General Purpose Storage'},
+            'secondary': {'name': 'Azure Cosmos DB', 'sku': 'mRUs'}  # Adjust as needed
+        }
+    }
+
+    service_info = service_to_name_and_sku_mapping.get(database_service)
+
+    if service_info:
+        # Attempt to fetch the primary database instance
+        database_instance = DatabaseSpecifications.objects.filter(
+            name=service_info['primary']['name'],
+            sku=service_info['primary']['sku']
+        ).first()
+
+        # If not found, try the secondary option
+        if not database_instance:
+            database_instance = DatabaseSpecifications.objects.filter(
+                name=service_info['secondary']['name'],
+                sku=service_info['secondary']['sku']
+            ).first()
+
+        if database_instance:
+            # Calculate the unit price based on the selected database size
+            size_multiplier = size_multiplier_mapping.get(database_size, 1)
+            unit_price = float(database_instance.unit_price) * size_multiplier
+
+            computed_data['database'] = {
+                'name': database_instance.name,
+                'unit_price': f'{unit_price:.2f}',
+                'sku': database_instance.sku,
+                'data_type': database_instance.data_type,
+                'provider': database_instance.provider.name,
+                'cloud_service': database_instance.cloud_service.service_type
+            }
+        else:
+            computed_data['database'] = 'No matching database found'
+
+
+    # if database_service:
+    #     # Query for the first database instance
+    #     database_instance = DatabaseSpecifications.objects.filter(name__icontains=database_service).first()
+    #     if database_instance:
+    #         computed_data['database'] = {
+    #             'name': database_instance.name,
+    #             'unit_price': database_instance.unit_price,
+    #             'unit_of_storage': database_instance.unit_of_storage,
+    #             'sku': database_instance.sku,
+    #             'data_type': database_instance.data_type,
+    #             'provider': database_instance.provider.name,
+    #             'cloud_service': database_instance.cloud_service.service_type
+    #         }
+    #     else:
+    #         computed_data['database'] = None
 
     # if networking_feature:
     #     if 'Content' in networking_feature:
@@ -460,74 +622,5 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
     #             'provider': networking_instance.provider.name,
     #             'cloud_service': networking_instance.cloud_service.service_type
     #         }
-
-    return computed_data
-
-
-def calculated_data_Azure_basic(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location):
-    computed_data = {'provider': 'Microsoft Azure',}  # Initialize dictionary to store computed data
-
-    # Retrieve data from the database based on the provided keyword
-    if expected_cpu:
-        # Query for the first compute instance
-        compute_instance = ComputeSpecifications.objects.filter(cpu=expected_cpu).first()
-        if compute_instance:
-            computed_data['compute'] = {
-                'name': compute_instance.name,
-                'unit_price': compute_instance.unit_price,
-                'cpu': compute_instance.cpu,
-                'memory': compute_instance.memory,
-                'sku': compute_instance.sku,
-                'provider': compute_instance.provider.name,
-                'cloud_service': compute_instance.cloud_service.service_type
-            }
-
-    if cloud_storage:
-        # Query for the first storage instance based on the keyword "File"
-        storage_instance = StorageSpecifications.objects.filter(name__icontains='File').first()
-        if storage_instance:
-            computed_data['storage'] = {
-                'name': storage_instance.name,
-                'unit_price': storage_instance.unit_price,
-                'unit_of_storage': storage_instance.unit_of_storage,
-                'sku': storage_instance.sku,
-                'provider': storage_instance.provider.name,
-                'cloud_service': storage_instance.cloud_service.service_type
-            }
-
-    if database_service:
-        # Query for the first database instance
-        database_instance = DatabaseSpecifications.objects.filter(name__icontains=database_service).first()
-        if database_instance:
-            computed_data['database'] = {
-                'name': database_instance.name,
-                'unit_price': database_instance.unit_price,
-                'unit_of_storage': database_instance.unit_of_storage,
-                'sku': database_instance.sku,
-                'data_type': database_instance.data_type,
-                'provider': database_instance.provider.name,
-                'cloud_service': database_instance.cloud_service.service_type
-            }
-        else:
-            computed_data['database'] = None
-
-    if networking_feature:
-        if 'Content' in networking_feature:
-            # Query for the first networking instance based on the keyword "CDN"
-            networking_instance = NetworkingSpecifications.objects.filter(name__icontains='CDN').first()
-        else:
-            # Query for the first networking instance based on the first word
-            first_word = networking_feature.split()[0]
-            networking_instance = NetworkingSpecifications.objects.filter(name__icontains=first_word).first()
-
-        if networking_instance:
-            computed_data['networking'] = {
-                'name': networking_instance.name,
-                'unit_price': networking_instance.unit_price,
-                'unit_of_measure': networking_instance.unit_of_measure,
-                'sku': networking_instance.sku,
-                'provider': networking_instance.provider.name,
-                'cloud_service': networking_instance.cloud_service.service_type
-            }
 
     return computed_data

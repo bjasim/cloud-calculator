@@ -49,15 +49,20 @@ def handle_basic_form_submission(request):
     if request.method == 'POST':
         form_data = json.loads(request.body)
         print("Received form data:", form_data)
-        database_service_Azure = form_data.get('databaseService')
-        expected_cpu_Azure = form_data.get('expectedRAM')  # Assuming the CPU field stores RAM information
-        cloud_storage_Azure = form_data.get('cloudStorage')
-        networking_feature_Azure = form_data.get('networkingFeature')
 
-        azure_data = calculated_data_Azure_basic(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location)
-        aws_data = calculated_data_Azure_basic(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location)
-        google_data = calculated_data_Azure_basic(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location)
-        Oracle_data = calculated_data_Azure_basic(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location)
+        compute_complexity = form_data.get('computeComplexity')
+        expected_users = form_data.get('expectedUsers')  # Assuming the CPU field stores RAM information
+        data_storage_type = form_data.get('dataStorageType')
+        database_service = form_data.get('databaseService')
+        budget = form_data.get('monthlyBudget')
+        dns_feature = form_data.get('dnsFeature')
+        cdn_networking = form_data.get('cdnNetworking')
+        region = form_data.get('region')
+
+        azure_data = calculated_data_Azure_basic(compute_complexity, expected_users, data_storage_type, database_service, dns_feature, cdn_networking, region, budget)
+        aws_data = calculated_data_Azure_basic(compute_complexity, expected_users, data_storage_type, database_service, dns_feature, cdn_networking, region)
+        google_data = calculated_data_Azure_basic(compute_complexity, expected_users, data_storage_type, database_service, dns_feature, cdn_networking, region)
+        Oracle_data = calculated_data_Azure_basic(compute_complexity, expected_users, data_storage_type, database_service, dns_feature, cdn_networking, region)
 
         combined_data = {
             'Azure': azure_data,
@@ -75,5 +80,6 @@ def handle_basic_form_submission(request):
     else:
         # Return error response if the request method is not POST
         return JsonResponse({'success': False, 'error': 'Only POST requests are allowed'})
+
 
 
