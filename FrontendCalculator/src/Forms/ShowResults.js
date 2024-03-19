@@ -99,7 +99,7 @@ const RecommendedPlans = ({ responseData }) => {
                           </span>
                         </div>
                         <div style={{ fontSize: "1.2rem", textAlign: "left" }}>
-                          Price/Monthly: {plan.compute.unit_price}
+                          Price/Monthly: ${plan.compute.unit_price}
                         </div>
                       </>
                     ) : (
