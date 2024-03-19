@@ -46,6 +46,21 @@ firestore_skus = [
     "712B-54D4-F3C9", "8979-BD7B-638C", "2793-76AA-56C9", "0D43-B821-BD27",
     "BCF3-E44E-0182", "8083-93BB-F13A", "802A-A763-295B","5C80-18C6-21C5"
 ]
+filestore_skus= [
+    "559A-0506-7B0A", "D149-0966-D3EA", "ABBD-1012-8CAB",
+    "40C7-C133-48C1", "8789-2E1F-DD35", "C7B1-C2AB-8FB3",
+    "F7F7-BABE-3C0D", "1675-34BD-A7AD", "1CF8-3D90-ED7A",
+    "B315-A685-9DC4", "D0C4-A7AF-FCE8", "BD98-0C8E-B52B",
+    "49F0-CDF0-8A41", "C4D4-3CC1-EA04", "FD2A-CA44-05B9",
+    "9851-EB15-3A2F", "0CC7-15EB-7F77", "3DD1-7333-DD1E",
+    "BA6C-7537-6045", "637E-F5F6-8B5E", "3B6C-72D5-47D5",
+    "A6FF-1F2B-B99D", "A4FA-97A6-FE9D", "81AC-9287-2FA4",
+    "28E9-AF7A-9107", "9ECF-18E5-1649", "EEB6-F2A3-670C",
+    "E3C7-752B-C3EA", "4FFE-CED3-540C", "FC3D-DA69-44D4",
+    "8424-E89C-4CBE", "47BC-DFD4-04CD", "24BB-417D-4E26",
+    "88D6-264C-F61C", "6B47-1705-3B1C", "07E7-E83A-DAB6",
+    "B731-DDB2-6110"
+]
 def main():
     # Get authenticated service
     #service = get_authenticated_service()
@@ -66,7 +81,8 @@ def main():
     #Getting storage specs
     #get_storage_specs(endpoint_url,API_KEY,service_filter_storage,output_file_Storage)
     # retrieve_prices_from_json(output_file_Storage,API_KEY,storage_combined)
-    fetch_save(API_KEY, '6F81-5844-456A',block_storage_skus) # no json files being used for this function
+    #fetch_save(API_KEY, '6F81-5844-456A',block_storage_skus) # Block storage, Persistant Disk
+    fetch_save(API_KEY, 'D97E-AB26-5D95',filestore_skus) # Cloud File Store 
    
 # Getting the price for CloudSQL services
 def get_prices():
@@ -354,8 +370,6 @@ def retrieve_prices_from_json(json_file, api_key, output_file):
         sku_info = data['sku_info']
         prices_data = data['prices_data']
         
-        
-        # Extract relevant information
         # Extract relevant information
         name = sku_info.get('displayName', '')
         provider_id = 1  # Assuming you have a default provider with id=1
@@ -457,7 +471,7 @@ def fetch_save(api_key, service_id, all_skus):
                             # Add other fields as needed
                         )
                         db_spec.save()
-                    elif service_id == '6F81-5844-456A':
+                    elif service_id == '6F81-5844-456A' or service_id == 'D97E-AB26-5D95':
                         # Save to StorageSpecifications table
                         storage_spec = StorageSpecifications.objects.create(
                             sku=sku_id,
@@ -572,14 +586,15 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
         city= 'Iowa'   #doesnt work for storage, None for Block Storage
     elif location == 'us-east1': # dont use no location for everything
         city= 'South Carolina'
-    elif location == 'us-east4':
+    elif location == 'us-east2':
+        location = 'us-east4'
         city= 'Northern Virginia'
     elif location == 'us-east5':
         city= 'Columbus'
     elif location == 'us-south1':
         city= 'Dallas'
     elif location == 'us-west1':
-        city= 'Oregon' # None for postgresql 
+        city= 'Oregon'# None for postgresql 
     elif location == 'us-west2':
         city= 'Los Angeles'
     elif location == 'us-west3':
@@ -666,19 +681,30 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
         'cloud_service': compute_instance.cloud_service.service_type
     }
     
-    #Storage Logic
-    query_temp=None
-    if cloud_storage == "Object Storage":
-        query_temp = "Standard Storage %s"
+    query_temp = None
+
+    if cloud_storage == "File Storage":
+        if city in ["Oregon", "Iowa", "South Carolina"]:
+            query_temp = "Filestore Capacity Basic HDD (Standard) Iowa/South Carolina/Oregon"
+        else:
+            query_temp = "Filestore Capacity Basic HDD (Standard) in %s"
+
     elif cloud_storage == 'Block Storage':
         query_temp = "Storage PD Capacity in %s"
-    elif cloud_storage == 'File Storage': # Get code for filestore from what i did 
-        query_temp = "Storage PD Capacity in %s"
         
+    elif cloud_storage == "Object Storage":
+        query_temp = "Standard Storage %s"
+
+    # Check if query_temp and city are both not None
     if query_temp and city:
-        query_temp = query_temp % city  # Performing string formatting if both query_temp and city are not None
+        if "%s" in query_temp:  # Check if the format specifier exists in the template
+            query = query_temp % city  # Perform string formatting if city is provided
+        else:
+            query = query_temp
+
         # Query for the first storage instance based on the query_temp
-        storage_instance = StorageSpecifications.objects.filter(name__contains=query_temp).first()
+        storage_instance = StorageSpecifications.objects.filter(name__contains=query).first()
+        
         if storage_instance:
             computed_data['storage'] = {
                 'name': storage_instance.name,
@@ -688,29 +714,46 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
                 'provider': storage_instance.provider.name,
                 'cloud_service': storage_instance.cloud_service.service_type
             }
+        elif cloud_storage == 'Block Storage':
+            # If no results found using the city, default to querying "Storage PD Capacity"
+            query_default = "Storage PD Capacity in %s" % city
+            storage_instance_default = StorageSpecifications.objects.filter(name=query_default).first()
+            if storage_instance_default:
+                computed_data['storage'] = {
+                    'name': storage_instance_default.name,
+                    'unit_price': storage_instance_default.unit_price,
+                    'unit_of_storage': storage_instance_default.unit_of_storage,
+                    'sku': storage_instance_default.sku,
+                    'provider': storage_instance_default.provider.name,
+                    'cloud_service': storage_instance_default.cloud_service.service_type
+                }
+            else:
+                computed_data['storage'] = None
         else:
             computed_data['storage'] = None
     else:
         # Handle the case where either query_temp or city is None
         computed_data['storage'] = None
-            
-            
+                     
     # #Database Logic
     query_template=None
     if database_service== 'postgreSQL':
         query_template = "Cloud SQL for PostgreSQL: Regional - Standard storage in %s"
     elif database_service == 'sql':
-        query_template = "Cloud SQL for SQL Server: Regional - Standard storage in %s"
+        # Additional condition for SQL Server databases if city is Oregon
+        if city == "Oregon":
+            query_template = "Cloud SQL for SQL Server: Regional - Standard storage in Americas"
+        else:
+            query_template = "Cloud SQL for SQL Server: Regional - Standard storage in %s"
     elif database_service == 'noSQL': # Need to add Code for the firestore. Not working
         query_template= "Cloud Firestore Storage %s"
     
-    if query_template and city:
-    # If city matches specified conditions, override the template
-        if city in ["South Carolina", "Iowa", "Belgium"]:
+    if query_template:
+        if database_service == 'noSQL' and city in ["South Carolina", "Iowa", "Belgium"]:
             query_template = "Cloud Firestore Storage"
     # Proceed with constructing the query
     if "%s" in query_template:  # Check if the format specifier exists in the template
-        query = query_template % city
+        query = query_template % city if city else query_template  # Perform string formatting if city is provided
     else:
         query = query_template
 
