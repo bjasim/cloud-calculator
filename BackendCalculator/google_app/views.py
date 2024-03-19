@@ -601,17 +601,21 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
         city= 'Salt Lake City'
     elif location == 'us-west4':
         city= 'Las Vegas'
-    elif location == 'asia-east2':
+    elif location == 'ap-east1':
+        location = 'asia-east2'
         city= 'Hong Kong'
     elif location == 'asia-east1':
         city= 'Taiwan' # None for PostgreSQL
     elif location == 'asia-northeast1':
-        city= 'Tokyo' # None for PostgreSQL
-    elif location == 'asia-northeast2':
+        city= 'Tokyo' # None for PostgreSQLS
+    elif location == 'ap-northeast-3':
+        location = 'asia-northeast2'
         city= 'Osaka'
-    elif location == 'asia-northeast3':
+    elif location == 'ap-northeast-2':
+        location='asia-northeast3'
         city= 'Seoul'
-    elif location == 'asia-south1':
+    elif location == 'ap-south-1':
+        location = 'asia-south1'
         city= 'Mumbai'
     elif location == 'asia-south2':
         city= 'Delhi'
@@ -687,7 +691,7 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
         if city in ["Oregon", "Iowa", "South Carolina"]:
             query_temp = "Filestore Capacity Basic HDD (Standard) Iowa/South Carolina/Oregon"
         else:
-            query_temp = "Filestore Capacity Basic HDD (Standard) in %s"
+            query_temp = "Filestore Capacity Basic HDD (Standard) %s"
 
     elif cloud_storage == 'Block Storage':
         query_temp = "Storage PD Capacity in %s"
@@ -716,7 +720,7 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
             }
         elif cloud_storage == 'Block Storage':
             # If no results found using the city, default to querying "Storage PD Capacity"
-            query_default = "Storage PD Capacity in %s" % city
+            query_default = "Storage PD Capacity"
             storage_instance_default = StorageSpecifications.objects.filter(name=query_default).first()
             if storage_instance_default:
                 computed_data['storage'] = {
