@@ -31,7 +31,38 @@ storage_combined = "C:/Users/Joseph/Documents/storageprice.json"
 output_file_Storage="C:/Users/Joseph/Documents/storageinfo.json"
 
 # Skus for all relevant  services, the following array includes Skus for Cloud CDN and Cloud DNS
-networkingskus=['0CAB-FE26-F2C6','B932-7C57-E43B','2A8D-245C-0E0B','E141-D225-4599','15AE-8E35-C42B','620D-FE53-4BA9','6DFF-5025-A128']
+loadbalacer_skus = [
+    '0427-AC0E-DEAF', '074C-3176-B6B1', '0805-38B4-A6AA',
+    '0BE3-FB0A-41B5', '130D-D8B9-8C01', '1448-AE6A-3DFD',
+    '1497-0D02-1D98', '1538-E533-F41F', '1603-E19B-DD92',
+    '1752-6065-3660', '1B1F-B284-2AF9', '22EA-A3F3-D43E',
+    '2A55-54D9-70F4', '2C71-0AFA-E05A', '2D99-1312-BBAB',
+    '2DA4-60F8-167D', '3004-4CDD-0CFB', '3275-05B0-D475',
+    '333D-F545-6705', '3546-A4D3-F710', '3A80-35DD-8213',
+    '3F60-2E4F-0911', '454E-9A7D-F9D5', '46A6-3157-39E1',
+    '4AD7-DE70-A9F7', '4CA1-8FD0-21EE', '5A74-0128-8187',
+    '5D20-55B9-6896', '5EEB-601A-4B74', '62F2-9E12-5F44',
+    '634A-3C77-A50A', '6447-DBD0-130A', '6461-9B80-88EB',
+    '6692-4B3B-9E35', '7022-A7D6-7D82', '7087-03B4-CF6F',
+    '732B-7574-0DDC', '77C0-9E0C-76B0', '7817-144B-A5AC',
+    '7A0E-3D45-C93B', '7DE5-A1CE-27D7', '82A1-DB74-B3FA',
+    '8365-2032-F1D3', '8562-97A0-797E', '8625-A380-1224',
+    '8681-2E73-F5B0', '8868-408C-BF4B', '9139-E803-FACE',
+    '949C-F222-A9F1', '9666-1DDE-5905', '9859-3C2C-5FE1',
+    '9895-3D84-C97F', '9BB3-3C40-2809', '9DF3-2AC6-2D3E',
+    'A0D5-35E8-DDE0', 'A200-33A3-245F', 'A60F-0E11-6E0C',
+    'A650-E839-CDB6', 'A7BC-0A86-BB2E', 'AA4D-A91E-8D75',
+    'AE3D-4662-FCEF', 'B140-DACF-3365', 'B212-B2EA-6B8D',
+    'B338-7E43-8EBA', 'B380-B567-6D29', 'B468-6105-7883',
+    'B955-5B44-BD28', 'B9BD-6489-535E', 'BC7E-076A-0571',
+    'C136-EB77-2990', 'C2EB-B343-5192', 'C88B-3016-1C60',
+    'D008-DADF-093C', 'D107-DA77-EE8C', 'D27A-42CE-1A3A',
+    'D683-33F2-5C47', 'D727-6F37-F264', 'D83A-C047-F3B5',
+    'DCE9-C1CA-81B2', 'E4FD-CE95-F940', 'EBCE-61F1-6CE7',
+    'F051-558E-CBE7', 'F0C7-4A86-E056', 'F0DD-1D41-B68D',
+    'F2A9-01F4-E934', '0CAB-FE26-F2C6'
+]
+
 block_storage_skus = ["0306-B164-A7B7","0572-568A-4FC4","17A8-D0A4-D7E5","1F1F-0EF5-15BE","23BD-C186-EF37","28D0-437A-CEAD","320C-7688-1A62","5334-92F9-3E7F","5881-96B1-93E3","5A6A-4A16-F865","7A7B-EA46-2897","7EA3-FF02-75C9","80E2-7FF9-979E","83E4-C062-FDEC","8AF1-1146-E7DA","92E5-B76E-D04B","95EE-349E-CA35","9917-39D5-DB38","9917-39D5-DB38","9977-2BC5-386A","9CB9-1019-8019","A084-03C1-A923","A9A2-174F-91A0","AE8C-46C3-4994","B287-C627-C943","B749-AAF2-5AC4","BF1A-6647-009D","BF8D-1C96-EE1C","CEF4-0773-7924","D279-B8D7-090F","D619-8E03-F681","DF49-E005-E705","E083-93C6-55CD","E45C-6460-E782","E763-1A59-7698","EEFE-F863-E07A","F993-B67E-E316","D973-5D65-BAB2"]
 #F17B-412E-CB64 FOR APP ENGINE
 firestore_skus = [
@@ -82,7 +113,11 @@ def main():
     #get_storage_specs(endpoint_url,API_KEY,service_filter_storage,output_file_Storage)
     # retrieve_prices_from_json(output_file_Storage,API_KEY,storage_combined)
     #fetch_save(API_KEY, '6F81-5844-456A',block_storage_skus) # Block storage, Persistant Disk
-    fetch_save(API_KEY, 'D97E-AB26-5D95',filestore_skus) # Cloud File Store 
+    #fetch_save(API_KEY, 'D97E-AB26-5D95',filestore_skus) # Cloud File Store 
+    
+    
+    #NETWORKING
+    fetch_save(API_KEY,'E505-1604-58F8',loadbalacer_skus)
    
 # Getting the price for CloudSQL services
 def get_prices():
@@ -485,6 +520,21 @@ def fetch_save(api_key, service_id, all_skus):
                             # Add other fields as needed
                         )
                         storage_spec.save()
+                        
+                    elif service_id == 'E505-1604-58F8':
+                        # Save to StorageSpecifications table
+                        network_spec = NetworkingSpecifications.objects.create(
+                            sku=sku_id,
+                            name=description,  # Insert description as name value
+                            provider_id=1,  # Assuming default provider id
+                            cloud_service_id=1,  # Assuming default cloud service id
+                            unit_price=str(unit_price),
+                            unit_of_measure=unit_of_storage,
+                            region=region,
+                            price_monthly=str(float(unit_price) * 730)  # Assuming a monthly price (30 days)
+                            # Add other fields as needed
+                        )
+                        network_spec.save()
 
             page_token = api_data.get('nextPageToken')
             if not page_token:
@@ -792,7 +842,59 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
         }
     else:
         computed_data['database'] = None
+        
+        
+    #Networking Logic
+    inbound_lb = None
+    outbound_lb = None
+    dns_instance = None
+    cdn_instance = None
+    name = ""
 
+    if scalability == "essential":
+        name += "Auto Scaling & Load Balancing"
+        inbound_query = f"Regional External Application Load Balancer Inbound Data Processing for {city}"
+        inbound_lb= NetworkingSpecifications.objects.filter(name__contains=inbound_query).first()
+        print(inbound_query)
+        outbound_query= f"Regional External Application Load Balancer Outbound Data Processing for {city}"
+        outbound_lb= NetworkingSpecifications.objects.filter(name__contains=outbound_query).first()
+        print(outbound_query)
+    else:
+        name = ""
+    
+    if dns_connection == 'Yes':
+        name += " DNS"
+        dns_query='0CAB-FE26-F2C6'
+        dns_instance= NetworkingSpecifications.objects.filter(sku=dns_query).first()
+    else:
+        name=""
+        
+    if cdn_connection == 'Yes':
+        name += " CDN"
+        cdn_query='620D-FE53-4BA9'
+        cdn_instance= NetworkingSpecifications.objects.filter(sku=cdn_query).first()
+    else :
+        name +=""
+        
+    if inbound_lb or outbound_lb or dns_instance or cdn_instance:
+    # Compute total price only for non-null instances
+        network_total_price = (float(inbound_lb.unit_price) if inbound_lb else 0) + \
+                            (float(outbound_lb.unit_price) if outbound_lb else 0) + \
+                            (float(dns_instance.unit_price) if dns_instance else 0) + \
+                            (float(cdn_instance.unit_price) if cdn_instance else 0)
+        
+        network_total_price*= 730
+        sku_components = [component.sku if component else "" for component in [inbound_lb, outbound_lb, dns_instance, cdn_instance]]
+        sku_comp = " + ".join(filter(None, sku_components))
+        computed_data['networking'] = {
+        'name': name,
+        'unit_price': network_total_price,
+        'sku': sku_comp
+    }
+    else:
+        computed_data['networking'] = None
+        
+    
     # if networking_feature:
     #     if 'Content' in networking_feature:
     #         # Query for the first networking instance based on the keyword "CDN"
