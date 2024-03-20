@@ -189,7 +189,7 @@ def fetch_pricing_data(sku, service_code):
 #         break
 
 #     return HttpResponse("AWS data processed successfully.")
-def process_ec2_data(sku, pricing_data, region):
+def process_ec2_data(sku, pricing_data, region, service_code):
     # AWS Provider and Compute CloudService setup
     provider_name = 'AWS'
     provider, _ = Provider.objects.get_or_create(name=provider_name)
@@ -256,7 +256,7 @@ def process_ec2_data(sku, pricing_data, region):
     return HttpResponse("AWS data processed successfully.")
 
 
-def process_to_database_storage_specification(sku, pricing_data):
+def process_to_database_specifications(sku, pricing_data, region, service_code):
     provider_name = 'AWS'
     provider, _ = Provider.objects.get_or_create(name=provider_name)
 
@@ -391,7 +391,7 @@ def process_to_database_specifications(sku, pricing_data, region, service_code):
     except DatabaseSpecifications.DoesNotExist:
         print(f"Verification Failed: SKU {sku} not found in database.")
 
-def process_to_storage_specifications(sku, pricing_data):
+def process_to_storage_specifications(sku, pricing_data, region, service_code):
     # Extracting initial attributes
     provider_name = 'AWS'
     provider, _ = Provider.objects.get_or_create(name=provider_name)
@@ -467,16 +467,17 @@ def process_to_storage_specifications(sku, pricing_data):
 
 
 def process_and_save_data(sku, service_code, pricing_data):
+    region = ''
     # Check if SKU is part of AmazonEC2 and not "HY3BZPP2B6K8MSJF"
     if service_code == "AmazonEC2" and sku != "HY3BZPP2B6K8MSJF":
         process_ec2_data(sku, pricing_data, 'us-east-1')
     elif service_code == "AmazonDynamoDB" or sku == "QVD35TA7MPS92RBC":
         # Call the process_dynamodb_data function for DynamoDB SKUs
-        process_to_database_storage_specification(sku, pricing_data)
+        process_to_database_specifications(sku, pricing_data, region, service_code)
     elif sku == "MV3A7KKN6HB749EA":
         process_to_database_specifications(sku, pricing_data, 'us-east-1', service_code)
     elif service_code == "AmazonS3" or service_code == "AmazonEFS" or sku == "HY3BZPP2B6K8MSJF":
-        process_to_storage_specifications(sku, pricing_data)
+        process_to_storage_specifications(sku, pricing_data, region, service_code)
     else:
         # Handle other cases or simply pass
         pass
@@ -496,7 +497,7 @@ def aws_compute_fetch(request):
         'ca-central-1', 'ca-west-1', 'eu-central-1', 'eu-west-1', 'eu-west-2', 'eu-south-1', 'eu-west-3', 'eu-south-2', 
         'eu-north-1', 'eu-central-2', 'me-south-1', 'me-central-1', 'sa-east-1', 'us-gov-east-1', 'us-gov-west-1', 'me-central-1',  
     ]
- 
+    service_code = ''
     records_processed = 0
 
     for region in regions:
@@ -514,7 +515,7 @@ def aws_compute_fetch(request):
 
     # Pass the process_ec2_data function as an argument
    
-        records_processed += process_aws_pricing_data(response, process_ec2_data, region)
+        records_processed += process_aws_pricing_data(response, process_ec2_data, region, service_code)
         while 'NextToken' in response and records_processed:
             response = client.get_products(
                 ServiceCode='AmazonEC2',
@@ -522,7 +523,7 @@ def aws_compute_fetch(request):
                 MaxResults=100,
                 NextToken=response['NextToken']
             )
-            records_processed += process_aws_pricing_data(response, process_ec2_data, region)
+            records_processed += process_aws_pricing_data(response, process_ec2_data, region, service_code)
 
     # while 'NextToken' in response and records_processed < max_records:
     #     response = client.get_products(
@@ -577,7 +578,7 @@ def aws_storage_fetch(request):
     client = boto3.client('pricing', region_name='us-east-1')
     storage_services = ['AmazonEFS', 'AmazonS3']
     total_records_processed = 0
-
+    region = ''
     for service_code in storage_services:
         response = client.get_products(
             ServiceCode=service_code,
@@ -585,7 +586,7 @@ def aws_storage_fetch(request):
             MaxResults=100
         )
 
-        records_processed = process_aws_pricing_data(response, process_to_storage_specifications)
+        records_processed = process_aws_pricing_data(response, process_to_storage_specifications, region, service_code)
         total_records_processed += records_processed
 
         while 'NextToken' in response:
@@ -595,7 +596,7 @@ def aws_storage_fetch(request):
                 MaxResults=100,
                 NextToken=response['NextToken']
             )
-            records_processed = process_aws_pricing_data(response, process_to_storage_specifications)
+            records_processed = process_aws_pricing_data(response, process_to_storage_specifications, region, service_code)
             total_records_processed += records_processed
 
     return JsonResponse({"message": f"AWS Storage data processed. Total records: {total_records_processed}"}, safe=False)
@@ -603,24 +604,26 @@ def aws_storage_fetch(request):
 def aws_rds_fetch(request):
     client = boto3.client('pricing', region_name='us-east-1')
     databases = ['AmazonRDS' ,'AmazonDynamoDB']
-
+    region = 'us-east-1'  # Define the region variable
+    # service_code = ''
     for database_service in databases:
         response = client.get_products(
             ServiceCode=database_service,
-            Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'us-east-1'}],
+            Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': region}],
             MaxResults=100
         )
-
-        records_processed = process_aws_pricing_data(response, process_to_database_specifications)
+        # Pass region to process_aws_pricing_data if it's necessary
+        records_processed = process_aws_pricing_data(response, process_to_database_specifications, region, database_service)
 
         while 'NextToken' in response:
             response = client.get_products(
                 ServiceCode=database_service,
-                Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'us-east-1'}],
+                Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': region}],
                 MaxResults=100,
                 NextToken=response['NextToken']
             )
-            records_processed += process_aws_pricing_data(response, process_to_database_specifications)
+            # If process_aws_pricing_data needs region, pass it here too
+            records_processed += process_aws_pricing_data(response, process_to_database_specifications, region, databases)
 
     return JsonResponse({"message": f"AWS database data processed. Total records: {records_processed}"}, safe=False)
 
@@ -630,14 +633,14 @@ def aws_networking_fetch(request, service_code):
     client = boto3.client('pricing', region_name='us-east-1')
     max_records = 500
     records_processed = 0
-
+    region = ''
     response = client.get_products(
         ServiceCode=service_code,  # Use the provided service code
         Filters=[{'Type': 'TERM_MATCH', 'Field': 'regionCode', 'Value': 'us-east-1'}],
         MaxResults=100
     )
 
-    records_processed += process_aws_pricing_data(response, process_networking_data)
+    records_processed += process_aws_pricing_data(response, process_networking_data, region, service_code)
 
     while 'NextToken' in response and records_processed < max_records:
         response = client.get_products(
@@ -646,12 +649,12 @@ def aws_networking_fetch(request, service_code):
             MaxResults=100,
             NextToken=response['NextToken']
         )
-        records_processed += process_aws_pricing_data(response, process_networking_data)
+        records_processed += process_aws_pricing_data(response, process_networking_data, region, service_code)
 
     return JsonResponse({"message": f"AWS {service_code} data processed. Total records: {records_processed}"}, safe=False)
 
 
-def process_networking_data(sku, pricing_data):
+def process_networking_data(sku, pricing_data, region, service_code):
     provider_name = 'AWS'
     provider, _ = Provider.objects.get_or_create(name=provider_name)
 
@@ -719,19 +722,19 @@ def aws_vpc_fetch(request):
 #             print(f"JSON parsing error: {e}")
 #     return processed
 
-def process_aws_pricing_data(response, process_function):
+def process_aws_pricing_data(response, process_function, region, service_code):
     processed = 0
     for price_str in response['PriceList']:
         try:
             pricing_data = json.loads(price_str)
             sku = pricing_data.get('product', {}).get('sku')
             if sku:
-                process_function(sku, pricing_data)
+                # Pass service_code along with other arguments
+                process_function(sku, pricing_data, region, service_code)
                 processed += 1
         except json.JSONDecodeError as e:
             print(f"JSON parsing error: {e}")
     return processed
-
 
 def calculated_data_AWS(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location):
     computed_data = {'provider': 'AWS',}  # Initialize dictionary to store computed data
@@ -1495,31 +1498,209 @@ def calculated_data_AWS(monthly_budget, expected_cpu, database_service, database
 #     computed_data['annual'] = plan_annual_price
 def calculated_data_AWS_basic(compute_complexity, expected_users, data_storage_type, database_service, dns_feature, cdn_networking, region):
     computed_data = {'provider': 'AWS',}  # Initialize dictionary to store computed data
-   
     if compute_complexity:
-        try:
-            # compute_instance = ComputeSpecifications.objects.get(sku=compute_sku, provider__name='AWS')
-            # # unit_price = float(compute_instance.unit_price) * 720 # Convert unit price to float
-            # compute_unit_price = float(compute_instance.unit_price)# Convert unit price to float
-            # compute_name = "Ec2 Instance"
-            computed_data['compute'] = {
-            'name': 'EC2',
-            # 'unit_price': unit_price,
-            'unit_price': '123',
-            'cpu': '12',
-            'memory': '4',
-            'sku': 'rwerwerwerwer322',
-            # 'provider': compute_instance.provider.name,
-            # 'cloud_service': compute_instance.cloud_service.service_type,
-            # 'description': compute_instance.description  # Assuming there's a description field
-            }        
-            # compute_total_price = compute_unit_price  # Calculate total price
-            # compute_total_price = compute_unit_price * 720  # Calculate total price
-            # print("-------------------------------------------------------------")
-            # print(f"Compute unit price is:  {compute_unit_price}")
-            # print(f"Compute total price is:  {compute_total_price}")
-        except ComputeSpecifications.DoesNotExist:
-            computed_data['compute'] = 'No compute instance found for SKU 3DG6WFZ5QW4JAAHJ.'
+        if compute_complexity == "simple":
+            if region == "us-east-1": # Virginia
+                compute_sku = "ZARW2CVKAGDA9CH7"
+            elif region == "us-east-2": # Ohio
+                compute_sku = "G3MWKTTASN4YDV9G"
+            elif region == "us-west-1":   # California
+                compute_sku = "2YBVU66CE3ZCB3MN"
+            elif region == "us-west-2": # Oregon
+                compute_sku = "95AQPMX9Z2Q79CUA"    
+            elif region == "ap-east-1": # Hong Kong
+                compute_sku = "YPN5EFDYK7EWBYFS" 
+            elif region == "ap-south-1": # Mumbai
+                compute_sku = "8EJHB83R33SUFQ6N"
+            elif region == "ap-northeast-3": # Osaka
+                compute_sku = "DTJZW7BSSC22H47Y"
+            elif region == "ap-northeast-2": # Seoul
+                compute_sku = "8JC7KPKJGZQW9XE8"
+            elif region == "ap-southeast-1": # Singapore
+                compute_sku = "25QKCHCQ2X6PQ4SK"
+            elif region == "ap-southeast-2":  # Sydney
+                compute_sku = "D7Y7SA65JHNJ8TVK"
+            elif region == "ap-northeast-1":  # Tokyo
+                compute_sku = "39XEARFEZ6AR38HF"
+            elif region == "ca-central-1":  # Canada central, may we should add calgary region as well
+                compute_sku = "9D4UM5M4CKKUMC7F"
+            elif region == "cn-north-1":    # Chine not available in this api calls
+                compute_sku = ""
+            elif region == "cn-northwest-1":  # Not available 
+                compute_sku = "3DG6WFZ5QW4JAAHJ"
+            elif region == "eu-central-1": # Frankfurt
+                compute_sku = "3K59PVQYWBTWXEHT" # keep thisssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+            elif region == "eu-west-1":  # Ireland
+                compute_sku = "HTENM5U4FF46JJX4"
+            elif region == "eu-west-2":   # London
+                compute_sku = "SWBFZA9T9TPE7BTW"
+            elif region == "eu-south-1":   # Milan
+                compute_sku = "3SNYTU7RS77EZVEV"
+            elif region == "eu-west-3":  # Paris
+                compute_sku = "GUCTAJJ2UBWCYGBV"
+            elif region == "eu-north-1":   # Stockholm
+                compute_sku = "42YK6425MDNNXXYK"
+            elif region == "me-south-1":  # Bahrain
+                compute_sku = "2R36JA9UAT77F3QS"
+            elif region == "sa-east-1":   # São Paulo
+                compute_sku = "WJYZVWCTJV8GR994"
+            elif region == "af-south-1":   # Cape Town
+                compute_sku = "5S6YRHGH44SE49ND"
+
+                            
+        elif compute_complexity == "moderate":
+            if region == "us-east-1": # Virginia
+                compute_sku = "P37Q5U4XP3NAK2W5"
+            elif region == "us-east-2": # Ohio
+                compute_sku = "4QB2537CEAFFV88T"
+            elif region == "us-west-1":   # California
+                compute_sku = "9ADVHZJRUPF5J82B"
+            elif region == "us-west-2": # Oregon
+                compute_sku = "EB4NSNHN8RZWNQ9A"    
+            elif region == "ap-east-1": # Hong Kong
+                compute_sku = "5ZA9M9B4FYCU8WF4" 
+            elif region == "ap-south-1": # Mumbai
+                compute_sku = "DAQPRJYRW62BPP7E"
+            elif region == "ap-northeast-3": # Osaka
+                compute_sku = "VNC3YEB9P8E6Z5JY"
+            elif region == "ap-northeast-2": # Seoul
+                compute_sku = "P8XRUVFG33JR4PK4"
+            elif region == "ap-southeast-1": # Singapore
+                compute_sku = "QYCDQVDKVPX7T5FQ"
+            elif region == "ap-southeast-2":  # Sydney
+                compute_sku = "KCQSMEZWEQ6BAHRC"
+            elif region == "ap-northeast-1":  # Tokyo
+                compute_sku = "EKN7XE2H44U8E8NC"
+            elif region == "ca-central-1":  # Canada central, may we should add calgary region as well
+                compute_sku = "XSJ4F6YSZ5TMX3ZV"
+            elif region == "cn-north-1":    # Chine not available in this api calls
+                compute_sku = ""
+            elif region == "cn-northwest-1":  # Not available 
+                compute_sku = "3DG6WFZ5QW4JAAHJ"
+            elif region == "eu-central-1": # Frankfurt
+                compute_sku = "N4HZ49HZM3XYD2U5" # keep thisssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+            elif region == "eu-west-1":  # Ireland
+                compute_sku = "UQZYXZ3XSGNKGCZE"
+            elif region == "eu-west-2":   # London
+                compute_sku = "C3HTATWN6KJN775T"
+            elif region == "eu-south-1":   # Milan
+                compute_sku = "BPSU5UBW7WWXGUCJ"
+            elif region == "eu-west-3":  # Paris
+                compute_sku = "XN9FQ9WYKTPB2YSA"
+            elif region == "eu-north-1":   # Stockholm
+                compute_sku = "3UZ4XBKSANQ7KPR7"
+            elif region == "me-south-1":  # Bahrain
+                compute_sku = "7GB2W3ARTW8WNZE8"
+            elif region == "sa-east-1":   # São Paulo
+                compute_sku = "WWRX68SGEEHPB7NZ"
+            elif region == "af-south-1":   # Cape Town
+                compute_sku = "NBMYQQ4T7RUGXKGV"
+                
+                
+        elif compute_complexity == "complex":
+            if region == "us-east-1": # Virginia
+                compute_sku = "Q9BFE6EA4544M38X"
+            elif region == "us-east-2": # Ohio
+                compute_sku = "2D6MD5K8FY3WJ8FZ"
+            elif region == "us-west-1":   # California
+                compute_sku = "GNUB6XWN2VHXGFKR"
+            elif region == "us-west-2": # Oregon
+                compute_sku = "R2Z2U7QW2959AQTN"    
+            elif region == "ap-east-1": # Hong Kong
+                compute_sku = "E94TGFKCTYWVDGTR"  
+            elif region == "ap-south-1": # Mumbai
+                compute_sku = "GUTY5ZHF27FQNDY6" 
+            elif region == "ap-northeast-3": # Osaka
+                compute_sku = "9V8KU27YTW9M56YP" 
+            elif region == "ap-northeast-2": # Seoul
+                compute_sku = "XPU62JHUXR6YGHM7"
+            elif region == "ap-southeast-1": # Singapore
+                compute_sku = "UK4G6YTCGUXQ95FV"
+            elif region == "ap-southeast-2":  # Sydney
+                compute_sku = "84X58QT58C94M9S4"
+            elif region == "ap-northeast-1":  # Tokyo
+                compute_sku = "QWP5HGDJCPK7M5HX"
+            elif region == "ca-central-1":  # Canada central, may we should add calgary region as well
+                compute_sku = "2EY9Q93X25CP4JPH" 
+            elif region == "cn-north-1":    # Chine not available in this api calls
+                compute_sku = ""
+            elif region == "cn-northwest-1":  # Not available 
+                compute_sku = ""
+            elif region == "eu-central-1": # Frankfurt
+                compute_sku = "MHVW6ECJ79TE8898" # keep thisssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+            elif region == "eu-west-1":  # Ireland
+                compute_sku = "2W2HPS86C3XU5Z5N"
+            elif region == "eu-west-2":   # London
+                compute_sku = "9G5PTTCAG64KWYW3" 
+            elif region == "eu-south-1":   # Milan
+                compute_sku = "7DK3DEGTAJSARFB3" 
+            elif region == "eu-west-3":  # Paris
+                compute_sku = "XZ3QNZ72MHT2FCNN" 
+            elif region == "eu-north-1":   # Stockholm
+                compute_sku = "MBE4DX6V4944MUSG" 
+            elif region == "me-south-1":  # Bahrain
+                compute_sku = "NKSRA2MGJ26488D9" 
+            elif region == "sa-east-1":   # São Paulo
+                compute_sku = "FTKRMY28NATVFRT8"
+            elif region == "af-south-1":   # Cape Town
+                compute_sku = "U4DM5KKKH38Q93SY" 
+
+
+    if expected_users == "10000":
+        print('essential')
+        scaling = " + Auto Scaling"
+    else: 
+        scaling = ""
+
+    try:
+        compute_instance = ComputeSpecifications.objects.get(sku=compute_sku, provider__name='AWS')
+        # unit_price = float(compute_instance.unit_price) * 720 # Convert unit price to float
+        compute_unit_price = float(compute_instance.unit_price)# Convert unit price to float
+        compute_name = "Ec2 Instance"
+        computed_data['compute'] = {
+        'name': compute_name + scaling,
+        # 'unit_price': unit_price,
+        'unit_price': compute_unit_price,
+        'cpu': compute_instance.cpu,
+        'memory': compute_instance.memory,
+        'sku': compute_instance.sku,
+        'provider': compute_instance.provider.name,
+        'cloud_service': compute_instance.cloud_service.service_type,
+        'description': compute_instance.description  # Assuming there's a description field
+        }        
+        compute_total_price = compute_unit_price  # Calculate total price
+        compute_total_price = compute_unit_price * 720  # Calculate total price
+        print("-------------------------------------------------------------")
+        print(f"Compute unit price is:  {compute_unit_price}")
+        print(f"Compute total price is:  {compute_total_price}")
+    except ComputeSpecifications.DoesNotExist:
+        computed_data['compute'] = 'No compute instance found for SKU 3DG6WFZ5QW4JAAHJ.'
+
+   
+    # if compute_complexity:
+    #     try:
+    #         # compute_instance = ComputeSpecifications.objects.get(sku=compute_sku, provider__name='AWS')
+    #         # # unit_price = float(compute_instance.unit_price) * 720 # Convert unit price to float
+    #         # compute_unit_price = float(compute_instance.unit_price)# Convert unit price to float
+    #         # compute_name = "Ec2 Instance"
+    #         computed_data['compute'] = {
+    #         'name': 'EC2',
+    #         # 'unit_price': unit_price,
+    #         'unit_price': '123',
+    #         'cpu': '12',
+    #         'memory': '4',
+    #         'sku': 'rwerwerwerwer322',
+    #         # 'provider': compute_instance.provider.name,
+    #         # 'cloud_service': compute_instance.cloud_service.service_type,
+    #         # 'description': compute_instance.description  # Assuming there's a description field
+    #         }        
+    #         # compute_total_price = compute_unit_price  # Calculate total price
+    #         # compute_total_price = compute_unit_price * 720  # Calculate total price
+    #         # print("-------------------------------------------------------------")
+    #         # print(f"Compute unit price is:  {compute_unit_price}")
+    #         # print(f"Compute total price is:  {compute_total_price}")
+    #     except ComputeSpecifications.DoesNotExist:
+    #         computed_data['compute'] = 'No compute instance found for SKU 3DG6WFZ5QW4JAAHJ.'
             
     if data_storage_type:
         try:
