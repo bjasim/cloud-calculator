@@ -17,66 +17,78 @@ const AdvancedForm = () => {
   const navigate = useNavigate(); // Initialize navigate function
 
   const [formData, setFormData] = useState({
-    businessSize: "",
-    expectedUsers: "",
+    // businessSize: "",
+    // expectedUsers: "",
     monthlyBudget: "",
     expectedRAM: "",
     databaseService: "",
     databaseSize: "",
     cloudStorage: "",
-    storageType: "",
-    networkPerformance: "",
-    networkingFeature: "",
+    storageSize: "",
+    // networkPerformance: "",
+    dnsConnection: "",
+    cdnConnection: "",
     scalability: "",
     location: "",
   });
 
   const [validationErrors, setValidationErrors] = useState({
-    businessSize: false,
-    expectedUsers: false,
+    // businessSize: false,
+    // expectedUsers: false,
     monthlyBudget: false,
     expectedRAM: false,
     databaseService: false,
     databaseSize: false,
     cloudStorage: false,
-    storageType: false,
-    networkPerformance: false,
-    networkingFeature: false,
+    storageSize: false,
+    // networkPerformance: false,
+    dnsConnection: false,
+    cdnConnection: false,
     scalability: false,
     location: false,
   });
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-    setFormData((prevData) => ({
+    setFormData(prevData => ({
       ...prevData,
       [name]: value,
     }));
-    setValidationErrors((prevErrors) => ({
-      ...prevErrors,
-      [name]: value === "",
-    }));
+    // Clear databaseSize error if 'noDatabase' is selected
+    if (name === "databaseService" && value === "noDatabase") {
+      setValidationErrors(prevErrors => ({
+        ...prevErrors,
+        [name]: value === "",
+        databaseSize: false, // Do not validate databaseSize if 'noDatabase' is selected
+      }));
+    } else {
+      setValidationErrors(prevErrors => ({
+        ...prevErrors,
+        [name]: value === "",
+      }));
+    }
   };
-
+  
   const handleSubmit = async (event) => {
     event.preventDefault();
     let isValid = true;
     const newValidationErrors = { ...validationErrors };
     Object.entries(formData).forEach(([key, value]) => {
-      if (value === "") {
+      // Skip validation for databaseSize if 'noDatabase' is selected
+      if ((key === "databaseSize" && formData.databaseService === "noDatabase") || 
+          (key === "storageSize" && formData.cloudStorage === "No Storage")) {
+        newValidationErrors[key] = false;
+      } else if (value === "") {
         isValid = false;
         newValidationErrors[key] = true;
-        setTimeout(() => {
-          setValidationErrors((prevErrors) => ({
-            ...prevErrors,
-            [key]: false,
-          }));
-        }, 3000); // Clear error after 3 seconds
       } else {
         newValidationErrors[key] = false;
       }
     });
+  
+    // Update state immediately, no need to delay with setTimeout
     setValidationErrors(newValidationErrors);
+  
     if (isValid) {
       try {
         const response = await fetch("http://localhost:8000/api/submit-advanced-form/", {
@@ -88,12 +100,9 @@ const AdvancedForm = () => {
         });
         if (response.ok) {
           console.log("Form data submitted successfully");
-          // Handle success
-          const responseData = await response.json(); // Parse response body as JSON
-          console.log("Response from backend:", responseData); // Print the response
+          const responseData = await response.json(); 
           navigate("/results", { state: { responseData } });
         } else {
-          // Handle error
           console.error("Failed to submit form data");
         }
       } catch (error) {
@@ -101,6 +110,11 @@ const AdvancedForm = () => {
       }
     }
   };
+  
+
+  // Determine if Database Size and Storage Size should be disabled
+  const isDatabaseDisabled = !formData.databaseService || formData.databaseService === "noDatabase";
+  const isStorageDisabled = !formData.cloudStorage || formData.cloudStorage === "No Storage";  
 
   return (
     <Container maxWidth="md">
@@ -111,7 +125,7 @@ const AdvancedForm = () => {
         <form onSubmit={handleSubmit}>
           <Grid container spacing={4}>
             {/* Business Size */}
-            <Grid item xs={6}>
+            {/* <Grid item xs={6}>
               <FormControl fullWidth>
                 <InputLabel id="business-size-label">Business Size</InputLabel>
                 <Select
@@ -135,8 +149,8 @@ const AdvancedForm = () => {
                   <FormHelperText error>Please select business size</FormHelperText>
                 )}
               </FormControl>
-            </Grid>
-            {/* Expected Users */}
+            </Grid> */}
+            {/* Expected Users
             <Grid item xs={6}>
               <FormControl fullWidth>
                 <InputLabel id="user-count-label">Expected users</InputLabel>
@@ -159,7 +173,7 @@ const AdvancedForm = () => {
                   <FormHelperText error>Please select expected users</FormHelperText>
                 )}
               </FormControl>
-            </Grid>
+            </Grid> */}
             {/* Monthly Budget */}
             <Grid item xs={6}>
               <FormControl fullWidth>
@@ -223,7 +237,6 @@ const AdvancedForm = () => {
                 >
                   <MenuItem value="">Select...</MenuItem>
                   <MenuItem value="noSQL">NoSQL</MenuItem>
-                  <MenuItem value="postgreSQL">PostgreSQL</MenuItem>
                   <MenuItem value="sql">SQL</MenuItem>
                   <MenuItem value="noDatabase">No Database Required</MenuItem>
                 </Select>
@@ -234,7 +247,7 @@ const AdvancedForm = () => {
             </Grid>
 
             {/* Database Size */}
-            <Grid item xs={6}>
+            {/* <Grid item xs={6}>
               <FormControl fullWidth>
                 <InputLabel id="database-size-label">Database Size</InputLabel>
                 <Select
@@ -251,6 +264,29 @@ const AdvancedForm = () => {
                   <MenuItem value="large">Large (10-100 TB)</MenuItem>
                   <MenuItem value="veryLarge">Very Large (over 100 TB)</MenuItem>
                   <MenuItem value="notSure">Not Sure/No Specific Requirements</MenuItem>
+                </Select>
+                {validationErrors.databaseSize && (
+                  <FormHelperText error>Please select database size</FormHelperText>
+                )}
+              </FormControl>
+            </Grid> */}
+
+            <Grid item xs={6}>
+              <FormControl fullWidth disabled={isDatabaseDisabled}>
+                <InputLabel id="database-size-label">Database Size</InputLabel>
+                <Select
+                  labelId="database-size-label"
+                  value={formData.databaseSize}
+                  onChange={handleChange}
+                  name="databaseSize"
+                  label="Database Size"
+                  error={validationErrors.databaseSize}
+                  disabled={isDatabaseDisabled} // Disable based on condition
+                >
+                  <MenuItem value="">Select...</MenuItem>
+                  <MenuItem value="small">Small (under 1 TB)</MenuItem>
+                  <MenuItem value="medium">Medium (10 TB)</MenuItem>
+                  <MenuItem value="large">Large (100 TB)</MenuItem>
                 </Select>
                 {validationErrors.databaseSize && (
                   <FormHelperText error>Please select database size</FormHelperText>
@@ -282,32 +318,57 @@ const AdvancedForm = () => {
               </FormControl>
             </Grid>
 
-            {/* Storage Type */}
-            <Grid item xs={6}>
+            {/* Storage Size */}
+            {/* <Grid item xs={6}>
               <FormControl fullWidth>
-                <InputLabel id="storage-type-label">Storage Type</InputLabel>
+                <InputLabel id="storage-size-label">Storage Size</InputLabel>
                 <Select
-                  labelId="storage-type-label"
-                  value={formData.storageType}
+                  labelId="storage-size-label"
+                  value={formData.storageSize}
                   onChange={handleChange}
-                  name="storageType"
-                  label="Storage Type"
-                  error={validationErrors.storageType}
+                  name="storageSize"
+                  label="Storage Size"
+                  error={validationErrors.storageSize}
                 >
                   <MenuItem value="">Select...</MenuItem>
-                  <MenuItem value="High Volume">High Volume Storage</MenuItem>
-                  <MenuItem value="Fast Access">Fast Access Storage</MenuItem>
-                  <MenuItem value="Backup Recovery">Regular Backup and Recovery</MenuItem>
-                  <MenuItem value="No Storage">No Storage Required</MenuItem>
+                  <MenuItem value="small">Small (under 1 TB)</MenuItem>
+                  <MenuItem value="medium">Medium (1-10 TB)</MenuItem>
+                  <MenuItem value="large">Large (10-100 TB)</MenuItem>
+                  <MenuItem value="veryLarge">Very Large (over 100 TB)</MenuItem>
+                  <MenuItem value="notSure">Not Sure/No Specific Requirements</MenuItem>
                 </Select>
-                {validationErrors.storageType && (
-                  <FormHelperText error>Please select storage type</FormHelperText>
+                {validationErrors.storageSize && (
+                  <FormHelperText error>Please select storage size</FormHelperText>
+                )}
+              </FormControl>
+            </Grid> */}
+
+            <Grid item xs={6}>
+              <FormControl fullWidth disabled={isStorageDisabled}>
+                <InputLabel id="storage-size-label">Storage Size</InputLabel>
+                <Select
+                  labelId="storage-size-label"
+                  value={formData.storageSize}
+                  onChange={handleChange}
+                  name="storageSize"
+                  label="Storage Size"
+                  error={validationErrors.storageSize}
+                  disabled={isStorageDisabled} // Disable based on condition
+                >
+                  <MenuItem value="">Select...</MenuItem>
+                  <MenuItem value="small">Small (under 1 TB)</MenuItem>
+                  <MenuItem value="medium">Medium (1-10 TB)</MenuItem>
+                  <MenuItem value="large">Large (10-100 TB)</MenuItem>
+                </Select>
+                {validationErrors.storageSize && (
+                  <FormHelperText error>Please select storage size</FormHelperText>
                 )}
               </FormControl>
             </Grid>
 
+
             {/* Network Performance */}
-            <Grid item xs={6}>
+            {/* <Grid item xs={6}>
               <FormControl fullWidth>
                 <InputLabel id="network-performance-label">Network Performance</InputLabel>
                 <Select
@@ -328,31 +389,52 @@ const AdvancedForm = () => {
                   <FormHelperText error>Please select network performance</FormHelperText>
                 )}
               </FormControl>
-            </Grid>
+            </Grid> */}
 
-            {/* Networking Features */}
+            {/* Content Delivery Network (CDN) */}
             <Grid item xs={6}>
               <FormControl fullWidth>
-                <InputLabel id="networking-features-label">Networking Features</InputLabel>
+                <InputLabel id="dns-feature-laber">Domain Name System (DNS)</InputLabel>
                 <Select
-                  labelId="networking-features-label"
-                  value={formData.networkingFeature}
+                  labelId="dns-feature-laber"
+                  value={formData.dnsConnection}
                   onChange={handleChange}
-                  name="networkingFeature"
-                  label="Networking Features"
-                  error={validationErrors.networkingFeature}
+                  name="dnsConnection"
+                  label="dns connection"
+                  error={validationErrors.dnsConnection}
                 >
                   <MenuItem value="">Select...</MenuItem>
-                  <MenuItem value="Virtual Private Networking">VPN Connections</MenuItem>
-                  <MenuItem value="Content Delivery Network">
-                    Content Delivery Network (CDN)
-                  </MenuItem>
+                  <MenuItem value="Yes">Yes</MenuItem>
+                  <MenuItem value="No">No</MenuItem>
                 </Select>
-                {validationErrors.networkingFeature && (
-                  <FormHelperText error>Please select networking feature</FormHelperText>
+                {validationErrors.dnsConnection && (
+                  <FormHelperText error>Please select your option</FormHelperText>
                 )}
               </FormControl>
             </Grid>
+
+            {/* Content Delivery Network (CDN) */}
+            <Grid item xs={6}>
+              <FormControl fullWidth>
+                <InputLabel id="cdn-feature-laber">Content Delivery Network (CDN)</InputLabel>
+                <Select
+                  labelId="cdn-feature-laber"
+                  value={formData.cdnConnection}
+                  onChange={handleChange}
+                  name="cdnConnection"
+                  label="cdn connection"
+                  error={validationErrors.cdnConnection}
+                >
+                  <MenuItem value="">Select...</MenuItem>
+                  <MenuItem value="Yes">Yes</MenuItem>
+                  <MenuItem value="No">No</MenuItem>
+                </Select>
+                {validationErrors.cdnConnection && (
+                  <FormHelperText error>Please select your option</FormHelperText>
+                )}
+              </FormControl>
+            </Grid>
+
 
             {/* Scalability */}
             <Grid item xs={6}>
@@ -368,8 +450,8 @@ const AdvancedForm = () => {
                 >
                   <MenuItem value="">Select...</MenuItem>
                   <MenuItem value="notImportant">Not Important</MenuItem>
-                  <MenuItem value="somewhatImportant">Somewhat Important</MenuItem>
-                  <MenuItem value="veryImportant">Very Important</MenuItem>
+                  {/* <MenuItem value="somewhatImportant">Somewhat Important</MenuItem> */}
+                  {/* <MenuItem value="veryImportant">Very Important</MenuItem> */}
                   <MenuItem value="essential">Essential</MenuItem>
                 </Select>
                 {validationErrors.scalability && (
