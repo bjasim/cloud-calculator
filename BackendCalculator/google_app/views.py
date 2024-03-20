@@ -855,10 +855,9 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
         name += "Auto Scaling & Load Balancing"
         inbound_query = f"Regional External Application Load Balancer Inbound Data Processing for {city}"
         inbound_lb= NetworkingSpecifications.objects.filter(name__contains=inbound_query).first()
-        print(inbound_query)
         outbound_query= f"Regional External Application Load Balancer Outbound Data Processing for {city}"
         outbound_lb= NetworkingSpecifications.objects.filter(name__contains=outbound_query).first()
-        print(outbound_query)
+
     else:
         name = ""
     
@@ -882,8 +881,9 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
                             (float(outbound_lb.unit_price) if outbound_lb else 0) + \
                             (float(dns_instance.unit_price) if dns_instance else 0) + \
                             (float(cdn_instance.unit_price) if cdn_instance else 0)
-        
+
         network_total_price*= 730
+
         sku_components = [component.sku if component else "" for component in [inbound_lb, outbound_lb, dns_instance, cdn_instance]]
         sku_comp = " + ".join(filter(None, sku_components))
         computed_data['networking'] = {
@@ -915,6 +915,13 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
     #         }
     #     else:
     #         computed_data['networking']= None
+    plan_monthly_price = compute_total_cost + storage_total_price + database_total_price + network_total_price
+
+    plan_annual_price = float(plan_monthly_price) * 12
+    print("Total Monthly Plan Cost: ", plan_monthly_price)
+    print("Total Annual Plan Cost: ", plan_annual_price)
+    computed_data['monthly'] = round(plan_monthly_price)
+    computed_data['annual'] = round("$" + plan_annual_price)
 
     return computed_data
 
