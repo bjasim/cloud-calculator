@@ -177,6 +177,11 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     compute_total_price = 0
     database_total_price = 0
     storage_total_price = 0
+
+    #sku
+    ram_sku = None
+    compute_sku = None
+
 #ADVANCED FORM
 #-------------
     #Question #1: Monthly Budget
@@ -242,7 +247,7 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
             name_scalability = "- Auto-scaling & Load-balancer"
 
         #Check database size and select compute instance based off that.
-        if database_size in ["small", "medium", "1000", "5000"]:
+        if database_size in ["small", "medium", "1000", "5000", None]:
             compute_sku = "B93113"
             name_override = "AMD Standard E4 - "  
             ram_sku = "B93114"
@@ -291,7 +296,7 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     #
 
     #Check for the "No Storage" option first.
-    if database_service == "noDatabase" or database_service == "nodatabase":
+    if database_service == "noDatabase" or database_service == "nodatabase" or database_size == None:
         computed_data['database'] = {
             'name': "No Database",
             'unit_price': "N/A",
@@ -306,12 +311,12 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
 
             #advanced form
             "noSQL": "B89739",
-            #"postgreSQL": "B99062",
-            "sql": "B92426",
+            "sql": "B99062", #DB with POSTGRESQL
+            #prev sql option B92426
 
             #basic form 
-            "basic": "B92426",
-            "complex": "B89739",
+            "basic": "B89739", #nosql
+            "complex": "B99062", #postgresql
         }
 
         #Get the SKU for the current cloud_storage type.
@@ -385,7 +390,7 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     # 
 
     #Check for the "No Storage" option first
-    if cloud_storage == "No Storage":
+    if cloud_storage == "No Storage" or cloud_storage == None:
         computed_data['storage'] = {
             'name': "No Storage",
             'unit_price': "N/A",
