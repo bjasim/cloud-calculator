@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect} from "react";
+import CircularProgress from "@mui/material/CircularProgress";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import {
   Box,
@@ -15,7 +16,7 @@ import {
 
 const AdvancedForm = () => {
   const navigate = useNavigate(); // Initialize navigate function
-
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     // businessSize: "",
     // expectedUsers: "",
@@ -69,12 +70,62 @@ const AdvancedForm = () => {
     }
   };
   
+  // const handleSubmit = async (event) => {
+  //   event.preventDefault();
+  //   let isValid = true;
+  //   const newValidationErrors = { ...validationErrors };
+  //   Object.entries(formData).forEach(([key, value]) => {
+  //     // Skip validation for databaseSize if 'noDatabase' is selected
+  //     if ((key === "databaseSize" && formData.databaseService === "noDatabase") || 
+  //         (key === "storageSize" && formData.cloudStorage === "No Storage")) {
+  //       newValidationErrors[key] = false;
+  //     } else if (value === "") {
+  //       isValid = false;
+  //       newValidationErrors[key] = true;
+  //     } else {
+  //       newValidationErrors[key] = false;
+  //     }
+  //   });
+  
+  //   // Update state immediately, no need to delay with setTimeout
+  //   setValidationErrors(newValidationErrors);
+  
+  //   if (isValid) {
+  //     setLoading(true);
+  //     try {
+  //       const response = await fetch("http://localhost:8000/api/submit-advanced-form/", {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify(formData),
+  //       });
+  //       if (response.ok) {
+  //         console.log("Form data submitted successfully");
+  //         const responseData = await response.json(); 
+  //         navigate("/results", { state: { responseData } });
+  //         console.log("Response from backend:", responseData);
+
+  //         // Delay 5 seconds before navigating to the results page
+  //         setTimeout(() => {
+  //           setLoading(false); // Stop loading after the response
+  //           navigate("/results", { state: { responseData } });
+  //         }, 3000);
+  //       } else {
+  //         console.error("Failed to submit form data");
+  //         setLoading(false);
+  //       }
+  //     } catch (error) {
+  //       console.error("Error submitting form data:", error);
+  //       setLoading(false);
+  //     }
+  //   }
+  // };
   const handleSubmit = async (event) => {
     event.preventDefault();
     let isValid = true;
     const newValidationErrors = { ...validationErrors };
     Object.entries(formData).forEach(([key, value]) => {
-      // Skip validation for databaseSize if 'noDatabase' is selected
       if ((key === "databaseSize" && formData.databaseService === "noDatabase") || 
           (key === "storageSize" && formData.cloudStorage === "No Storage")) {
         newValidationErrors[key] = false;
@@ -86,10 +137,10 @@ const AdvancedForm = () => {
       }
     });
   
-    // Update state immediately, no need to delay with setTimeout
     setValidationErrors(newValidationErrors);
   
     if (isValid) {
+      setLoading(true); // Ensure loading is set to true before starting the fetch
       try {
         const response = await fetch("http://localhost:8000/api/submit-advanced-form/", {
           method: "POST",
@@ -99,22 +150,47 @@ const AdvancedForm = () => {
           body: JSON.stringify(formData),
         });
         if (response.ok) {
-          console.log("Form data submitted successfully");
-          const responseData = await response.json(); 
-          navigate("/results", { state: { responseData } });
+          const responseData = await response.json();
+          // Introduce a delay here using setTimeout
+          setTimeout(() => {
+            setLoading(false); // Stop loading and then navigate
+            navigate("/results", { state: { responseData } });
+          }, 3000); // Adjust the delay as needed
         } else {
           console.error("Failed to submit form data");
+          setLoading(false); // Ensure loading is set to false on failure
         }
       } catch (error) {
         console.error("Error submitting form data:", error);
+        setLoading(false); // Ensure loading is set to false on exception
       }
     }
   };
+  
   
 
   // Determine if Database Size and Storage Size should be disabled
   const isDatabaseDisabled = !formData.databaseService || formData.databaseService === "noDatabase";
   const isStorageDisabled = !formData.cloudStorage || formData.cloudStorage === "No Storage";  
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setValidationErrors({
+        monthlyBudget: false,
+        expectedRAM: false,
+        databaseService: false,
+        databaseSize: false,
+        cloudStorage: false,
+        storageSize: false,
+        // networkPerformance: false,
+        dnsConnection: false,
+        cdnConnection: false,
+        scalability: false,
+        location: false,
+      });
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [validationErrors]);
 
   return (
     <Container maxWidth="md">
@@ -503,10 +579,13 @@ const AdvancedForm = () => {
             </Grid>
             {/* Submit Button */}
             <Grid item xs={12}>
-              <Box mt={3} textAlign="center">
-                <Button variant="contained" color="primary" type="submit">
+              <Box mt={3} textAlign="center" position="relative">
+                <Button variant="contained" color="primary" type="submit" disabled={loading}>
                   Calculate
                 </Button>
+                {loading && (
+                  <CircularProgress size={24} style={{ position: "absolute", top: "5px" }} />
+                )}
               </Box>
             </Grid>
           </Grid>
