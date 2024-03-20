@@ -57,12 +57,37 @@ def handle_advanced_form_submission(request):
 def handle_basic_form_submission(request):
     if request.method == 'POST':
         form_data = json.loads(request.body)
-
-        # Print form data to console
         print("Received form data:", form_data)
+        monthly_budget = form_data.get('monthlyBudget')
+        expected_cpu = form_data.get('computeComplexity')  # Assuming the CPU field stores RAM information
+        database_service = form_data.get('databaseService')
+        database_size = form_data.get('expectedUsers')
+        cloud_storage = form_data.get('dataStorageType')
+        storage_size = form_data.get('expectedUsers')
+        dns_connection = form_data.get('dnsFeature')
+        cdn_connection = form_data.get('cdnNetworking')
+        scalability = form_data.get('scalability')
+        location = form_data.get('region')
+        # networking_feature = form_data.get('networkingFeature')
 
-        # Return success response
-        return JsonResponse({'success': True})
+        #azure_data = calculated_data_Azure(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location)
+        #aws_data = calculated_data_AWS(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location)
+        google_data = calculated_data_gcp(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location)
+        #Oracle_data = calculated_data_Oracle(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location)
+
+        combined_data = {
+            #'Azure': azure_data,
+            #'AWS': aws_data,
+            'Google': google_data,
+            #'Oracle': Oracle_data
+        }
+
+        # print(calculated_data)
+        # # Return computed data as JSON response
+        # return JsonResponse(calculated_data)
+        print(combined_data)
+        # Return computed data as JSON response
+        return JsonResponse(combined_data)
     else:
         # Return error response if the request method is not POST
         return JsonResponse({'success': False, 'error': 'Only POST requests are allowed'})

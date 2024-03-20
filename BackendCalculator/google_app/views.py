@@ -275,7 +275,7 @@ def computeinfo():
     # Assuming 'compute' is the key in your YAML file
     compute_data = data['compute']
 
-    
+   
     # Iterate over instance data
     for instance, instance_details in compute_data['instance'].items():
         # Create a new ComputeSpecifications object for each instance       
@@ -674,19 +674,27 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
     elif expected_cpu == "16vCPUs":
         compute_name="n1-standard-16"
     # Compute Logic
+    compute_total_cost=0
     compute_instance = ComputeSpecifications.objects.filter(provider__name='GCP', name=compute_name, region=location).first()
+    compute_total_cost=float(compute_instance.unit_price)*730 
     computed_data['compute'] = {
         'name': compute_instance.name,
-        'unit_price': compute_instance.unit_price,
+        'unit_price': compute_total_cost,
         'cpu': compute_instance.cpu,
         'memory': compute_instance.memory,
         'sku': compute_instance.sku,
         'provider': compute_instance.provider.name,
         'cloud_service': compute_instance.cloud_service.service_type
     }
+#----------------------------------------------------------------------------------------------------------------------------------------
+    if storage_size=='large':
+        storage_size=100000
+    elif storage_size=='medium':    
+        storage_size = 10000
+    elif storage_size=='small':
+        storage_size = 1000
     
     query_temp = None
-
     if cloud_storage == "File Storage":
         if city in ["Oregon", "Iowa", "South Carolina"]:
             query_temp = "Filestore Capacity Basic HDD (Standard) Iowa/South Carolina/Oregon"
@@ -708,11 +716,11 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
 
         # Query for the first storage instance based on the query_temp
         storage_instance = StorageSpecifications.objects.filter(name__contains=query).first()
-        
+        storage_total_price=float(storage_instance.unit_price)* storage_size  #figure out the pricing is done for the storage. Weather it is per gb a month
         if storage_instance:
             computed_data['storage'] = {
                 'name': storage_instance.name,
-                'unit_price': storage_instance.unit_price,
+                'unit_price': storage_total_price, #storage_total_price,
                 'unit_of_storage': storage_instance.unit_of_storage,
                 'sku': storage_instance.sku,
                 'provider': storage_instance.provider.name,
@@ -722,10 +730,11 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
             # If no results found using the city, default to querying "Storage PD Capacity"
             query_default = "Storage PD Capacity"
             storage_instance_default = StorageSpecifications.objects.filter(name=query_default).first()
+            storage_total_price=float(storage_instance_default.unit_price)* storage_size
             if storage_instance_default:
                 computed_data['storage'] = {
                     'name': storage_instance_default.name,
-                    'unit_price': storage_instance_default.unit_price,
+                    'unit_price': storage_total_price, #storage_total_price,
                     'unit_of_storage': storage_instance_default.unit_of_storage,
                     'sku': storage_instance_default.sku,
                     'provider': storage_instance_default.provider.name,
@@ -738,8 +747,15 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
     else:
         # Handle the case where either query_temp or city is None
         computed_data['storage'] = None
-                     
+ #-------------------------------------------------------------------------------------------------------------------------------------------------------------                    
     # #Database Logic
+    if database_size == 'large':
+        database_size = 1000
+    elif database_size == 'medium':
+        database_size = 100
+    elif database_size == 'small':
+        database_size = 10
+        
     query_template=None
     if database_service== 'postgreSQL':
         query_template = "Cloud SQL for PostgreSQL: Regional - Standard storage in %s"
@@ -754,7 +770,7 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
     
     if query_template:
         if database_service == 'noSQL' and city in ["South Carolina", "Iowa", "Belgium"]:
-            query_template = "Cloud Firestore Storage"
+            query_template = "Cloud Firestore Storage"  
     # Proceed with constructing the query
     if "%s" in query_template:  # Check if the format specifier exists in the template
         query = query_template % city if city else query_template  # Perform string formatting if city is provided
@@ -763,10 +779,11 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
 
     # Query for the first database instance
     database_instance = DatabaseSpecifications.objects.filter(name=query).first()
+    database_total_price= float(database_instance.unit_price)*database_size # be sure to change the price in the database, some of the values have not been formated correctly.
     if database_instance:
         computed_data['database'] = {
             'name': database_instance.name,
-            'unit_price': database_instance.unit_price,
+            'unit_price': database_total_price,
             'unit_of_storage': database_instance.unit_of_storage,   
             'sku': database_instance.sku,
             'data_type': database_instance.data_type,
