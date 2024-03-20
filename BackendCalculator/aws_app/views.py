@@ -1709,4 +1709,6 @@ def calculated_data_AWS_basic(compute_complexity, expected_users, data_storage_t
 # # to-do
 # Add logic if user select database for basic form (basic form)
 # Add logic for monthly budget to change price color (basic and advanced form)
+# Add all skus to the dictionary so they can be updated no matter what
+# Add time attribute to each database table to show updated time everytime the table gets updated
 # Finalize locations that work for all of us (basic and advanced form)
