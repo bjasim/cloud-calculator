@@ -777,7 +777,7 @@ def calculated_data_AWS(monthly_budget, expected_cpu, database_service, database
             elif location == "cn-north-1":    # Chine not available in this api calls
                 compute_sku = ""
             elif location == "cn-northwest-1":  # Not available 
-                compute_sku = "3DG6WFZ5QW4JAAHJ"
+                compute_sku = ""
             elif location == "eu-central-1": # Frankfurt
                 compute_sku = "3DG6WFZ5QW4JAAHJ" # keep thisssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
             elif location == "eu-west-1":  # Ireland
@@ -1507,31 +1507,39 @@ def calculated_data_AWS_basic(compute_complexity, expected_users, data_storage_t
             elif region == "af-south-1":   # Cape Town
                 compute_sku = "U4DM5KKKH38Q93SY" 
 
-
-    if expected_users == "10000":
-        print('essential')
-        scaling = " + Auto Scaling"
-    else: 
-        scaling = ""
+    if expected_users:
+        if expected_users == "1000":
+            size = 50
+            scaling = ""
+        elif expected_users == "5000":
+            size = 200
+            scaling = ""
+        elif expected_users == "10000":
+            size = 1000
+            print('essential')
+            scaling = " + Auto Scaling & Load Balancing"
+        # else: 
+        #     scaling = ""
 
     try:
         compute_instance = ComputeSpecifications.objects.get(sku=compute_sku, provider__name='AWS')
-        # unit_price = float(compute_instance.unit_price) * 720 # Convert unit price to float
         compute_unit_price = float(compute_instance.unit_price)# Convert unit price to float
         compute_name = "Ec2 Instance"
+        compute_total_price = round(compute_unit_price * 720)  # Calculate total price
+
         computed_data['compute'] = {
-        'name': compute_name + scaling,
+        # 'name': compute_name + scaling,
+        'name': compute_instance.instance_type + scaling,
+
         # 'unit_price': unit_price,
-        'unit_price': compute_unit_price,
-        'cpu': compute_instance.cpu,
+        'unit_price': compute_total_price,
+        'cpu': 'CPU and RAM: ' + compute_instance.cpu,
         'memory': compute_instance.memory,
         'sku': compute_instance.sku,
         'provider': compute_instance.provider.name,
         'cloud_service': compute_instance.cloud_service.service_type,
         'description': compute_instance.description  # Assuming there's a description field
         }        
-        compute_total_price = compute_unit_price  # Calculate total price
-        compute_total_price = compute_unit_price * 720  # Calculate total price
         print("-------------------------------------------------------------")
         print(f"Compute unit price is:  {compute_unit_price}")
         print(f"Compute total price is:  {compute_total_price}")
@@ -1539,65 +1547,166 @@ def calculated_data_AWS_basic(compute_complexity, expected_users, data_storage_t
         computed_data['compute'] = 'No compute instance found for SKU 3DG6WFZ5QW4JAAHJ.'
 
    
-    # if compute_complexity:
-    #     try:
-    #         # compute_instance = ComputeSpecifications.objects.get(sku=compute_sku, provider__name='AWS')
-    #         # # unit_price = float(compute_instance.unit_price) * 720 # Convert unit price to float
-    #         # compute_unit_price = float(compute_instance.unit_price)# Convert unit price to float
-    #         # compute_name = "Ec2 Instance"
-    #         computed_data['compute'] = {
-    #         'name': 'EC2',
-    #         # 'unit_price': unit_price,
-    #         'unit_price': '123',
-    #         'cpu': '12',
-    #         'memory': '4',
-    #         'sku': 'rwerwerwerwer322',
-    #         # 'provider': compute_instance.provider.name,
-    #         # 'cloud_service': compute_instance.cloud_service.service_type,
-    #         # 'description': compute_instance.description  # Assuming there's a description field
-    #         }        
-    #         # compute_total_price = compute_unit_price  # Calculate total price
-    #         # compute_total_price = compute_unit_price * 720  # Calculate total price
-    #         # print("-------------------------------------------------------------")
-    #         # print(f"Compute unit price is:  {compute_unit_price}")
-    #         # print(f"Compute total price is:  {compute_total_price}")
-    #     except ComputeSpecifications.DoesNotExist:
-    #         computed_data['compute'] = 'No compute instance found for SKU 3DG6WFZ5QW4JAAHJ.'
-            
     if data_storage_type:
-        try:
-            # compute_instance = ComputeSpecifications.objects.get(sku=compute_sku, provider__name='AWS')
-            # # unit_price = float(compute_instance.unit_price) * 720 # Convert unit price to float
-            # compute_unit_price = float(compute_instance.unit_price)# Convert unit price to float
-            # compute_name = "Ec2 Instance"
-            computed_data['storage'] = {
-                'name': 'dsgsdgsd',
-                'unit_price': 'sdgsdgsdg',
-                'unit_of_storage': 'storage_instance.unit_of_storage',
-                'sku': 'storage_instance',
-                'provider': 'sgsgsdgdsg',
-                # 'cloud_service': storage_instance.cloud_service.service_type
-            }
-            print("-------------------------------------------------------------")
-            print("Storage unit price is: ")
-            # print(f"Storage total price is:  {storage_total_price}")
-            # 'provider': compute_instance.provider.name,
-            # 'cloud_service': compute_instance.cloud_service.service_type,
-            # 'description': compute_instance.description  # Assuming there's a description field 
-            # compute_total_price = compute_unit_price  # Calculate total price
-            # compute_total_price = compute_unit_price * 720  # Calculate total price
-            # print("-------------------------------------------------------------")
-            # print(f"Compute unit price is:  {compute_unit_price}")
-            # print(f"Compute total price is:  {compute_total_price}")
-        except ComputeSpecifications.DoesNotExist:
-            computed_data['compute'] = 'No compute instance found for SKU 3DG6WFZ5QW4JAAHJ.'
+        if data_storage_type == "files":
+            storage_name = "Amazon EFS"
+            storage_sku = "YFV3RHAD3CDDP3VE"
+        # elif data_storage_type == "databases":
+        #     # storage_name = "Amazon EFS"
+        #     storage_sku = 'YFV3RHAD3CDDP3VE'
+        elif data_storage_type == "multimedia":
+            storage_name = "Amazon S3"
+            storage_sku = 'WP9ANXZGBYYSGJEA'
 
+        storage_instance = StorageSpecifications.objects.get(sku=storage_sku, provider__name='AWS')
+        # Make sure storage_unit_price is a float
+        storage_unit_price = float(storage_instance.unit_price)
+        # Now calculate the total price
+        storage_total_price = round(storage_unit_price * size)
+
+        if storage_instance:
+            computed_data['storage'] = {
+                'name': storage_name,
+                'unit_price': storage_total_price,
+                'unit_of_storage': storage_instance.unit_of_storage,
+                'sku': storage_instance.sku,
+                'provider': storage_instance.provider.name,
+                'cloud_service': storage_instance.cloud_service.service_type
+            }
+        print("-------------------------------------------------------------")
+        print(f"Storage unit price is:  {storage_unit_price}")
+        print(f"Storage total price is:  {storage_total_price}")
+            
+            
+            
+    total_db_price = 0
+    db_storage_total_price = 0
+    db_instance_total_price = 0
+
+    if database_service:
+        # if database_service == "basic":
+        #     sku = 'F3E2EDSYC6ZNW7XP'
+        # if database_service == "complex":
+        #     sku = ''
+        # if database_service == "nodatabase":
+        #     sku = ''
+        db_storage_sku = 'F3E2EDSYC6ZNW7XP' if database_service == 'basic' else 'QVD35TA7MPS92RBC'
+        db_instance_sku = 'MV3A7KKN6HB749EA' if database_service == 'complex' else None
+        database_name = "DynamoDB" if database_service == 'basic' else "SQL Instance and Storage"
+
+        if database_service == "complex":
+            sku = 'MV3A7KKN6HB749EA'
+        else:
+            sku = 'F3E2EDSYC6ZNW7XP'
+        try:
+            db_storage_instance = DatabaseSpecifications.objects.get(sku=db_storage_sku, provider__name='AWS')
+            db_storage_unit_price = float(db_storage_instance.unit_price)
+            db_storage_total_price = round(db_storage_unit_price * size)
+        except DatabaseSpecifications.DoesNotExist:
+            computed_data['database'] = f'No database storage instance found for SKU {db_storage_sku}.'
+
+        if db_instance_sku:
+            try:
+                db_instance = DatabaseSpecifications.objects.get(sku=db_instance_sku, provider__name='AWS')
+                db_instance_unit_price = float(db_instance.unit_price)
+                db_instance_total_price = round(db_instance_unit_price * 720)
+            except DatabaseSpecifications.DoesNotExist:
+                computed_data['database'] = f'No database instance found for SKU {db_instance_sku}.'
+
+        total_db_price = db_storage_total_price + db_instance_total_price
+        computed_data['database'] = {
+            'name': database_name,
+            'sku': sku,
+            # 'instance_price': db_instance_total_price,
+            'unit_price': total_db_price
+        }
+
+    # Log to check the values
+    print("Database storage cost:", db_storage_total_price)
+    print("Database instance cost:", db_instance_total_price)
+    print("Total database cost:", total_db_price)
+
+    dns_unit_price = 0
+    cdn_unit_price = 0
+    network = 'false'
+    dns = ""
+    cdn = ""
+
+    if dns_feature == "Yes" and cdn_networking == "Yes":
+        networkName = "DNS & CDN"
+    elif dns_feature == "Yes" and cdn_networking == "No":
+        networkName = "DNS"
+    elif dns_feature == "No" and cdn_networking == "Yes":
+        networkName = "CDN"
+
+
+    if dns_feature == "Yes": # == route53
+        dns_sku = "98Y35YBR3J64B5FX"
+        # dns_name = "Route53"
+        network = 'true'
+        try:
+            dns = NetworkingSpecifications.objects.get(sku=dns_sku, provider__name='AWS')
+            dns_unit_price = float(dns.unit_price)# Convert unit price to float
+
+            print("-------------------------------------------------------------")
+            print(f"dns unit price is:  {dns_unit_price}")
+            # print(f"Compute total price is:  {compute_total_price}")
+
+        except ComputeSpecifications.DoesNotExist:
+            computed_data['networking'] = 'No dns networking instance found.'
+            
+
+    if cdn_networking == "Yes": # == CloudFront
+        network = 'true'
+        # cdn_name = 'CloudFront'
+        print('  + Cloudfront')
+        cdn_sku = "VN4VYBAF9PPSN7NQ"
+        
+        try:
+            cdn = NetworkingSpecifications.objects.get(sku=cdn_sku, provider__name='AWS')
+            cdn_unit_price = float(cdn.unit_price)# Convert unit price to float
+
+            print("-------------------------------------------------------------")
+            print(f"cdn unit price is:  {cdn_unit_price}")
+
+        except ComputeSpecifications.DoesNotExist:
+            computed_data['networking'] = 'No cdn networking instance found.'
+
+    if network == 'true':
+        if dns_feature == "Yes":
+            sku = dns_sku
+        elif dns_feature == "No":
+            sku = cdn_sku
+            # Fetch the compute instance with the specific SKU
+        try:
+            network_total_price = dns_unit_price + cdn_unit_price
+            formatted_price = "{:.6f}".format(network_total_price)
+
+            computed_data['networking'] = {
+            'name': networkName,
+            'unit_price': formatted_price,
+            'sku': sku,
+            }        
+            print("-------------------------------------------------------------")
+            print(f"dns unit price is:  {dns_unit_price}")
+
+        except ComputeSpecifications.DoesNotExist:
+            computed_data['networking'] = 'No networking instance found.'
+
+            
+    plan_monthly_price = compute_total_price + storage_total_price + total_db_price + network_total_price
+
+    plan_annual_price = float(plan_monthly_price) * 12
+    print("Total Monthly Plan Cost: ", plan_monthly_price)
+    print("Total Annual Plan Cost: ", plan_annual_price)
+    computed_data['monthly'] = round(plan_monthly_price)
+    computed_data['annual'] = round(plan_annual_price)
+
+            
             
     return computed_data
 
 # # to-do
-# do logic for storage
-# calculate for storage
-# Show monthly and annual prices in the front-end UI
-# Add question for storage size
-# # implement the same functionality for rds as the networking services and pass service code to the function to fetch data trhough API (S3, EFS, etc..)
+# Add logic if user select database for basic form (basic form)
+# Add logic for monthly budget to change price color (basic and advanced form)
+# Finalize locations that work for all of us (basic and advanced form)
