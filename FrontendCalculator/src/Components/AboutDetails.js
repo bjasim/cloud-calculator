@@ -10,7 +10,7 @@ const AboutUs = () => {
           <img
             src={school}
             alt="Bug"
-            style={{ width: "90%", maxWidth: "800px", display: "block", margin: "20px auto" }}
+            style={{ width: "60%", maxWidth: "800px", display: "block", margin: "20px auto" }}
           />
         </Grid> 
         <Grid item xs={12}>
