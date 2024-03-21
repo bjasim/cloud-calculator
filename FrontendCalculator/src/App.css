@@ -32,11 +32,30 @@ nav {
   margin-right: -145px;
 
 }
+/* home page footer */
 .css-1m1gqdl {
   background-color: #68a4cf;
   padding: 20px 0;
   color: #000000;
   margin-top: 250px;
+  margin-left: -145px;
+  margin-right: -145px;
+}
+/* 'about us AND results footer' */
+.css-w1n4cy {
+  background-color: #68a4cf;
+  padding: 20px 0;
+  color: #000000;
+  margin-top: 0px;
+  margin-left: -145px;
+  margin-right: -145px;
+}
+/* basic AND advanced form footer */
+.css-1ixidnt {
+  background-color: #68a4cf;
+  padding: 20px 0;
+  color: #000000;
+  margin-top: 150px;
   margin-left: -145px;
   margin-right: -145px;
 }
@@ -74,7 +93,9 @@ nav {
 .home-banner-container {
   position: relative;
   display: flex;
-  padding-top: 3rem;
+  padding-top: 10rem;
+  padding-left: 24rem;
+
 }
 .home-bannerImage-container {
   position: absolute;
@@ -96,7 +117,7 @@ nav {
   justify-content: center;
   align-items: flex-start;
   /*Changed to move text section up*/
-  margin-top: -4rem;
+  margin-top: -20rem;
 }
 .primary-heading {
   font-size: clamp(2rem, 4vw, 4rem);
@@ -135,11 +156,12 @@ nav {
 }
 
 .about-section-container {
-  margin-top: 1rem;
+  margin-top: -8rem;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding-left: 10rem;
 }
 .about-background-image-container {
   position: absolute;
