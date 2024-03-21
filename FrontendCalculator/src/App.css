@@ -93,8 +93,8 @@ nav {
 .home-banner-container {
   position: relative;
   display: flex;
-  padding-top: 10rem;
-  padding-left: 24rem;
+  padding-top: 4rem;
+  padding-left: 10rem;
 
 }
 .home-bannerImage-container {
@@ -117,7 +117,7 @@ nav {
   justify-content: center;
   align-items: flex-start;
   /*Changed to move text section up*/
-  margin-top: -20rem;
+  margin-top: -5rem;
 }
 .primary-heading {
   font-size: clamp(2rem, 4vw, 4rem);
@@ -156,7 +156,7 @@ nav {
 }
 
 .about-section-container {
-  margin-top: -8rem;
+  margin-top: -3rem;
   position: relative;
   display: flex;
   align-items: center;
