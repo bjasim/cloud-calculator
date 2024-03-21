@@ -21,12 +21,17 @@ body {
 }
 
 nav {
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: space-between;
   min-height: 90px;
   background-color: #68a4cf;
+  padding: 0 150px;
+  margin-left: -145px;
+  margin-right: -145px;
 }
+
 .navbar-menu-container {
   display: none;
 }
