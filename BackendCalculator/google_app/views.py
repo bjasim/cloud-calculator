@@ -636,7 +636,7 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
         city= 'Iowa'   #doesnt work for storage, None for Block Storage
     elif location == 'us-east1': # dont use no location for everything
         city= 'South Carolina'
-    elif location == 'us-east2':
+    elif location == 'us-east-2':
         location = 'us-east4'
         city= 'Northern Virginia'
     elif location == 'us-east5':
@@ -645,7 +645,8 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
         city= 'Dallas'
     elif location == 'us-west1':
         city= 'Oregon'# None for postgresql 
-    elif location == 'us-west2':
+    elif location == 'us-west-2':
+        location = 'us-west2'
         city= 'Los Angeles'
     elif location == 'us-west3':
         city= 'Salt Lake City'
@@ -711,9 +712,9 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
     # Compute Logic
     # Retrieve data from the database based on the provided keyword
     compute_name=None
-    if expected_cpu == "1vCPU":
+    if expected_cpu == "1vCPU" or expected_cpu=="simple":
         compute_name="n1-standard-1"
-    elif expected_cpu == "2vCPUs":
+    elif expected_cpu == "2vCPUs" :
         compute_name="n1-standard-2"
     elif expected_cpu == "4vCPUs":
         compute_name="n1-standard-4"
@@ -725,8 +726,11 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
         compute_name="n1-standard-16"
     # Compute Logic
     compute_total_cost=0
+    print(compute_name)
+    print(location)
     compute_instance = ComputeSpecifications.objects.filter(provider__name='GCP', name=compute_name, region=location).first()
     compute_total_cost=float(compute_instance.unit_price)*730 
+    print(compute_total_cost)
     computed_data['compute'] = {
         'name': compute_instance.name,
         'unit_price': compute_total_cost,
@@ -739,33 +743,35 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
 #----------------------------------------------------------------------------------------------------------------------------------------
     if storage_size=='large':
         storage_size=100000
-    elif storage_size=='medium':    
+    elif storage_size=='medium' or storage_size=='5000':    
         storage_size = 10000
     elif storage_size=='small':
         storage_size = 1000
-    
+    print(storage_size) 
+    print(cloud_storage)
     query_temp = None
-    if cloud_storage == "File Storage":
+    if cloud_storage == "File Storage" or cloud_storage == "files":
         if city in ["Oregon", "Iowa", "South Carolina"]:
             query_temp = "Filestore Capacity Basic HDD (Standard) Iowa/South Carolina/Oregon"
         else:
             query_temp = "Filestore Capacity Basic HDD (Standard) %s"
 
-    elif cloud_storage == 'Block Storage':
+    elif cloud_storage == 'Block Storage' or cloud_storage == 'databases':
         query_temp = "Storage PD Capacity in %s"
         
     elif cloud_storage == "Object Storage":
         query_temp = "Standard Storage %s"
-
+    print(query_temp, city)
     # Check if query_temp and city are both not None
     if query_temp and city:
         if "%s" in query_temp:  # Check if the format specifier exists in the template
             query = query_temp % city  # Perform string formatting if city is provided
         else:
             query = query_temp
-
+        
         # Query for the first storage instance based on the query_temp
         storage_instance = StorageSpecifications.objects.filter(name__contains=query).first()
+        print(storage_instance.name)
         storage_total_price=float(storage_instance.unit_price)* storage_size  #figure out the pricing is done for the storage. Weather it is per gb a month
         if storage_instance:
             computed_data['storage'] = {
@@ -799,23 +805,23 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
         computed_data['storage'] = None
  #-------------------------------------------------------------------------------------------------------------------------------------------------------------                    
     # #Database Logic
-    if database_size == 'large':
+    if database_size == 'large' or database_size == '100000':
         database_size = 1000
-    elif database_size == 'medium':
+    elif database_size == 'medium'  or database_size == '5000':
         database_size = 100
-    elif database_size == 'small':
+    elif database_size == 'small' or database_size == '1000':
         database_size = 10
         
     query_template=None
     if database_service== 'postgreSQL':
         query_template = "Cloud SQL for PostgreSQL: Regional - Standard storage in %s"
-    elif database_service == 'sql':
+    elif database_service == 'sql' or database_service == 'complex':
         # Additional condition for SQL Server databases if city is Oregon
         if city == "Oregon":
             query_template = "Cloud SQL for SQL Server: Regional - Standard storage in Americas"
         else:
             query_template = "Cloud SQL for SQL Server: Regional - Standard storage in %s"
-    elif database_service == 'noSQL': # Need to add Code for the firestore. Not working
+    elif database_service == 'noSQL' or database_service == 'basic': # Need to add Code for the firestore. Not working
         query_template= "Cloud Firestore Storage %s"
     
     if query_template:
@@ -921,7 +927,7 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
     print("Total Monthly Plan Cost: ", plan_monthly_price)
     print("Total Annual Plan Cost: ", plan_annual_price)
     computed_data['monthly'] = round(plan_monthly_price)
-    computed_data['annual'] = round("$" + plan_annual_price)
+    computed_data['annual'] = round(plan_annual_price)
 
     return computed_data
 
