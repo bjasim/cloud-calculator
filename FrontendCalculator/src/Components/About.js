@@ -23,7 +23,7 @@ const About = () => {
         <p className="primary-text">Click below to learn more</p>
         <div className="about-buttons-container">
           {/* Use Link component with 'to' attribute set to '/learnmore' */}
-          <Link to="/learnmore" style={{ textDecoration: "none" }}>
+          <Link to="/About" style={{ textDecoration: "none" }}>
             {" "}
             {/* Style textDecoration to "none" */}
             <button className="secondary-button">Learn More</button>
