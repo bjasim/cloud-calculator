@@ -101,7 +101,7 @@ def main():
     service_name = "services/9662-B51E-5089"  # CloudSQL 
     #get_specs(endpoint_url, API_KEY, service_filter, desired_categories, output_file_path)
     #get_prices()
-    #combine_json_data(output_file_path, output_file_path2,combined_info)
+    combine_json_data(output_file_path, output_file_path2,combined_info)
     #Firestore information
     #fetch_save(API_KEY, 'F17B-412E-CB64',firestore_skus)
     
@@ -117,7 +117,7 @@ def main():
     
     
     #NETWORKING
-    fetch_save(API_KEY,'E505-1604-58F8',loadbalacer_skus)
+    #fetch_save(API_KEY,'E505-1604-58F8',loadbalacer_skus)
    
 # Getting the price for CloudSQL services
 def get_prices():
@@ -227,12 +227,12 @@ def combine_json_data(file1_path, file2_path, output_file_path):
     for specs_sku in spec_info:
         sku_id = specs_sku['skuId']
         for price_sku in price_info:
-            if sku_id in price_sku['name']:
+            if sku_id in price_sku['Name']:
                 combined_sku = {
                     'skuId': specs_sku['skuId'],
                     'displayName': specs_sku['displayName'],
-                    'category': price_sku['category'],
-                    'pricingInfo': price_sku['pricingInfo'],
+                    'category': price_sku['Description'],
+                    'pricingInfo': price_sku['Pricing_info'],
                     'productTaxonomy': specs_sku['productTaxonomy'],
                     'geoTaxonomy': specs_sku['geoTaxonomy']
                 }
@@ -281,7 +281,7 @@ def combine_json_data(file1_path, file2_path, output_file_path):
                 cloud_service=cloud_service,
                 data_type=data_type,
                 sku=sku_id,
-                unit_price=price_nanos,  
+                unit_price=price_nanos/1e9,  
                 unit_of_storage=unit_price,              
                 region=region              
             )
@@ -638,12 +638,13 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
         city= 'South Carolina'
     elif location == 'us-east-2':
         location = 'us-east4'
-        city= 'Northern Virginia'
+        city= 'Northern Virginia' #only virginia for block storage
     elif location == 'us-east5':
         city= 'Columbus'
     elif location == 'us-south1':
         city= 'Dallas'
-    elif location == 'us-west1':
+    elif location == 'us-west-1':
+        location = 'us-west1'
         city= 'Oregon'# None for postgresql 
     elif location == 'us-west-2':
         location = 'us-west2'
@@ -652,7 +653,7 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
         city= 'Salt Lake City'
     elif location == 'us-west4':
         city= 'Las Vegas'
-    elif location == 'ap-east1':
+    elif location == 'ap-east-1':
         location = 'asia-east2'
         city= 'Hong Kong'
     elif location == 'asia-east1':
@@ -733,7 +734,7 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
     print(compute_total_cost)
     computed_data['compute'] = {
         'name': compute_instance.name,
-        'unit_price': compute_total_cost,
+        'unit_price': round(compute_total_cost, 2),
         'cpu': compute_instance.cpu,
         'memory': compute_instance.memory,
         'sku': compute_instance.sku,
@@ -745,7 +746,7 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
         storage_size=100000
     elif storage_size=='medium' or storage_size=='5000':    
         storage_size = 10000
-    elif storage_size=='small':
+    elif storage_size=='small' or storage_size=='1000':
         storage_size = 1000
     print(storage_size) 
     print(cloud_storage)
@@ -771,8 +772,7 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
         
         # Query for the first storage instance based on the query_temp
         storage_instance = StorageSpecifications.objects.filter(name__contains=query).first()
-        print(storage_instance.name)
-        storage_total_price=float(storage_instance.unit_price)* storage_size  #figure out the pricing is done for the storage. Weather it is per gb a month
+        storage_total_price=float(storage_instance.unit_price)* storage_size  
         if storage_instance:
             computed_data['storage'] = {
                 'name': storage_instance.name,
@@ -798,56 +798,58 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
                 }
             else:
                 computed_data['storage'] = None
-        else:
-            computed_data['storage'] = None
     else:
         # Handle the case where either query_temp or city is None
         computed_data['storage'] = None
  #-------------------------------------------------------------------------------------------------------------------------------------------------------------                    
     # #Database Logic
-    if database_size == 'large' or database_size == '100000':
-        database_size = 1000
-    elif database_size == 'medium'  or database_size == '5000':
-        database_size = 100
-    elif database_size == 'small' or database_size == '1000':
-        database_size = 10
-        
-    query_template=None
-    if database_service== 'postgreSQL':
-        query_template = "Cloud SQL for PostgreSQL: Regional - Standard storage in %s"
-    elif database_service == 'sql' or database_service == 'complex':
-        # Additional condition for SQL Server databases if city is Oregon
-        if city == "Oregon":
-            query_template = "Cloud SQL for SQL Server: Regional - Standard storage in Americas"
-        else:
-            query_template = "Cloud SQL for SQL Server: Regional - Standard storage in %s"
-    elif database_service == 'noSQL' or database_service == 'basic': # Need to add Code for the firestore. Not working
-        query_template= "Cloud Firestore Storage %s"
+    if database_service != 'nodatabase':
+        if database_size == 'large' or database_size == '100000':
+            database_size = 1000
+        elif database_size == 'medium'  or database_size == '5000':
+            database_size = 100
+        elif database_size == 'small' or database_size == '1000':
+            database_size = 10
+            
+        query_template=None
+        if database_service== 'postgreSQL':
+            query_template = "Cloud SQL for PostgreSQL: Regional - Standard storage in %s"
+        elif database_service == 'sql' or database_service == 'complex':
+            # Additional condition for SQL Server databases if city is Oregon
+            if city == "Oregon":
+                query_template = "Cloud SQL for SQL Server: Regional - Standard storage in Americas"
+            else:
+                query_template = "Cloud SQL for SQL Server: Regional - Standard storage in %s"
+        elif database_service == 'noSQL' or database_service == 'basic': # Need to add Code for the firestore. Not working
+            query_template= "Cloud Firestore Storage %s"
+              
+        if query_template:
+            if database_service == 'noSQL' and city in ["South Carolina", "Iowa", "Belgium"]:
+                query_template = "Cloud Firestore Storage"  
+            # Proceed with constructing the query
+            if "%s" in query_template:  # Check if the format specifier exists in the template
+                query = query_template % city if city else query_template  # Perform string formatting if city is provided
+            else:
+                query = query_template
+        # Query for the first database instance
     
-    if query_template:
-        if database_service == 'noSQL' and city in ["South Carolina", "Iowa", "Belgium"]:
-            query_template = "Cloud Firestore Storage"  
-    # Proceed with constructing the query
-    if "%s" in query_template:  # Check if the format specifier exists in the template
-        query = query_template % city if city else query_template  # Perform string formatting if city is provided
-    else:
-        query = query_template
-
-    # Query for the first database instance
-    database_instance = DatabaseSpecifications.objects.filter(name=query).first()
-    database_total_price= float(database_instance.unit_price)*database_size # be sure to change the price in the database, some of the values have not been formated correctly.
-    if database_instance:
-        computed_data['database'] = {
-            'name': database_instance.name,
-            'unit_price': database_total_price,
-            'unit_of_storage': database_instance.unit_of_storage,   
-            'sku': database_instance.sku,
-            'data_type': database_instance.data_type,
-            'provider': database_instance.provider.name,
-            'cloud_service': database_instance.cloud_service.service_type
-        }
+        database_instance = DatabaseSpecifications.objects.filter(name=query).first()
+        database_total_price= float(database_instance.unit_price)*database_size # be sure to change the price in the database, some of the values have not been formated correctly.
+        if database_instance:
+            computed_data['database'] = {
+                'name': database_instance.name,
+                'unit_price': database_total_price,
+                'unit_of_storage': database_instance.unit_of_storage,   
+                'sku': database_instance.sku,
+                'data_type': database_instance.data_type,
+                'provider': database_instance.provider.name,
+                'cloud_service': database_instance.cloud_service.service_type
+            }
+        else :
+            computed_data['database'] = None
     else:
         computed_data['database'] = None
+        database_total_price= 0
         
         
     #Networking Logic
@@ -871,8 +873,10 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
         name += " DNS"
         dns_query='0CAB-FE26-F2C6'
         dns_instance= NetworkingSpecifications.objects.filter(sku=dns_query).first()
+        dns_instance.unit_price=float(dns_instance.unit_price)* 1000000
     else:
         name=""
+        
         
     if cdn_connection == 'Yes':
         name += " CDN"
@@ -880,21 +884,23 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
         cdn_instance= NetworkingSpecifications.objects.filter(sku=cdn_query).first()
     else :
         name +=""
-        
+    network_total_price=0
     if inbound_lb or outbound_lb or dns_instance or cdn_instance:
     # Compute total price only for non-null instances
         network_total_price = (float(inbound_lb.unit_price) if inbound_lb else 0) + \
                             (float(outbound_lb.unit_price) if outbound_lb else 0) + \
-                            (float(dns_instance.unit_price) if dns_instance else 0) + \
+                            (float(dns_instance.unit_price)  if dns_instance else 0) + \
                             (float(cdn_instance.unit_price) if cdn_instance else 0)
-
+        print(network_total_price)
+        
         network_total_price*= 730
+        
 
         sku_components = [component.sku if component else "" for component in [inbound_lb, outbound_lb, dns_instance, cdn_instance]]
         sku_comp = " + ".join(filter(None, sku_components))
         computed_data['networking'] = {
         'name': name,
-        'unit_price': network_total_price,
+        'unit_price': round(network_total_price,2),
         'sku': sku_comp
     }
     else:
@@ -924,10 +930,9 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
     plan_monthly_price = compute_total_cost + storage_total_price + database_total_price + network_total_price
 
     plan_annual_price = float(plan_monthly_price) * 12
-    print("Total Monthly Plan Cost: ", plan_monthly_price)
-    print("Total Annual Plan Cost: ", plan_annual_price)
-    computed_data['monthly'] = round(plan_monthly_price)
-    computed_data['annual'] = round(plan_annual_price)
+
+    computed_data['monthly'] = round(plan_monthly_price, 2)
+    computed_data['annual'] = round(plan_annual_price, 2)
 
     return computed_data
 
