@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import CircularProgress from "@mui/material/CircularProgress";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -12,34 +13,35 @@ import {
   Typography,
   FormHelperText,
 } from "@mui/material";
-import { faL } from "@fortawesome/free-solid-svg-icons";
 
 const BasicForm = () => {
   const navigate = useNavigate(); // Initialize navigate function
-
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     computeComplexity: "",
-    // networkReliability: "",
+    expectedUsers: "",
     dataStorageType: "",
     databaseService: "",
     monthlyBudget: "",
-    expectedUsers: "",
     dnsFeature: "",
     cdnNetworking: "",
     region: "",
+    // networkReliability: "",
+    // dataStorageSize: "",
     // resourceGrowth: "",
   });
 
   const [validationErrors, setValidationErrors] = useState({
     computeComplexity: false,
-    // networkReliability: false,
+    expectedUsers: false,
     dataStorageType: false,
     databaseService: false,
     monthlyBudget: false,
-    expectedUsers: false,
     dnsFeature: false,
     cdnNetworking: false,
     region: false,
+    // networkReliability: false,
+    // dataStorageSize: false,
     // resourceGrowth: false,
   });
 
@@ -68,7 +70,9 @@ const BasicForm = () => {
       }
     });
     setValidationErrors(newValidationErrors);
+
     if (isValid) {
+      setLoading(true); // Start loading before the request
       try {
         const response = await fetch("http://localhost:8000/api/submit-basic-form/", {
           method: "POST",
@@ -78,16 +82,24 @@ const BasicForm = () => {
           body: JSON.stringify(formData),
         });
         if (response.ok) {
-          // Handle success
           console.log("Form data submitted successfully");
-          // Redirect to /results URL upon successful form submission
-          navigate("/results"); // Redirect to /results on successful form submission
+          // Handle success
+          const responseData = await response.json(); // Parse response body as JSON
+          console.log("Response from backend:", responseData); // Print the response
+
+          // Delay 5 seconds before navigating to the results page
+          setTimeout(() => {
+            setLoading(false); // Stop loading after the response
+            navigate("/results", { state: { responseData } });
+          }, 3000);
         } else {
           // Handle error
           console.error("Failed to submit form data");
+          setLoading(false); // Stop loading on error
         }
       } catch (error) {
         console.error("Error submitting form data:", error);
+        setLoading(false); // Stop loading on exception
       }
     }
   };
@@ -96,16 +108,11 @@ const BasicForm = () => {
     const timer = setTimeout(() => {
       setValidationErrors({
         computeComplexity: false,
-        // networkReliability: false,
-        dataStorageType: false,
+        networkReliability: false,
+        dataStorageSize: false,
         databaseService: false,
         monthlyBudget: false,
-        expectedUsers: false,
-        dnsFeature: false,
-        cdnNetworking: false,
-        region: false,
-    
-        // resourceGrowth: false,
+        resourceGrowth: false,
       });
     }, 3000);
     return () => clearTimeout(timer);
@@ -133,90 +140,48 @@ const BasicForm = () => {
                   error={validationErrors.computeComplexity}
                 >
                   <MenuItem value="">Select...</MenuItem>
-                  <MenuItem value="basic">
-                  Basic Computing
-                  </MenuItem>
-                  <MenuItem value="moderate">
-                    Moderate
-                  </MenuItem>
-                  <MenuItem value="intensive">
-                  Intensive
-                  </MenuItem>
+                  <MenuItem value="simple">Basic Computing</MenuItem>
+                  <MenuItem value="moderate">Moderate</MenuItem>
+                  <MenuItem value="complex">Intensive</MenuItem>
                 </Select>
                 {validationErrors.computeComplexity && (
                   <FormHelperText error>Please select compute complexity</FormHelperText>
                 )}
               </FormControl>
             </Grid>
-            {/* Expected Users */}
             <Grid item xs={10}>
               <FormControl fullWidth variant="outlined">
-                <InputLabel id="expected-users-label">Expected Users</InputLabel>
+                <InputLabel id="compute-complexity-label">Expected Users</InputLabel>
                 <Select
-                  labelId="expected-users-label"
-                  id="expected-users-select"
+                  labelId="compute-complexity-label"
+                  id="compute-complexity-select"
                   value={formData.expectedUsers}
                   onChange={handleChange}
-                  label="Expected Users"
+                  label="Compute Complexity"
                   name="expectedUsers"
                   error={validationErrors.expectedUsers}
                 >
                   <MenuItem value="">Select...</MenuItem>
-                  <MenuItem value="1000">
-                    Less than 1000
-                  </MenuItem>
-                  <MenuItem value="5000">
-                    5000
-                  </MenuItem>
-                  <MenuItem value="10000+">
-                    10000+
-                  </MenuItem>
+                  <MenuItem value="1000">Less than 1000</MenuItem>
+                  <MenuItem value="5000">5000</MenuItem>
+                  <MenuItem value="10000">10000+</MenuItem>
                 </Select>
                 {validationErrors.expectedUsers && (
-                  <FormHelperText error>Please select expected users</FormHelperText>
+                  <FormHelperText error>Please select compute complexity</FormHelperText>
                 )}
               </FormControl>
             </Grid>
-            {/* Network Reliability
             <Grid item xs={10}>
               <FormControl fullWidth variant="outlined">
-                <InputLabel id="network-reliability-label">Network Reliability</InputLabel>
+                <InputLabel id="compute-complexity-label">
+                  What type of data do you work with ?
+                </InputLabel>
                 <Select
-                  labelId="network-reliability-label"
-                  id="network-reliability-select"
-                  value={formData.networkReliability}
-                  onChange={handleChange}
-                  label="Network Reliability"
-                  name="networkReliability"
-                  error={validationErrors.networkReliability}
-                >
-                  <MenuItem value="">Select...</MenuItem>
-                  <MenuItem value="low">
-                    Basic: Basic network connectivity with minimal downtime
-                  </MenuItem>
-                  <MenuItem value="medium">
-                    Moderate: Reliable network with occasional downtime for maintenance
-                  </MenuItem>
-                  <MenuItem value="high">
-                    High: High availability network with minimal downtime and fast response times
-                  </MenuItem>
-                </Select>
-                {validationErrors.networkReliability && (
-                  <FormHelperText error>Please select network reliability</FormHelperText>
-                )}
-              </FormControl>
-            </Grid>
- */}
-            {/* Data Storage Type */}
-            <Grid item xs={10}>
-              <FormControl fullWidth variant="outlined">
-                <InputLabel id="data-storage-type-label">What type of data do you work with ?</InputLabel>
-                <Select
-                  labelId="data-storage-type-label"
-                  id="data-storage-type-select"
+                  labelId="compute-complexity-label"
+                  id="compute-complexity-select"
                   value={formData.dataStorageType}
                   onChange={handleChange}
-                  label="Data Storage Type"
+                  label="Compute Complexity"
                   name="dataStorageType"
                   error={validationErrors.dataStorageType}
                 >
@@ -230,7 +195,6 @@ const BasicForm = () => {
                 )}
               </FormControl>
             </Grid>
-
             {/* Database Service */}
             <Grid item xs={10}>
               <FormControl fullWidth variant="outlined">
@@ -245,23 +209,15 @@ const BasicForm = () => {
                   error={validationErrors.databaseService}
                 >
                   <MenuItem value="">Select...</MenuItem>
-                  <MenuItem value="basic">
-                    Basic Database
-                  </MenuItem>
-                  <MenuItem value="complex">
-                    Complex Database
-                  </MenuItem>
-                  <MenuItem value="nodatabase">
-                    No database
-                  </MenuItem>
-
+                  <MenuItem value="basic">Basic Database</MenuItem>
+                  <MenuItem value="complex">Complex Database</MenuItem>
+                  <MenuItem value="nodatabase">No database</MenuItem>
                 </Select>
                 {validationErrors.databaseService && (
                   <FormHelperText error>Please select database service</FormHelperText>
                 )}
               </FormControl>
             </Grid>
-
             {/* Monthly Budget */}
             <Grid item xs={10}>
               <FormControl fullWidth variant="outlined">
@@ -289,7 +245,10 @@ const BasicForm = () => {
             {/* DNS Feature */}
             <Grid item xs={10}>
               <FormControl fullWidth variant="outlined">
-                <InputLabel id="dns-feature-label">Do you want to ensure that your website is identifiable by a user-friendly address?</InputLabel>
+                <InputLabel id="dns-feature-label">
+                  Do you want to ensure that your website is identifiable by a user-friendly
+                  address?
+                </InputLabel>
                 <Select
                   labelId="dns-feature-label"
                   id="dns-feature-select"
@@ -300,12 +259,8 @@ const BasicForm = () => {
                   error={validationErrors.dnsFeature}
                 >
                   <MenuItem value="">Select...</MenuItem>
-                  <MenuItem value="Yes">
-                    Yes
-                  </MenuItem>
-                  <MenuItem value="No">
-                    No
-                  </MenuItem>
+                  <MenuItem value="Yes">Yes</MenuItem>
+                  <MenuItem value="No">No</MenuItem>
                 </Select>
                 {validationErrors.dnsFeature && (
                   <FormHelperText error>Please select your option</FormHelperText>
@@ -315,7 +270,10 @@ const BasicForm = () => {
             {/* DNS Feature */}
             <Grid item xs={10}>
               <FormControl fullWidth variant="outlined">
-                <InputLabel id="cdn-feature-label">Do you have a website or application with global users and want to minimize delays in loading web content? </InputLabel>
+                <InputLabel id="cdn-feature-label">
+                  Do you have a website with global users and want to minimize delays in loading
+                  content?{" "}
+                </InputLabel>
                 <Select
                   labelId="cdn-feature-label"
                   id="cdn-feature-select"
@@ -326,12 +284,8 @@ const BasicForm = () => {
                   error={validationErrors.cdnNetworking}
                 >
                   <MenuItem value="">Select...</MenuItem>
-                  <MenuItem value="Yes">
-                    Yes
-                  </MenuItem>
-                  <MenuItem value="No">
-                    No
-                  </MenuItem>
+                  <MenuItem value="Yes">Yes</MenuItem>
+                  <MenuItem value="No">No</MenuItem>
                 </Select>
                 {validationErrors.cdnNetworking && (
                   <FormHelperText error>Please select your option</FormHelperText>
@@ -382,9 +336,63 @@ const BasicForm = () => {
               </FormControl>
             </Grid>
 
+            {/* Network Reliability */}
+            {/* <Grid item xs={10}>
+              <FormControl fullWidth variant="outlined">
+                <InputLabel id="network-reliability-label">Network Reliability</InputLabel>
+                <Select
+                  labelId="network-reliability-label"
+                  id="network-reliability-select"
+                  value={formData.networkReliability}
+                  onChange={handleChange}
+                  label="Network Reliability"
+                  name="networkReliability"
+                  error={validationErrors.networkReliability}
+                >
+                  <MenuItem value="">Select...</MenuItem>
+                  <MenuItem value="low">
+                    Basic: Basic network connectivity with minimal downtime
+                  </MenuItem>
+                  <MenuItem value="medium">
+                    Moderate: Reliable network with occasional downtime for maintenance
+                  </MenuItem>
+                  <MenuItem value="high">
+                    High: High availability network with minimal downtime and fast response times
+                  </MenuItem>
+                </Select>
+                {validationErrors.networkReliability && (
+                  <FormHelperText error>Please select network reliability</FormHelperText>
+                )}
+              </FormControl>
+            </Grid>
 
-            {/* Resource Growth
-            <Grid item xs={10}>
+            {/* Data Storage Size */}
+            {/* <Grid item xs={10}>
+              <FormControl fullWidth variant="outlined">
+                <InputLabel id="data-storage-size-label">Data Storage Size</InputLabel>
+                <Select
+                  labelId="data-storage-size-label"
+                  id="data-storage-size-select"
+                  value={formData.dataStorageSize}
+                  onChange={handleChange}
+                  label="Data Storage Size"
+                  name="dataStorageSize"
+                  error={validationErrors.dataStorageSize}
+                >
+                  <MenuItem value="">Select...</MenuItem>
+                  <MenuItem value="small">Small: Up to 100GB of data storage</MenuItem>
+                  <MenuItem value="medium">Medium: 100GB to 1TB of data storage</MenuItem>
+                  <MenuItem value="large">Large: More than 1TB of data storage</MenuItem>
+                  <MenuItem value="verylarge">Very Large: More than 100 TB of data</MenuItem>
+                </Select>
+                {validationErrors.dataStorageSize && (
+                  <FormHelperText error>Please select data storage size</FormHelperText>
+                )}
+              </FormControl>
+            </Grid>  */}
+
+            {/* Resource Growth */}
+            {/* <Grid item xs={10}>
               <FormControl fullWidth variant="outlined">
                 <InputLabel id="resource-growth-label">Resource Growth</InputLabel>
                 <Select
@@ -409,10 +417,13 @@ const BasicForm = () => {
 
             {/* Submit Button */}
             <Grid item xs={10}>
-              <Box mt={3} textAlign="center">
-                <Button variant="contained" color="primary" type="submit">
+              <Box mt={3} textAlign="center" position="relative">
+                <Button variant="contained" color="primary" type="submit" disabled={loading}>
                   Calculate
                 </Button>
+                {loading && (
+                  <CircularProgress size={24} style={{ position: "absolute", top: "5px" }} />
+                )}
               </Box>
             </Grid>
           </Grid>
