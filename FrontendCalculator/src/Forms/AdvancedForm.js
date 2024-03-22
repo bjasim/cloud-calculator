@@ -18,6 +18,7 @@ import {
 const AdvancedForm = () => {
   const navigate = useNavigate(); // Initialize navigate function
   const [loading, setLoading] = useState(false);
+
   const [formData, setFormData] = useState({
     // businessSize: "",
     // expectedUsers: "",
@@ -192,6 +193,10 @@ const AdvancedForm = () => {
     }, 3000);
     return () => clearTimeout(timer);
   }, [validationErrors]);
+
+  // Determine if Database Size and Storage Size should be disabled
+  // const isDatabaseDisabled = !formData.databaseService || formData.databaseService === "noDatabase";
+  // const isStorageDisabled = !formData.cloudStorage || formData.cloudStorage === "No Storage";
 
   return (
     <Container maxWidth="md">
@@ -369,7 +374,8 @@ const AdvancedForm = () => {
                   <FormHelperText error>Please select database size</FormHelperText>
                 )}
               </FormControl>
-            </Grid>
+            </Grid> 
+
 
             {/* Cloud Storage */}
             <Grid item xs={6}>
@@ -580,13 +586,10 @@ const AdvancedForm = () => {
             </Grid>
             {/* Submit Button */}
             <Grid item xs={12}>
-              <Box mt={3} textAlign="center" position="relative">
-                <Button variant="contained" color="primary" type="submit" disabled={loading}>
+              <Box mt={3} textAlign="center">
+                <Button variant="contained" color="primary" type="submit">
                   Calculate
                 </Button>
-                {loading && (
-                  <CircularProgress size={24} style={{ position: "absolute", top: "5px" }} />
-                )}
               </Box>
             </Grid>
           </Grid>

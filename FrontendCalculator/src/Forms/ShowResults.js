@@ -45,33 +45,41 @@ const RecommendedPlans = ({ responseData }) => {
   }
 
   return (
-    <Box sx={{ display: "flex", justifyContent: "center", p: 4, flexWrap: "wrap" }}>
-      {plans.map((plan, index) => {
-        const name = plan.provider;
-        return (
-          <Card key={index} sx={{ maxWidth: 305, m: 2, display: "flex", flexDirection: "column" }}>
-            <Box
-              sx={{
-                height: 200,
-                width: "100%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: "#fff",
+    <Box sx={{ display: "flex", justifyContent: "center", p: 2, flexWrap: "wrap" }}>
+        {plans.map((plan, index) => {
+          const name = plan.provider;
+          return (
+            <Card 
+              key={index} 
+              sx={{ 
+                width: 'calc(25% - 16px)', // Adjusting width to 25% and subtracting total horizontal margin
+                m: 2, 
+                display: "flex", 
+                flexDirection: "column" 
               }}
             >
-              <CardMedia
-                component="img"
+              <Box
                 sx={{
-                  height: "auto",
-                  width: "auto",
-                  maxHeight: 140,
-                  maxWidth: 400,
+                  height: 200,
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: "#fff",
                 }}
-                image={logos[name]}
-                alt={`${name} logo`}
-              />
-            </Box>
+              >
+                <CardMedia
+                  component="img"
+                  sx={{
+                    height: "auto",
+                    width: "auto",
+                    maxHeight: 140,
+                    maxWidth: 400,
+                  }}
+                  image={logos[name]}
+                  alt={`${name} logo`}
+                />
+                </Box>
             <CardContent sx={{ flexGrow: 1, paddingTop: "0px" }}>
               <Typography gutterBottom variant="h5" component="div" align="center">
                 {name}
@@ -99,7 +107,7 @@ const RecommendedPlans = ({ responseData }) => {
                           </span>
                         </div>
                         <div style={{ fontSize: "1.2rem", textAlign: "left" }}>
-                          Price/Monthly: {plan.compute.unit_price}
+                          Price/Monthly: ${plan.compute.unit_price}
                         </div>
                       </>
                     ) : (

@@ -105,7 +105,7 @@ def main():
     #Firestore information
     # fetch_save(API_KEY, 'F17B-412E-CB64',firestore_skus)
     
-    #COMPUTE
+    # COMPUTE
     # computeinfo()
     
     
@@ -122,41 +122,53 @@ def main():
 # Getting the price for CloudSQL services
 def get_prices():
     try:
-        # Send GET request to the API endpoint with API key as parameter
-        response = requests.get(endpoint_url2, params={"key": API_KEY})
+        formatted_skus = []  # Initialize a list to store formatted data
 
-        # Check if the request was successful
-        if response.status_code == 200:
-            # Parse the JSON response
-            data = response.json()
+        # Initialize next page token
+        next_page_token = None
 
-            # Initialize a list to store formatted data
-            formatted_skus = []
+        while True:
+            # Send GET request to the API endpoint with API key as parameter
+            params = {"key": API_KEY}
+            if next_page_token:
+                params["pageToken"] = next_page_token
 
-            # Extract pricing information
-            skus = data.get('skus', [])
+            response = requests.get(endpoint_url2, params=params)
 
-            # Format and append each SKU to the list
-            for sku in skus:
-                formatted_sku = {
-                    "Name": sku['name'],
-                    "Description": sku['description'],
-                    "Pricing_info": sku['pricingInfo']
-                }
-                formatted_skus.append(formatted_sku)
+            # Check if the request was successful
+            if response.status_code == 200:
+                # Parse the JSON response
+                data = response.json()
 
-            # Save the formatted information to a JSON file
-            with open(output_file_path2, 'w') as json_file:
-                json.dump(formatted_skus, json_file, indent=2)
+                # Extract pricing information
+                skus = data.get('skus', [])
 
-            print('Pricing information saved to price_info.json')
+                # Format and append each SKU to the list
+                for sku in skus:
+                    formatted_sku = {
+                        "Name": sku['name'],
+                        "Description": sku['description'],
+                        "Pricing_info": sku['pricingInfo']
+                    }
+                    formatted_skus.append(formatted_sku)
 
-        else:
-            print(f"Error: {response.status_code} - {response.reason}")
+                # Check if there is a next page token
+                next_page_token = data.get("nextPageToken")
+                if not next_page_token:
+                    break  # Break the loop if there's no next page token or it's empty
+
+            else:
+                print(f"Error: {response.status_code} - {response.reason}")
+                break  # Exit loop on error
+
+# Save the formatted information to a JSON file
+        with open(output_file_path2, 'w') as json_file:
+            json.dump(formatted_skus, json_file, indent=2)
+
+        print('Pricing information saved to price_info.json')
 
     except Exception as e:
         print(f"An error occurred: {e}")
-        
         
 # Getting specs for Cloud SQL
 def get_specs(endpoint_url, API_KEY, service_filter, desired_categories, output_file_path):
@@ -210,6 +222,8 @@ def combine_json_data(file1_path, file2_path, output_file_path):
     cloud_service_type = 'Database'  # Assuming 'Database' is the service_type for database-related services
     cloud_service, _ = CloudService.objects.get_or_create(provider=provider, service_type=cloud_service_type)
     
+    DatabaseSpecifications.objects.filter(provider=provider).delete()
+
     
     # Load the content of the first JSON file
     with open(file1_path, 'r') as spec_file:
