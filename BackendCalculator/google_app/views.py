@@ -634,9 +634,10 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
     city=None
     if location == 'us-central1':
         city= 'Iowa'   #doesnt work for storage, None for Block Storage
-    elif location == 'us-east1': # dont use no location for everything
+    elif location == 'us-east-2': # dont use no location for everything
+        location = 'us-east2'
         city= 'South Carolina'
-    elif location == 'us-east-2':
+    elif location == 'us-east-1':
         location = 'us-east4'
         city= 'Northern Virginia' #only virginia for block storage
     elif location == 'us-east5':
@@ -658,7 +659,8 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
         city= 'Hong Kong'
     elif location == 'asia-east1':
         city= 'Taiwan' # None for PostgreSQL
-    elif location == 'asia-northeast1':
+    elif location == 'asia-northeast-1':
+        location = 'asia-northeast1'
         city= 'Tokyo' # None for PostgreSQLS
     elif location == 'ap-northeast-3':
         location = 'asia-northeast2'
@@ -717,15 +719,18 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
         compute_name="n1-standard-1"
     elif expected_cpu == "2vCPUs" :
         compute_name="n1-standard-2"
-    elif expected_cpu == "4vCPUs":
+    elif expected_cpu == "4vCPUs" or expected_cpu == "moderate":
         compute_name="n1-standard-4"
     elif expected_cpu == "8vCPUs":
         compute_name="n2-standard-8"
-    elif expected_cpu == "12vCPUs":
+    elif expected_cpu == "12vCPUs" or expected_cpu == "complex":
         compute_name="g2-standard-12"
     elif expected_cpu == "16vCPUs":
         compute_name="n1-standard-16"
     # Compute Logic
+    scale= ""
+    if scalability== 'essential' or database_size=='10000':
+        scale = "-Auto-scaling & Load-balancer"
     compute_total_cost=0
     print(compute_name)
     print(location)
@@ -733,16 +738,16 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
     compute_total_cost=float(compute_instance.unit_price)*730 
     print(compute_total_cost)
     computed_data['compute'] = {
-        'name': compute_instance.name,
+        'name': compute_instance.name + scale,
         'unit_price': round(compute_total_cost, 2),
-        'cpu': compute_instance.cpu,
+        'cpu': f"{compute_instance.cpu} vCPU",
         'memory': compute_instance.memory,
         'sku': compute_instance.sku,
         'provider': compute_instance.provider.name,
         'cloud_service': compute_instance.cloud_service.service_type
     }
 #----------------------------------------------------------------------------------------------------------------------------------------
-    if storage_size=='large':
+    if storage_size=='large' or storage_size=='10000':
         storage_size=100000
     elif storage_size=='medium' or storage_size=='5000':    
         storage_size = 10000
@@ -760,7 +765,7 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
     elif cloud_storage == 'Block Storage' or cloud_storage == 'databases':
         query_temp = "Storage PD Capacity in %s"
         
-    elif cloud_storage == "Object Storage":
+    elif cloud_storage == "Object Storage" or cloud_storage == 'multimedia':
         query_temp = "Standard Storage %s"
     print(query_temp, city)
     # Check if query_temp and city are both not None
@@ -803,8 +808,8 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
         computed_data['storage'] = None
  #-------------------------------------------------------------------------------------------------------------------------------------------------------------                    
     # #Database Logic
-    if database_service != 'nodatabase':
-        if database_size == 'large' or database_size == '100000':
+    if database_service != 'noDatabase':
+        if database_size == 'large' or database_size == '10000':
             database_size = 1000
         elif database_size == 'medium'  or database_size == '5000':
             database_size = 100
@@ -860,7 +865,6 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
     name = ""
 
     if scalability == "essential":
-        name += "Auto Scaling & Load Balancing"
         inbound_query = f"Regional External Application Load Balancer Inbound Data Processing for {city}"
         inbound_lb= NetworkingSpecifications.objects.filter(name__contains=inbound_query).first()
         outbound_query= f"Regional External Application Load Balancer Outbound Data Processing for {city}"
@@ -868,12 +872,13 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
 
     else:
         name = ""
-    
+    price_val=""
     if dns_connection == 'Yes':
         name += " DNS"
         dns_query='0CAB-FE26-F2C6'
         dns_instance= NetworkingSpecifications.objects.filter(sku=dns_query).first()
         dns_instance.unit_price=float(dns_instance.unit_price)* 1000000
+        price_val=f'{dns_instance.unit_price}/ per 1000000 queries'
     else:
         name=""
         
@@ -893,14 +898,14 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
                             (float(cdn_instance.unit_price) if cdn_instance else 0)
         print(network_total_price)
         
-        network_total_price*= 730
+        
         
 
         sku_components = [component.sku if component else "" for component in [inbound_lb, outbound_lb, dns_instance, cdn_instance]]
         sku_comp = " + ".join(filter(None, sku_components))
         computed_data['networking'] = {
         'name': name,
-        'unit_price': round(network_total_price,2),
+        'unit_price': f"{price_val}| Total price: {round(network_total_price,2)}",
         'sku': sku_comp
     }
     else:
