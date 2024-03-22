@@ -23,6 +23,7 @@ from testing.views import testing
 # from django.urls import include
 from databaseServer.views import handle_advanced_form_submission
 from databaseServer.views import handle_basic_form_submission
+from google_app.views import callmain
 
 #Oracle
 from oracle_app.views import get_oracle_pricing
@@ -59,6 +60,9 @@ urlpatterns = [
     #ORACLE
     path('oracle/', get_oracle_pricing, name='oracle-price-fetch'),   
 
+    
+    #gcp
+    path('gcpdb/',callmain,name='callmain'),
 ] + router.urls
 
 

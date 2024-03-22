@@ -13,7 +13,6 @@ import {
   Typography,
   FormHelperText,
 } from "@mui/material";
-import { faL } from "@fortawesome/free-solid-svg-icons";
 
 const BasicForm = () => {
   const navigate = useNavigate(); // Initialize navigate function
@@ -109,16 +108,11 @@ const BasicForm = () => {
     const timer = setTimeout(() => {
       setValidationErrors({
         computeComplexity: false,
-        // networkReliability: false,
-        dataStorageType: false,
+        networkReliability: false,
+        dataStorageSize: false,
         databaseService: false,
         monthlyBudget: false,
-        expectedUsers: false,
-        dnsFeature: false,
-        cdnNetworking: false,
-        region: false,
-    
-        // resourceGrowth: false,
+        resourceGrowth: false,
       });
     }, 3000);
     return () => clearTimeout(timer);
@@ -267,7 +261,10 @@ const BasicForm = () => {
             {/* DNS Feature */}
             <Grid item xs={10}>
               <FormControl fullWidth variant="outlined">
-                <InputLabel id="dns-feature-label">Do you want to ensure that your website is identifiable by a user-friendly address?</InputLabel>
+                <InputLabel id="dns-feature-label">
+                  Do you want to ensure that your website is identifiable by a user-friendly
+                  address?
+                </InputLabel>
                 <Select
                   labelId="dns-feature-label"
                   id="dns-feature-select"
@@ -278,12 +275,8 @@ const BasicForm = () => {
                   error={validationErrors.dnsFeature}
                 >
                   <MenuItem value="">Select...</MenuItem>
-                  <MenuItem value="Yes">
-                    Yes
-                  </MenuItem>
-                  <MenuItem value="No">
-                    No
-                  </MenuItem>
+                  <MenuItem value="Yes">Yes</MenuItem>
+                  <MenuItem value="No">No</MenuItem>
                 </Select>
                 {validationErrors.dnsFeature && (
                   <FormHelperText error>Please select your option</FormHelperText>
@@ -304,12 +297,8 @@ const BasicForm = () => {
                   error={validationErrors.cdnNetworking}
                 >
                   <MenuItem value="">Select...</MenuItem>
-                  <MenuItem value="Yes">
-                    Yes
-                  </MenuItem>
-                  <MenuItem value="No">
-                    No
-                  </MenuItem>
+                  <MenuItem value="Yes">Yes</MenuItem>
+                  <MenuItem value="No">No</MenuItem>
                 </Select>
                 {validationErrors.cdnNetworking && (
                   <FormHelperText error>Please select your option</FormHelperText>
