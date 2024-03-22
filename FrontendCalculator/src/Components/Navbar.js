@@ -53,7 +53,7 @@ const Navbar = () => {
       <div className="navbar-links-container">
         <a href="/">Home</a>
         <a href="/about">About Us</a>
-        <a href="/testimonials">Testimonials</a>
+        {/* <a href="/testimonials">Testimonials</a> */}
         <a href="/contact">Contact</a>
         <Link to="/form" className="primary-button">
           Calculate

@@ -24,6 +24,8 @@ from testing.views import testing
 from databaseServer.views import handle_advanced_form_submission
 from databaseServer.views import handle_basic_form_submission
 
+#Oracle
+from oracle_app.views import get_oracle_pricing
 
 router = DefaultRouter()
 router.register("api/results", ViewHello, basename="ViewHello")
@@ -53,6 +55,10 @@ urlpatterns = [
     path('aws-direct-fetch/', aws_direct_fetch, name='aws-direct-fetch'),       # Fetch to db for direct connect only
     path('aws-cloudfront-fetch/', aws_cloudfront_fetch, name='aws-cloudfront-fetch'),    # Fetch to db for cloudfront only
     path('testing/', testing, name='testing'),                  # This is for testing purposes only and will be removed later
+
+    #ORACLE
+    path('oracle/', get_oracle_pricing, name='oracle-price-fetch'),   
+
 ] + router.urls
 
 

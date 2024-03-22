@@ -1,6 +1,7 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import React, { useState, useEffect} from "react";
 import CircularProgress from "@mui/material/CircularProgress";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
+// import CircularProgress from "@mui/material/CircularProgress";
 import {
   Box,
   Button,
@@ -51,32 +52,96 @@ const AdvancedForm = () => {
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-    setFormData((prevData) => ({
+    setFormData(prevData => ({
       ...prevData,
       [name]: value,
     }));
-    setValidationErrors((prevErrors) => ({
-      ...prevErrors,
-      [name]: value === "",
-    }));
+    // Clear databaseSize error if 'noDatabase' is selected
+    if (name === "databaseService" && value === "noDatabase") {
+      setValidationErrors(prevErrors => ({
+        ...prevErrors,
+        [name]: value === "",
+        databaseSize: false, // Do not validate databaseSize if 'noDatabase' is selected
+      }));
+    } else {
+      setValidationErrors(prevErrors => ({
+        ...prevErrors,
+        [name]: value === "",
+      }));
+    }
   };
+  
+  // const handleSubmit = async (event) => {
+  //   event.preventDefault();
+  //   let isValid = true;
+  //   const newValidationErrors = { ...validationErrors };
+  //   Object.entries(formData).forEach(([key, value]) => {
+  //     // Skip validation for databaseSize if 'noDatabase' is selected
+  //     if ((key === "databaseSize" && formData.databaseService === "noDatabase") || 
+  //         (key === "storageSize" && formData.cloudStorage === "No Storage")) {
+  //       newValidationErrors[key] = false;
+  //     } else if (value === "") {
+  //       isValid = false;
+  //       newValidationErrors[key] = true;
+  //     } else {
+  //       newValidationErrors[key] = false;
+  //     }
+  //   });
+  
+  //   // Update state immediately, no need to delay with setTimeout
+  //   setValidationErrors(newValidationErrors);
+  
+  //   if (isValid) {
+  //     setLoading(true);
+  //     try {
+  //       const response = await fetch("http://localhost:8000/api/submit-advanced-form/", {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify(formData),
+  //       });
+  //       if (response.ok) {
+  //         console.log("Form data submitted successfully");
+  //         const responseData = await response.json(); 
+  //         navigate("/results", { state: { responseData } });
+  //         console.log("Response from backend:", responseData);
 
+  //         // Delay 5 seconds before navigating to the results page
+  //         setTimeout(() => {
+  //           setLoading(false); // Stop loading after the response
+  //           navigate("/results", { state: { responseData } });
+  //         }, 3000);
+  //       } else {
+  //         console.error("Failed to submit form data");
+  //         setLoading(false);
+  //       }
+  //     } catch (error) {
+  //       console.error("Error submitting form data:", error);
+  //       setLoading(false);
+  //     }
+  //   }
+  // };
   const handleSubmit = async (event) => {
     event.preventDefault();
     let isValid = true;
     const newValidationErrors = { ...validationErrors };
     Object.entries(formData).forEach(([key, value]) => {
-      if (value === "") {
+      if ((key === "databaseSize" && formData.databaseService === "noDatabase") || 
+          (key === "storageSize" && formData.cloudStorage === "No Storage")) {
+        newValidationErrors[key] = false;
+      } else if (value === "") {
         isValid = false;
         newValidationErrors[key] = true;
       } else {
         newValidationErrors[key] = false;
       }
     });
+  
     setValidationErrors(newValidationErrors);
-
+  
     if (isValid) {
-      setLoading(true); // Start loading before the request
+      setLoading(true); // Ensure loading is set to true before starting the fetch
       try {
         const response = await fetch("http://localhost:8000/api/submit-advanced-form/", {
           method: "POST",
@@ -86,26 +151,47 @@ const AdvancedForm = () => {
           body: JSON.stringify(formData),
         });
         if (response.ok) {
-          console.log("Form data submitted successfully");
-          // Handle success
-          const responseData = await response.json(); // Parse response body as JSON
-          console.log("Response from backend:", responseData); // Print the response
-
+          const responseData = await response.json();
+          // Introduce a delay here using setTimeout
           setTimeout(() => {
-            setLoading(false); // Stop loading after delay
+            setLoading(false); // Stop loading and then navigate
             navigate("/results", { state: { responseData } });
-          }, 3000); // Delay 5 seconds before navigating
+          }, 3000); // Adjust the delay as needed
         } else {
-          // Handle error
           console.error("Failed to submit form data");
-          setLoading(false); // Stop loading on error
+          setLoading(false); // Ensure loading is set to false on failure
         }
       } catch (error) {
         console.error("Error submitting form data:", error);
-        setLoading(false); // Stop loading on exception
+        setLoading(false); // Ensure loading is set to false on exception
       }
     }
   };
+  
+  
+
+  // Determine if Database Size and Storage Size should be disabled
+  const isDatabaseDisabled = !formData.databaseService || formData.databaseService === "noDatabase";
+  const isStorageDisabled = !formData.cloudStorage || formData.cloudStorage === "No Storage";  
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setValidationErrors({
+        monthlyBudget: false,
+        expectedRAM: false,
+        databaseService: false,
+        databaseSize: false,
+        cloudStorage: false,
+        storageSize: false,
+        // networkPerformance: false,
+        dnsConnection: false,
+        cdnConnection: false,
+        scalability: false,
+        location: false,
+      });
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [validationErrors]);
 
   return (
     <Container maxWidth="md">
@@ -116,6 +202,56 @@ const AdvancedForm = () => {
         <form onSubmit={handleSubmit}>
           <Grid container spacing={4}>
             {/* Business Size */}
+            {/* <Grid item xs={6}>
+              <FormControl fullWidth>
+                <InputLabel id="business-size-label">Business Size</InputLabel>
+                <Select
+                  labelId="business-size-label"
+                  value={formData.businessSize}
+                  onChange={handleChange}
+                  name="businessSize"
+                  label="Business Size"
+                  error={validationErrors.businessSize}
+                >
+                  <MenuItem value="">Select...</MenuItem>
+                  <MenuItem value="smallBusiness">Small Business / Startup</MenuItem>
+                  <MenuItem value="mediumBusiness">Medium-Sized Business</MenuItem>
+                  <MenuItem value="largeEnterprise">Large Enterprise</MenuItem>
+                  <MenuItem value="creativeAgencies">Creative and Digital Agencies</MenuItem>
+                  <MenuItem value="healthEducationNonProfit">
+                    Healthcare, Education, and Non-Profit Organizations
+                  </MenuItem>
+                </Select>
+                {validationErrors.businessSize && (
+                  <FormHelperText error>Please select business size</FormHelperText>
+                )}
+              </FormControl>
+            </Grid> */}
+            {/* Expected Users
+            <Grid item xs={6}>
+              <FormControl fullWidth>
+                <InputLabel id="user-count-label">Expected users</InputLabel>
+                <Select
+                  labelId="user-count-label"
+                  value={formData.expectedUsers}
+                  onChange={handleChange}
+                  name="expectedUsers"
+                  label="How many concurrent users?"
+                  error={validationErrors.expectedUsers}
+                >
+                  <MenuItem value="">Select...</MenuItem>
+                  <MenuItem value="100-500">100-500 users</MenuItem>
+                  <MenuItem value="500-1000">500-1000 users</MenuItem>
+                  <MenuItem value="1000-5000">1000-5000 users</MenuItem>
+                  <MenuItem value="5000-10000">5000-10000 users</MenuItem>
+                  <MenuItem value="moreThan10000">More than 10000 users</MenuItem>
+                </Select>
+                {validationErrors.expectedUsers && (
+                  <FormHelperText error>Please select expected users</FormHelperText>
+                )}
+              </FormControl>
+            </Grid> */}
+            {/* Monthly Budget */}
             <Grid item xs={6}>
               <FormControl fullWidth>
                 <InputLabel id="monthly-budget-label">Monthly Budget</InputLabel>
@@ -188,7 +324,7 @@ const AdvancedForm = () => {
             </Grid>
 
             {/* Database Size */}
-            <Grid item xs={6}>
+            {/* <Grid item xs={6}>
               <FormControl fullWidth>
                 <InputLabel id="database-size-label">Database Size</InputLabel>
                 <Select
@@ -204,6 +340,29 @@ const AdvancedForm = () => {
                   <MenuItem value="medium">100GB</MenuItem>
                   <MenuItem value="large">1TB</MenuItem>
                   <MenuItem value="noDatabase">Not database required</MenuItem>
+                </Select>
+                {validationErrors.databaseSize && (
+                  <FormHelperText error>Please select database size</FormHelperText>
+                )}
+              </FormControl>
+            </Grid> */}
+
+            <Grid item xs={6}>
+              <FormControl fullWidth disabled={isDatabaseDisabled}>
+                <InputLabel id="database-size-label">Database Size</InputLabel>
+                <Select
+                  labelId="database-size-label"
+                  value={formData.databaseSize}
+                  onChange={handleChange}
+                  name="databaseSize"
+                  label="Database Size"
+                  error={validationErrors.databaseSize}
+                  disabled={isDatabaseDisabled} // Disable based on condition
+                >
+                  <MenuItem value="">Select...</MenuItem>
+                  <MenuItem value="small">Small (10 GB)</MenuItem>
+                  <MenuItem value="medium">Medium (100 GB)</MenuItem>
+                  <MenuItem value="large">Large (1 TB)</MenuItem>
                 </Select>
                 {validationErrors.databaseSize && (
                   <FormHelperText error>Please select database size</FormHelperText>
@@ -236,7 +395,7 @@ const AdvancedForm = () => {
             </Grid>
 
             {/* Storage Size */}
-            <Grid item xs={6}>
+            {/* <Grid item xs={6}>
               <FormControl fullWidth>
                 <InputLabel id="storage-size-label">Storage Size</InputLabel>
                 <Select
@@ -248,16 +407,41 @@ const AdvancedForm = () => {
                   error={validationErrors.storageSize}
                 >
                   <MenuItem value="">Select...</MenuItem>
-                  <MenuItem value="small">1TB</MenuItem>
-                  <MenuItem value="medium">10TB</MenuItem>
-                  <MenuItem value="large">100TB</MenuItem>
-                  <MenuItem value="notSure">No storage required</MenuItem>
+                  <MenuItem value="small">Small (under 1 TB)</MenuItem>
+                  <MenuItem value="medium">Medium (1-10 TB)</MenuItem>
+                  <MenuItem value="large">Large (10-100 TB)</MenuItem>
+                  <MenuItem value="veryLarge">Very Large (over 100 TB)</MenuItem>
+                  <MenuItem value="notSure">Not Sure/No Specific Requirements</MenuItem>
+                </Select>
+                {validationErrors.storageSize && (
+                  <FormHelperText error>Please select storage size</FormHelperText>
+                )}
+              </FormControl>
+            </Grid> */}
+
+            <Grid item xs={6}>
+              <FormControl fullWidth disabled={isStorageDisabled}>
+                <InputLabel id="storage-size-label">Storage Size</InputLabel>
+                <Select
+                  labelId="storage-size-label"
+                  value={formData.storageSize}
+                  onChange={handleChange}
+                  name="storageSize"
+                  label="Storage Size"
+                  error={validationErrors.storageSize}
+                  disabled={isStorageDisabled} // Disable based on condition
+                >
+                  <MenuItem value="">Select...</MenuItem>
+                  <MenuItem value="small">Small (1 TB)</MenuItem>
+                  <MenuItem value="medium">Medium (10 TB)</MenuItem>
+                  <MenuItem value="large">Large (100 TB)</MenuItem>
                 </Select>
                 {validationErrors.storageSize && (
                   <FormHelperText error>Please select storage size</FormHelperText>
                 )}
               </FormControl>
             </Grid>
+
 
             {/* Network Performance */}
             {/* <Grid item xs={6}>
