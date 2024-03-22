@@ -170,7 +170,7 @@ const RecommendedPlans = ({ responseData }) => {
                       <>
                         <div style={{ textAlign: "left" }}>
                           <span style={{ fontSize: "1.1rem" }}>
-                            DNS Name:
+                            Name:
                             {plan.networking.name}
                           </span>{" "}
                         </div>

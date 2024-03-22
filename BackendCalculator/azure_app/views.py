@@ -281,14 +281,21 @@ def database_fetch_view(request):
 ###################################################################################################
 def calculated_data_Azure(monthly_budget, expected_ram, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location):
     computed_data = {'provider': 'Microsoft Azure'}  # Initialize dictionary to store computed data
+    compute_price = 0.0;
+    storage_pice = 0.0;
+    database_price = 0.0;
+    dns_price = 0.0
+    cdn_price = 0.0
+    monthly = 0.0;
+    annual = 0.0;
 
     # Mapping of user-friendly RAM/CPU options to SKU
     ram_to_sku_mapping = {
-        '1vCPU': 'Standard_D1_v2',  # Example mapping, adjust based on actual data
-        '2vCPUs': 'Standard_B2als_v2',  # Example mapping, adjust based on actual data
-        '4vCPUs': 'Standard_D4_v4',  # Example mapping
-        '8vCPUs': 'Standard_D8s_v5',  # Example mapping
-        '16vCPUs': 'Standard_D16ds_v5',  # Example mapping
+        '1vCPU': 'Standard_D1',  # Example mapping, adjust based on actual data
+        '2vCPUs': 'Standard_F2',  # Example mapping, adjust based on actual data
+        '4vCPUs': 'Standard_D4ds_v4',  # Example mapping
+        '8vCPUs': 'Standard_D8ps_v5',  # Example mapping
+        '16vCPUs': 'Standard_B16as_v2',  # Example mapping
         # add mappings as necessary
     }
 
@@ -299,8 +306,13 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
     if expected_sku:
         compute_instance = ComputeSpecifications.objects.filter(sku=expected_sku).first()
         if compute_instance:
+             # Append '+ load balancer' to the name if scalability is essential
+            instance_name = compute_instance.name + " + Azure Standard Load Balancer" if scalability == 'essential' else compute_instance.name
+            # Compute price
+            compute_price = float(compute_instance.price_monthly)
+
             computed_data['compute'] = {
-                'name': compute_instance.name,
+                'name': instance_name,
                 'unit_price': compute_instance.price_monthly,
                 'cpu': compute_instance.cpu,
                 'memory': compute_instance.memory,
@@ -310,87 +322,125 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
                 'price_monthly': compute_instance.price_monthly
             }
 
-        # Define size to price multiplier mapping
+    # Assuming these are price multipliers for different service tiers or capacities
     size_multiplier_mapping = {
-        'small': 10,
-        'medium': 100,
-        'large': 1000,
+        'small': 1,    # 1 TB
+        'medium': 10,  # 10 TB
+        'large': 100,  # 100 TB
         'noDatabase': 0,
     }
 
-    # Define name and SKU mapping with primary and secondary options
     service_to_name_and_sku_mapping = {
         'noSQL': {
-            'primary': {'name': 'Azure Cosmos DB for MongoDB vCore', 'sku': 'General Purpose Storage'},
-            'secondary': {'name': 'Azure Cosmos DB', 'sku': 'mRUs'}  # Adjust as needed
+            'primary': {
+                'name': 'Azure Cosmos DB',
+                'sku': 'RUm',
+                'region': 'eastus',
+                'unit_of_storage': '1 GB/Month'
+            },
+            'secondary': {
+                'name': 'Azure Cosmos DB for MongoDB vCore',
+                'sku': 'General Purpose Storage',
+                'region': 'eastus',
+                'unit_of_storage': '1 GB/Month'
+            }
         },
         'sql': {
-            'primary': {'name': 'SQL Database Standard - Storage', 'sku': 'Standard'},
-            'secondary': {'name': 'SQL Database Premium - Storage', 'sku': 'Premium'}  # Adjust as needed
+            'primary': {
+                'name': 'SQL Database Standard - Storage',
+                'sku': 'Standard',
+                'region': 'East US',
+                'unit_of_storage': '1 GB/Month'
+            },
+            'secondary': {
+                'name': 'SQL Database Premium - Storage',
+                'sku': 'Premium',
+                'region': 'eastus',
+                'unit_of_storage': '1 GB/Month'
+            }
         },
         'noDatabase': {
-            'primary': {'name': '', 'sku': ''},
-            'secondary': {'name': '', 'sku': ''}  # Adjust as needed
+            'primary': {
+                'name': '',
+                'sku': '',
+                'region': '',
+                'unit_of_storage': ''
+            },
+            'secondary': {
+                'name': '',
+                'sku': '',
+                'region': '',
+                'unit_of_storage': ''
+            }
         }
     }
 
     service_info = service_to_name_and_sku_mapping.get(database_service)
 
     if service_info:
-        # Attempt to fetch the primary database instance
         database_instance = DatabaseSpecifications.objects.filter(
             name=service_info['primary']['name'],
-            sku=service_info['primary']['sku']
+            sku=service_info['primary']['sku'],
+            region=service_info['primary']['region'],
+            unit_of_storage=service_info['primary']['unit_of_storage']
         ).first()
 
-        # If not found, try the secondary option
         if not database_instance:
             database_instance = DatabaseSpecifications.objects.filter(
                 name=service_info['secondary']['name'],
-                sku=service_info['secondary']['sku']
+                sku=service_info['secondary']['sku'],
+                region=service_info['secondary']['region'],
+                unit_of_storage=service_info['secondary']['unit_of_storage']
             ).first()
 
         if database_instance:
-            # Calculate the unit price based on the selected database size
             size_multiplier = size_multiplier_mapping.get(database_size, 1)
-            unit_price = float(database_instance.unit_price) * size_multiplier
+            unit_price = float(database_instance.unit_price)  # Assume this gives price per GB/Month
+            # Calculate the price for the selected size
+            total_price = unit_price * 1024 * size_multiplier  # Assuming price needs to be calculated per TB
+            database_price = float(total_price)
 
             computed_data['database'] = {
                 'name': database_instance.name,
-                'unit_price': f'{unit_price:.2f}',
+                'unit_price': f'{total_price:.2f}',
+                'total_price': f'{total_price:.2f}',
                 'sku': database_instance.sku,
+                'region': database_instance.region,
+                'unit_of_storage': database_instance.unit_of_storage,
                 'data_type': database_instance.data_type,
                 'provider': database_instance.provider.name,
                 'cloud_service': database_instance.cloud_service.service_type
             }
         else:
             computed_data['database'] = 'No matching database found'
+    else:
+        computed_data['database'] = 'Service not found'
 
     # Define size to price multiplier mapping, adjust as needed
     size_multiplier_mapping_storage = {
-        'small': 1024,
-        'medium': 10240,
-        'large': 102400,
-        'notSure': 0,
+        'small': 1,      # For 1 TB
+        'medium': 10,    # For 10 TB
+        'large': 100,    # For 100 TB
+        'notSure': 1,    # Default or unsure case
     }
 
-    # Define storage type to name and SKU mapping with primary and secondary options
+        # Define storage type to name, SKU, region, and unit of storage mapping with primary and secondary options
     storage_to_name_and_sku_mapping_storage = {
         'Object Storage': {
-            'primary': {'name': 'General Block Blob', 'sku': 'Standard GRS'},
-            'secondary': {'name': 'General Block Blob v2', 'sku': 'Hot GRS'}
+            'primary': {'name': 'General Block Blob', 'sku': 'Standard GRS', 'region': 'uksouth', 'unit_of_storage': '1 GB/Month'},
+            'secondary': {'name': 'General Block Blob v2', 'sku': 'Cold RA-GZRS', 'region': 'uksouth', 'unit_of_storage': '1 GB'}
         },
         'File Storage': {
-            'primary': {'name': 'Files v2', 'sku': 'Cool LRS'},
-            'secondary': {'name': 'Files', 'sku': 'Standard LRS'}
+            'primary': {'name': 'Files', 'sku': 'Standard LRS', 'region': 'brazilsoutheast', 'unit_of_storage': '1 GB/Month'},
+            'secondary': {'name': 'Files v2', 'sku': 'Cool GRS', 'region': 'westeurope', 'unit_of_storage': '1 GB'}
         },
         'Block Storage': {
-            'primary': {'name': 'Standard SSD Managed Disks', 'sku': 'E70 LRS'},
-            'secondary': {'name': 'Premium SSD Managed Disks', 'sku': 'P15 LRS'}
+            'primary': {'name': 'Standard SSD Managed Disks', 'sku': 'E3 LRS', 'region': 'attnewyork1', 'unit_of_storage': '1/Month'},
+            'secondary': {'name': 'Standard SSD Managed Disks', 'sku': 'E3 LRS', 'region': 'norwaywest', 'unit_of_storage': '1/Month'}
         },
         'No Storage': {
-            'primary': {'name': '', 'sku': ''},
-            'secondary': {'name': '', 'sku': ''}  # Adjust as needed
+            'primary': {'name': '', 'sku': '', 'region': '', 'unit_of_storage': ''},
+            'secondary': {'name': '', 'sku': '', 'region': '', 'unit_of_storage': ''}  # Adjust as needed
         }
         # Add more mappings as necessary for different storage types
     }
@@ -401,14 +451,18 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
         # Attempt to fetch the primary storage instance
         storage_instance = StorageSpecifications.objects.filter(
             name=storage_info['primary']['name'],
-            sku=storage_info['primary']['sku']
+            sku=storage_info['primary']['sku'],
+            region=storage_info['primary']['region'],
+            unit_of_storage=storage_info['primary']['unit_of_storage']  # Include unit of storage in the query
         ).first()
 
         # If not found, try the secondary option
         if not storage_instance:
             storage_instance = StorageSpecifications.objects.filter(
                 name=storage_info['secondary']['name'],
-                sku=storage_info['secondary']['sku']
+                sku=storage_info['secondary']['sku'],
+                region=storage_info['secondary']['region'],
+                unit_of_storage=storage_info['secondary']['unit_of_storage']  # Include unit of storage in the query
             ).first()
 
         if storage_instance:
@@ -417,16 +471,22 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
 
             # Interpret unit of storage to calculate monthly price
             unit_of_storage = storage_instance.unit_of_storage.lower()
-            if 'gb/month' in unit_of_storage or '1/month' in unit_of_storage:
-                base_price = unit_price  # Already monthly price
+            # Define a set of keywords to identify different forms of unit storage
+            gb_keywords = ['gb', 'gib/month', 'gb/month', '1/month']
+
+            if any(keyword in unit_of_storage for keyword in gb_keywords):
+                base_price = unit_price * 1024  # Convert to GB for consistency
             elif '10k/month' in unit_of_storage or '10k' in unit_of_storage:
-                base_price = unit_price * 10  # Example, adjust according to your pricing model
-            else:
-                base_price = unit_price  # Default case, adjust as needed
+                # Assuming '10k' means 10,000 KB and calculating for 1 TB
+                kb_in_tb = 1024 * 1024 * 1024  # Total KB in 1 TB
+                blocks_in_1TB = kb_in_tb / 10000  # Number of 10K blocks in 1 TB
+                base_price = unit_price * blocks_in_1TB  # Adjust unit price to total price for 1 TB
+
 
             # Apply size multiplier based on storage size selected by user
             size_multiplier = size_multiplier_mapping_storage.get(storage_size, 1)
             price_monthly = base_price * size_multiplier
+            storage_pice = float(price_monthly)
 
             computed_data['storage'] = {
                 'name': storage_instance.name,
@@ -441,74 +501,108 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
             computed_data['storage'] = 'No matching storage found'
 
 
-    # Define networking type to name and SKU mapping
+        # Define networking type to name, SKU, unit of storage, and region mapping
     networking_to_name_and_sku_mapping = {
         'CDN': {
-            'primary': {'name': 'Azure CDN from Akamai - Zone 3', 'sku': 'Custom'},
-            'secondary': {'name': 'Azure CDN from Akamai - Zone 5', 'sku': 'Custom'}
+            'primary': {'name': 'Azure CDN from Microsoft - ', 'sku': 'WAF', 'unit_of_measure': '1M/Month'},
+            'secondary': {'name': 'Azure CDN from Microsoft - ', 'sku': 'WAF', 'unit_of_measure': '1M/Month'}
         },
         'DNS': {
-           'primary': {'name': 'Azure DNS - Zone 3', 'sku': 'Private'},
-            'secondary': {'name': 'Azure DNS - Zone 4', 'sku': 'Azure DNS Private Resolver'}
+            'primary': {'name': 'Azure DNS - ', 'sku': 'Private', 'unit_of_measure': '1M'},
+            'secondary': {'name': 'Azure DNS - ', 'sku': 'Public', 'unit_of_measure': '1M'}
         },
         # Add more mappings as necessary for different networking types
     }
 
-    # Handle DNS Connection
+        # Fetch DNS information if DNS connection is enabled
     if dns_connection == 'Yes':
         dns_info = networking_to_name_and_sku_mapping.get('DNS')
         if dns_info:
             dns_instance = NetworkingSpecifications.objects.filter(
                 name=dns_info['primary']['name'],
-                sku=dns_info['primary']['sku']
+                sku=dns_info['primary']['sku'],
+                unit_of_measure=dns_info['primary']['unit_of_measure'],
             ).first() or NetworkingSpecifications.objects.filter(
                 name=dns_info['secondary']['name'],
-                sku=dns_info['secondary']['sku']
+                sku=dns_info['secondary']['sku'],
+                unit_of_measure=dns_info['secondary']['unit_of_measure'],
             ).first()
 
             if dns_instance:
+                dns_price = float(dns_instance.unit_price)
                 computed_data['networking'] = {
                     'name': dns_instance.name,
-                    'unit_price': f'{unit_price:.2f}',
+                    'unit_price': f'{float(dns_instance.unit_price):.2f} | 1,000,000 queries',
                     'sku': dns_instance.sku,
                     'provider': dns_instance.provider.name,
                     'cloud_service': dns_instance.cloud_service.service_type,
-                    'unit_of_measure': dns_instance.unit_of_measure
+                    'unit_of_measure': dns_instance.unit_of_measure,
                 }
 
-    # Handle CDN Connection
+    # Fetch CDN information if CDN connection is enabled
     if cdn_connection == 'Yes':
         cdn_info = networking_to_name_and_sku_mapping.get('CDN')
         if cdn_info:
             cdn_instance = NetworkingSpecifications.objects.filter(
                 name=cdn_info['primary']['name'],
-                sku=cdn_info['primary']['sku']
+                sku=cdn_info['primary']['sku'],
+                unit_of_measure=cdn_info['primary']['unit_of_measure'],
             ).first() or NetworkingSpecifications.objects.filter(
                 name=cdn_info['secondary']['name'],
-                sku=cdn_info['secondary']['sku']
+                sku=cdn_info['secondary']['sku'],
+                unit_of_measure=cdn_info['secondary']['unit_of_measure'],
             ).first()
 
             if cdn_instance:
-                computed_data['cdn_networking'] = {
-                    'name': cdn_instance.name,
-                    'unit_price': f'{unit_price:.2f}',
-                    'sku': cdn_instance.sku,
-                    'provider': cdn_instance.provider.name,
-                    'cloud_service': cdn_instance.cloud_service.service_type,
-                    'unit_of_measure': cdn_instance.unit_of_measure
-                }
+                cdn_price = float(cdn_instance.unit_price)
+                # If computed_data['networking'] already has DNS data, append CDN data
+                if 'networking' in computed_data:
+                    combined_unit_price = float(computed_data['networking']['unit_price'].split('|')[0]) + float(cdn_instance.unit_price)
+                    computed_data['networking'] = {
+                        'name': f"{computed_data['networking']['name']}  {cdn_instance.name}",
+                        'unit_price': f"{combined_unit_price:.2f} | 1,000,000 queries",
+                        'sku': f"{computed_data['networking']['sku']} & {cdn_instance.sku}",
+                        'provider': f"{computed_data['networking']['provider']} & {cdn_instance.provider.name}",
+                        'cloud_service': f"{computed_data['networking']['cloud_service']} & {cdn_instance.cloud_service.service_type}",
+                        'unit_of_measure': f"{computed_data['networking']['unit_of_measure']} & {cdn_instance.unit_of_measure}",
+                    }
+                else:
+                    computed_data['networking'] = {
+                        'name': cdn_instance.name,
+                        'unit_price': f'{float(cdn_instance.unit_price):.2f} | 1,000,000 queries',
+                        'sku': cdn_instance.sku,
+                        'provider': cdn_instance.provider.name,
+                        'cloud_service': cdn_instance.cloud_service.service_type,
+                        'unit_of_measure': cdn_instance.unit_of_measure,
+                    }
+
+
+        # Calculating total monthly and annual prices
+    monthly = compute_price + storage_pice + database_price + dns_price + cdn_price
+    annual = monthly * 12
+
+    # Adding monthly and annual totals to the computed_data dictionary
+    computed_data['monthly'] = f'{monthly:.2f}'
+    computed_data['annual'] = f'{annual:.2f}'
 
     return computed_data
 
 
 def calculated_data_Azure_basic(compute_complexity, expected_users, data_storage_type, database_service, dns_feature, cdn_networking, region, budget):
     computed_data = {'provider': 'Microsoft Azure',}  # Initialize dictionary to store computed data
+    compute_price = 0.0;
+    storage_pice = 0.0;
+    database_price = 0.0;
+    dns_price = 0.0
+    cdn_price = 0.0
+    monthly = 0.0;
+    annual = 0.0;
 
     # Mapping of user-friendly RAM/CPU options to SKU
     ram_to_sku_mapping = {
-        'simple': 'Standard_B2als_v2',  # Example mapping, adjust based on actual data
-        'moderate': 'Standard_D8s_v5',  # Example mapping
-        'complex': 'Standard_D16ds_v5',  # Example mapping
+        'simple': 'Standard_F2',  # Example mapping, adjust based on actual data
+        'moderate': 'Standard_D8ps_v5',  # Example mapping
+        'complex': 'Standard_B16as_v2',  # Example mapping
         # add mappings as necessary
     }
 
@@ -519,6 +613,9 @@ def calculated_data_Azure_basic(compute_complexity, expected_users, data_storage
     if expected_sku:
         compute_instance = ComputeSpecifications.objects.filter(sku=expected_sku).first()
         if compute_instance:
+
+            compute_price = float(compute_instance.price_monthly)
+
             computed_data['compute'] = {
                 'name': compute_instance.name,
                 'unit_price': compute_instance.price_monthly,
@@ -531,96 +628,266 @@ def calculated_data_Azure_basic(compute_complexity, expected_users, data_storage
             }
 
 
-    # Define size to price multiplier mapping
+    # Assuming these are price multipliers for different service tiers or capacities
     size_multiplier_mapping = {
-        'under50': 10,
-        '500to2000': 100,
-        '2000to5000': 1000,
-        'over5000': 10000,
+        '1000': 50,    # 50 GB
+        '5000': 200,  # 200 GB
+        '10000': 1024,  # 1000 T
     }
 
-    # Define name and SKU mapping with primary and secondary options
     service_to_name_and_sku_mapping = {
         'basic': {
-            'primary': {'name': 'Azure Cosmos DB for MongoDB vCore', 'sku': 'General Purpose Storage'},
-            'secondary': {'name': 'Azure Cosmos DB', 'sku': 'mRUs'}  # Adjust as needed
+            'primary': {
+                'name': 'Azure Cosmos DB',
+                'sku': 'RUm',
+                'region': 'eastus',
+                'unit_of_storage': '1 GB/Month'
+            },
+            'secondary': {
+                'name': 'Azure Cosmos DB for MongoDB vCore',
+                'sku': 'General Purpose Storage',
+                'region': 'eastus',
+                'unit_of_storage': '1 GB/Month'
+            }
         },
         'complex': {
-            'primary': {'name': 'SQL Database Standard - Storage', 'sku': 'Standard'},
-            'secondary': {'name': 'SQL Database Premium - Storage', 'sku': 'Premium'}  # Adjust as needed
+            'primary': {
+                'name': 'SQL Database Standard - Storage',
+                'sku': 'Standard',
+                'region': 'East US',
+                'unit_of_storage': '1 GB/Month'
+            },
+            'secondary': {
+                'name': 'SQL Database Premium - Storage',
+                'sku': 'Premium',
+                'region': 'eastus',
+                'unit_of_storage': '1 GB/Month'
+            }
         },
         'nodatabase': {
-           'primary': {'name': 'Azure Cosmos DB for MongoDB vCore', 'sku': 'General Purpose Storage'},
-            'secondary': {'name': 'Azure Cosmos DB', 'sku': 'mRUs'}  # Adjust as needed
+            'primary': {
+                'name': '',
+                'sku': '',
+                'region': '',
+                'unit_of_storage': ''
+            },
+            'secondary': {
+                'name': '',
+                'sku': '',
+                'region': '',
+                'unit_of_storage': ''
+            }
         }
     }
 
     service_info = service_to_name_and_sku_mapping.get(database_service)
 
     if service_info:
-        # Attempt to fetch the primary database instance
         database_instance = DatabaseSpecifications.objects.filter(
             name=service_info['primary']['name'],
-            sku=service_info['primary']['sku']
+            sku=service_info['primary']['sku'],
+            region=service_info['primary']['region'],
+            unit_of_storage=service_info['primary']['unit_of_storage']
         ).first()
 
-        # If not found, try the secondary option
         if not database_instance:
             database_instance = DatabaseSpecifications.objects.filter(
                 name=service_info['secondary']['name'],
-                sku=service_info['secondary']['sku']
+                sku=service_info['secondary']['sku'],
+                region=service_info['secondary']['region'],
+                unit_of_storage=service_info['secondary']['unit_of_storage']
             ).first()
 
         if database_instance:
-            # Calculate the unit price based on the selected database size
-            size_multiplier = size_multiplier_mapping.get(database_size, 1)
-            unit_price = float(database_instance.unit_price) * size_multiplier
+            size_multiplier = size_multiplier_mapping.get(expected_users, 1)
+            unit_price = float(database_instance.unit_price)  # Assume this gives price per GB/Month
+            # Calculate the price for the selected size
+            total_price = unit_price * size_multiplier  # Assuming price needs to be calculated per TB
+            database_price = float(total_price)
 
             computed_data['database'] = {
                 'name': database_instance.name,
-                'unit_price': f'{unit_price:.2f}',
+                'unit_price': f'{total_price:.2f}',
+                'total_price': f'{total_price:.2f}',
                 'sku': database_instance.sku,
+                'region': database_instance.region,
+                'unit_of_storage': database_instance.unit_of_storage,
                 'data_type': database_instance.data_type,
                 'provider': database_instance.provider.name,
                 'cloud_service': database_instance.cloud_service.service_type
             }
         else:
             computed_data['database'] = 'No matching database found'
+    else:
+        computed_data['database'] = 'Service not found'
 
 
-    # if database_service:
-    #     # Query for the first database instance
-    #     database_instance = DatabaseSpecifications.objects.filter(name__icontains=database_service).first()
-    #     if database_instance:
-    #         computed_data['database'] = {
-    #             'name': database_instance.name,
-    #             'unit_price': database_instance.unit_price,
-    #             'unit_of_storage': database_instance.unit_of_storage,
-    #             'sku': database_instance.sku,
-    #             'data_type': database_instance.data_type,
-    #             'provider': database_instance.provider.name,
-    #             'cloud_service': database_instance.cloud_service.service_type
-    #         }
-    #     else:
-    #         computed_data['database'] = None
+    # Define size to price multiplier mapping, adjust as needed
+    size_multiplier_mapping_storage = {
+        '1000': 50,    # 50 GB
+        '5000': 200,  # 200 GB
+        '10000': 1024,  # 1000 T
+    }
 
-    # if networking_feature:
-    #     if 'Content' in networking_feature:
-    #         # Query for the first networking instance based on the keyword "CDN"
-    #         networking_instance = NetworkingSpecifications.objects.filter(name__icontains='CDN').first()
-    #     else:
-    #         # Query for the first networking instance based on the first word
-    #         first_word = networking_feature.split()[0]
-    #         networking_instance = NetworkingSpecifications.objects.filter(name__icontains=first_word).first()
+        # Define storage type to name, SKU, region, and unit of storage mapping with primary and secondary options
+    storage_to_name_and_sku_mapping_storage = {
+        'multimedia': {
+            'primary': {'name': 'General Block Blob', 'sku': 'Standard GRS', 'region': 'uksouth', 'unit_of_storage': '1 GB/Month'},
+            'secondary': {'name': 'General Block Blob v2', 'sku': 'Cold RA-GZRS', 'region': 'uksouth', 'unit_of_storage': '1 GB'}
+        },
+        'files': {
+            'primary': {'name': 'Files', 'sku': 'Standard LRS', 'region': 'brazilsoutheast', 'unit_of_storage': '1 GB/Month'},
+            'secondary': {'name': 'Files v2', 'sku': 'Cool GRS', 'region': 'westeurope', 'unit_of_storage': '1 GB'}
+        },
+        'databases': {
+            'primary': {'name': 'Standard SSD Managed Disks', 'sku': 'E3 LRS', 'region': 'attnewyork1', 'unit_of_storage': '1/Month'},
+            'secondary': {'name': 'Standard SSD Managed Disks', 'sku': 'E3 LRS', 'region': 'norwaywest', 'unit_of_storage': '1/Month'}
+        },
+        'No Storage': {
+            'primary': {'name': '', 'sku': '', 'region': '', 'unit_of_storage': ''},
+            'secondary': {'name': '', 'sku': '', 'region': '', 'unit_of_storage': ''}  # Adjust as needed
+        }
+        # Add more mappings as necessary for different storage types
+    }
 
-    #     if networking_instance:
-    #         computed_data['networking'] = {
-    #             'name': networking_instance.name,
-    #             'unit_price': networking_instance.unit_price,
-    #             'unit_of_measure': networking_instance.unit_of_measure,
-    #             'sku': networking_instance.sku,
-    #             'provider': networking_instance.provider.name,
-    #             'cloud_service': networking_instance.cloud_service.service_type
-    #         }
+    storage_info = storage_to_name_and_sku_mapping_storage.get(data_storage_type)
+
+    if storage_info:
+        # Attempt to fetch the primary storage instance
+        storage_instance = StorageSpecifications.objects.filter(
+            name=storage_info['primary']['name'],
+            sku=storage_info['primary']['sku'],
+            region=storage_info['primary']['region'],
+            unit_of_storage=storage_info['primary']['unit_of_storage']  # Include unit of storage in the query
+        ).first()
+
+        # If not found, try the secondary option
+        if not storage_instance:
+            storage_instance = StorageSpecifications.objects.filter(
+                name=storage_info['secondary']['name'],
+                sku=storage_info['secondary']['sku'],
+                region=storage_info['secondary']['region'],
+                unit_of_storage=storage_info['secondary']['unit_of_storage']  # Include unit of storage in the query
+            ).first()
+
+        if storage_instance:
+            # Calculate the base unit price
+            unit_price = float(storage_instance.unit_price)
+
+            # Interpret unit of storage to calculate monthly price
+            unit_of_storage = storage_instance.unit_of_storage.lower()
+            # Define a set of keywords to identify different forms of unit storage
+            gb_keywords = ['gb', 'gib/month', 'gb/month', '1/month']
+
+            if any(keyword in unit_of_storage for keyword in gb_keywords):
+                base_price = unit_price  # Convert to GB for consistency
+            elif '10k/month' in unit_of_storage or '10k' in unit_of_storage:
+                # Assuming '10k' means 10,000 KB and calculating for 1 TB
+                kb_in_tb = 1024 * 1024 * 1024  # Total KB in 1 TB
+                blocks_in_1TB = kb_in_tb / 10000  # Number of 10K blocks in 1 TB
+                base_price = unit_price * blocks_in_1TB  # Adjust unit price to total price for 1 TB
+
+
+            # Apply size multiplier based on storage size selected by user
+            size_multiplier = size_multiplier_mapping_storage.get(expected_users, 1)
+            price_monthly = base_price * size_multiplier
+            storage_pice = float(price_monthly)
+
+            computed_data['storage'] = {
+                'name': storage_instance.name,
+                'unit_price': f'{price_monthly:.2f}',  # Per unit price
+                'price_monthly': f'{price_monthly:.2f}',  # Total monthly price based on size
+                'sku': storage_instance.sku,
+                'provider': storage_instance.provider.name,
+                'cloud_service': storage_instance.cloud_service.service_type,
+                'unit_of_storage': storage_instance.unit_of_storage
+            }
+        else:
+            computed_data['storage'] = 'No matching storage found'
+
+
+        # Define networking type to name, SKU, unit of storage, and region mapping
+    networking_to_name_and_sku_mapping = {
+        'CDN': {
+            'primary': {'name': 'Azure CDN from Microsoft - ', 'sku': 'WAF', 'unit_of_measure': '1M/Month'},
+            'secondary': {'name': 'Azure CDN from Microsoft - ', 'sku': 'WAF', 'unit_of_measure': '1M/Month'}
+        },
+        'DNS': {
+            'primary': {'name': 'Azure DNS - ', 'sku': 'Private', 'unit_of_measure': '1M'},
+            'secondary': {'name': 'Azure DNS - ', 'sku': 'Public', 'unit_of_measure': '1M'}
+        },
+        # Add more mappings as necessary for different networking types
+    }
+
+        # Fetch DNS information if DNS connection is enabled
+    if dns_feature == 'Yes':
+        dns_info = networking_to_name_and_sku_mapping.get('DNS')
+        if dns_info:
+            dns_instance = NetworkingSpecifications.objects.filter(
+                name=dns_info['primary']['name'],
+                sku=dns_info['primary']['sku'],
+                unit_of_measure=dns_info['primary']['unit_of_measure'],
+            ).first() or NetworkingSpecifications.objects.filter(
+                name=dns_info['secondary']['name'],
+                sku=dns_info['secondary']['sku'],
+                unit_of_measure=dns_info['secondary']['unit_of_measure'],
+            ).first()
+
+            if dns_instance:
+                dns_price = float(dns_instance.unit_price)
+                computed_data['networking'] = {
+                    'name': dns_instance.name,
+                    'unit_price': f'{float(dns_instance.unit_price):.2f} | 1,000,000 queries',
+                    'sku': dns_instance.sku,
+                    'provider': dns_instance.provider.name,
+                    'cloud_service': dns_instance.cloud_service.service_type,
+                    'unit_of_measure': dns_instance.unit_of_measure,
+                }
+
+    # Fetch CDN information if CDN connection is enabled
+    if cdn_networking == 'Yes':
+        cdn_info = networking_to_name_and_sku_mapping.get('CDN')
+        if cdn_info:
+            cdn_instance = NetworkingSpecifications.objects.filter(
+                name=cdn_info['primary']['name'],
+                sku=cdn_info['primary']['sku'],
+                unit_of_measure=cdn_info['primary']['unit_of_measure'],
+            ).first() or NetworkingSpecifications.objects.filter(
+                name=cdn_info['secondary']['name'],
+                sku=cdn_info['secondary']['sku'],
+                unit_of_measure=cdn_info['secondary']['unit_of_measure'],
+            ).first()
+
+            if cdn_instance:
+                cdn_price = float(cdn_instance.unit_price)
+                # If computed_data['networking'] already has DNS data, append CDN data
+                if 'networking' in computed_data:
+                    combined_unit_price = float(computed_data['networking']['unit_price'].split('|')[0]) + float(cdn_instance.unit_price)
+                    computed_data['networking'] = {
+                        'name': f"{computed_data['networking']['name']}  {cdn_instance.name}",
+                        'unit_price': f"{combined_unit_price:.2f} | 1,000,000 queries",
+                        'sku': f"{computed_data['networking']['sku']} & {cdn_instance.sku}",
+                        'provider': f"{computed_data['networking']['provider']} & {cdn_instance.provider.name}",
+                        'cloud_service': f"{computed_data['networking']['cloud_service']} & {cdn_instance.cloud_service.service_type}",
+                        'unit_of_measure': f"{computed_data['networking']['unit_of_measure']} & {cdn_instance.unit_of_measure}",
+                    }
+                else:
+                    computed_data['networking'] = {
+                        'name': cdn_instance.name,
+                        'unit_price': f'{float(cdn_instance.unit_price):.2f} | 1,000,000 queries',
+                        'sku': cdn_instance.sku,
+                        'provider': cdn_instance.provider.name,
+                        'cloud_service': cdn_instance.cloud_service.service_type,
+                        'unit_of_measure': cdn_instance.unit_of_measure,
+                    }
+
+
+        # Calculating total monthly and annual prices
+    monthly = compute_price + storage_pice + database_price + dns_price + cdn_price
+    annual = monthly * 12
+
+    # Adding monthly and annual totals to the computed_data dictionary
+    computed_data['monthly'] = f'{monthly:.2f}'
+    computed_data['annual'] = f'{annual:.2f}'
 
     return computed_data
