@@ -324,9 +324,9 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
 
     # Assuming these are price multipliers for different service tiers or capacities
     size_multiplier_mapping = {
-        'small': 1,    # 1 TB
-        'medium': 10,  # 10 TB
-        'large': 100,  # 100 TB
+        'small': 10,    # 1 TB
+        'medium': 100,  # 10 TB
+        'large': 1000,  # 100 TB
         'noDatabase': 0,
     }
 
@@ -346,13 +346,13 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
             }
         },
         'sql': {
-            'primary': {
+            'secondary': {
                 'name': 'SQL Database Standard - Storage',
                 'sku': 'Standard',
-                'region': 'East US',
+                'region': 'eastus',
                 'unit_of_storage': '1 GB/Month'
             },
-            'secondary': {
+            'primary': {
                 'name': 'SQL Database Premium - Storage',
                 'sku': 'Premium',
                 'region': 'eastus',
@@ -397,7 +397,7 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
             size_multiplier = size_multiplier_mapping.get(database_size, 1)
             unit_price = float(database_instance.unit_price)  # Assume this gives price per GB/Month
             # Calculate the price for the selected size
-            total_price = unit_price * 1024 * size_multiplier  # Assuming price needs to be calculated per TB
+            total_price = unit_price  * size_multiplier  # Assuming price needs to be calculated per TB
             database_price = float(total_price)
 
             computed_data['database'] = {
@@ -532,7 +532,7 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
                 dns_price = float(dns_instance.unit_price)
                 computed_data['networking'] = {
                     'name': dns_instance.name,
-                    'unit_price': f'{float(dns_instance.unit_price):.2f} | 1,000,000 queries',
+                    'unit_price': f'{float(dns_instance.unit_price):.2f} | Per 1,000,000 queries',
                     'sku': dns_instance.sku,
                     'provider': dns_instance.provider.name,
                     'cloud_service': dns_instance.cloud_service.service_type,
@@ -560,7 +560,7 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
                     combined_unit_price = float(computed_data['networking']['unit_price'].split('|')[0]) + float(cdn_instance.unit_price)
                     computed_data['networking'] = {
                         'name': f"{computed_data['networking']['name']}  {cdn_instance.name}",
-                        'unit_price': f"{combined_unit_price:.2f} | 1,000,000 queries",
+                        'unit_price': f"{combined_unit_price:.2f} | Per 1,000,000 queries",
                         'sku': f"{computed_data['networking']['sku']} & {cdn_instance.sku}",
                         'provider': f"{computed_data['networking']['provider']} & {cdn_instance.provider.name}",
                         'cloud_service': f"{computed_data['networking']['cloud_service']} & {cdn_instance.cloud_service.service_type}",
@@ -569,7 +569,7 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
                 else:
                     computed_data['networking'] = {
                         'name': cdn_instance.name,
-                        'unit_price': f'{float(cdn_instance.unit_price):.2f} | 1,000,000 queries',
+                        'unit_price': f'{float(cdn_instance.unit_price):.2f} | Per 1,000,000 queries',
                         'sku': cdn_instance.sku,
                         'provider': cdn_instance.provider.name,
                         'cloud_service': cdn_instance.cloud_service.service_type,
@@ -630,9 +630,9 @@ def calculated_data_Azure_basic(compute_complexity, expected_users, data_storage
 
     # Assuming these are price multipliers for different service tiers or capacities
     size_multiplier_mapping = {
-        '1000': 50,    # 50 GB
-        '5000': 200,  # 200 GB
-        '10000': 1024,  # 1000 T
+        '1000': 10,    # 50 GB
+        '5000': 100,  # 200 GB
+        '10000': 1000,  # 1000 T
     }
 
     service_to_name_and_sku_mapping = {
@@ -724,9 +724,9 @@ def calculated_data_Azure_basic(compute_complexity, expected_users, data_storage
 
     # Define size to price multiplier mapping, adjust as needed
     size_multiplier_mapping_storage = {
-        '1000': 50,    # 50 GB
-        '5000': 200,  # 200 GB
-        '10000': 1024,  # 1000 T
+        '1000': 10,    # 50 GB
+        '5000': 100,  # 200 GB
+        '10000': 1000,  # 1000 T
     }
 
         # Define storage type to name, SKU, region, and unit of storage mapping with primary and secondary options
@@ -837,7 +837,7 @@ def calculated_data_Azure_basic(compute_complexity, expected_users, data_storage
                 dns_price = float(dns_instance.unit_price)
                 computed_data['networking'] = {
                     'name': dns_instance.name,
-                    'unit_price': f'{float(dns_instance.unit_price):.2f} | 1,000,000 queries',
+                    'unit_price': f'{float(dns_instance.unit_price):.2f} | Per 1,000,000 queries',
                     'sku': dns_instance.sku,
                     'provider': dns_instance.provider.name,
                     'cloud_service': dns_instance.cloud_service.service_type,
@@ -865,7 +865,7 @@ def calculated_data_Azure_basic(compute_complexity, expected_users, data_storage
                     combined_unit_price = float(computed_data['networking']['unit_price'].split('|')[0]) + float(cdn_instance.unit_price)
                     computed_data['networking'] = {
                         'name': f"{computed_data['networking']['name']}  {cdn_instance.name}",
-                        'unit_price': f"{combined_unit_price:.2f} | 1,000,000 queries",
+                        'unit_price': f"{combined_unit_price:.2f} | Per 1,000,000 queries",
                         'sku': f"{computed_data['networking']['sku']} & {cdn_instance.sku}",
                         'provider': f"{computed_data['networking']['provider']} & {cdn_instance.provider.name}",
                         'cloud_service': f"{computed_data['networking']['cloud_service']} & {cdn_instance.cloud_service.service_type}",
@@ -874,7 +874,7 @@ def calculated_data_Azure_basic(compute_complexity, expected_users, data_storage
                 else:
                     computed_data['networking'] = {
                         'name': cdn_instance.name,
-                        'unit_price': f'{float(cdn_instance.unit_price):.2f} | 1,000,000 queries',
+                        'unit_price': f'{float(cdn_instance.unit_price):.2f} | Per 1,000,000 queries',
                         'sku': cdn_instance.sku,
                         'provider': cdn_instance.provider.name,
                         'cloud_service': cdn_instance.cloud_service.service_type,
