@@ -37,7 +37,7 @@ class ComputeSpecifications(models.Model):
     currency = models.CharField(max_length=10, default='USD')
     region = models.CharField(max_length=50, default='No region provided')
     price_monthly = models.CharField(max_length=50,default='0.0')
-
+    created_at = models.DateField(auto_now_add=True)
 
 
     def __str__(self):
@@ -54,7 +54,7 @@ class StorageSpecifications(models.Model):
     unit_of_storage = models.CharField(max_length=50)
     region = models.CharField(max_length=50, default='No region provided')
     price_monthly = models.CharField(max_length=50,default='0.0')
-
+    created_at = models.DateField(auto_now_add=True)
 
     def __str__(self):
         return self.name if self.name else 'Unnamed Storage Specification'
@@ -69,6 +69,7 @@ class NetworkingSpecifications(models.Model):
     unit_of_measure = models.CharField(max_length=50)
     region = models.CharField(max_length=50, default='No region provided')
     price_monthly = models.CharField(max_length=50,default='0.0')
+    created_at = models.DateField(auto_now_add=True)
 
     def __str__(self):
         return self.name if self.name else 'Unnamed Networking Specification'
@@ -85,6 +86,7 @@ class DatabaseSpecifications(models.Model):
     unit_of_storage = models.CharField(max_length=50, default ='0.0')
     region = models.CharField(max_length=50, default='No region provided')
     price_monthly = models.CharField(max_length=50,default='0.0')
+    created_at = models.DateField(auto_now_add=True)
 
 
     def __str__(self):

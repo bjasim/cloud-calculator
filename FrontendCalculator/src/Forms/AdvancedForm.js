@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import CircularProgress from "@mui/material/CircularProgress";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
+// import CircularProgress from "@mui/material/CircularProgress";
 import {
   Box,
   Button,
@@ -15,6 +17,7 @@ import {
 
 const AdvancedForm = () => {
   const navigate = useNavigate(); // Initialize navigate function
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     // businessSize: "",
@@ -69,12 +72,62 @@ const AdvancedForm = () => {
     }
   };
 
+  // const handleSubmit = async (event) => {
+  //   event.preventDefault();
+  //   let isValid = true;
+  //   const newValidationErrors = { ...validationErrors };
+  //   Object.entries(formData).forEach(([key, value]) => {
+  //     // Skip validation for databaseSize if 'noDatabase' is selected
+  //     if ((key === "databaseSize" && formData.databaseService === "noDatabase") ||
+  //         (key === "storageSize" && formData.cloudStorage === "No Storage")) {
+  //       newValidationErrors[key] = false;
+  //     } else if (value === "") {
+  //       isValid = false;
+  //       newValidationErrors[key] = true;
+  //     } else {
+  //       newValidationErrors[key] = false;
+  //     }
+  //   });
+
+  //   // Update state immediately, no need to delay with setTimeout
+  //   setValidationErrors(newValidationErrors);
+
+  //   if (isValid) {
+  //     setLoading(true);
+  //     try {
+  //       const response = await fetch("http://localhost:8000/api/submit-advanced-form/", {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify(formData),
+  //       });
+  //       if (response.ok) {
+  //         console.log("Form data submitted successfully");
+  //         const responseData = await response.json();
+  //         navigate("/results", { state: { responseData } });
+  //         console.log("Response from backend:", responseData);
+
+  //         // Delay 5 seconds before navigating to the results page
+  //         setTimeout(() => {
+  //           setLoading(false); // Stop loading after the response
+  //           navigate("/results", { state: { responseData } });
+  //         }, 3000);
+  //       } else {
+  //         console.error("Failed to submit form data");
+  //         setLoading(false);
+  //       }
+  //     } catch (error) {
+  //       console.error("Error submitting form data:", error);
+  //       setLoading(false);
+  //     }
+  //   }
+  // };
   const handleSubmit = async (event) => {
     event.preventDefault();
     let isValid = true;
     const newValidationErrors = { ...validationErrors };
     Object.entries(formData).forEach(([key, value]) => {
-      // Skip validation for databaseSize if 'noDatabase' is selected
       if (
         (key === "databaseSize" && formData.databaseService === "noDatabase") ||
         (key === "storageSize" && formData.cloudStorage === "No Storage")
@@ -88,10 +141,10 @@ const AdvancedForm = () => {
       }
     });
 
-    // Update state immediately, no need to delay with setTimeout
     setValidationErrors(newValidationErrors);
 
     if (isValid) {
+      setLoading(true); // Ensure loading is set to true before starting the fetch
       try {
         const response = await fetch("http://localhost:8000/api/submit-advanced-form/", {
           method: "POST",
@@ -101,14 +154,19 @@ const AdvancedForm = () => {
           body: JSON.stringify(formData),
         });
         if (response.ok) {
-          console.log("Form data submitted successfully");
           const responseData = await response.json();
-          navigate("/results", { state: { responseData } });
+          // Introduce a delay here using setTimeout
+          setTimeout(() => {
+            setLoading(false); // Stop loading and then navigate
+            navigate("/results", { state: { responseData } });
+          }, 3000); // Adjust the delay as needed
         } else {
           console.error("Failed to submit form data");
+          setLoading(false); // Ensure loading is set to false on failure
         }
       } catch (error) {
         console.error("Error submitting form data:", error);
+        setLoading(false); // Ensure loading is set to false on exception
       }
     }
   };
@@ -116,6 +174,29 @@ const AdvancedForm = () => {
   // Determine if Database Size and Storage Size should be disabled
   const isDatabaseDisabled = !formData.databaseService || formData.databaseService === "noDatabase";
   const isStorageDisabled = !formData.cloudStorage || formData.cloudStorage === "No Storage";
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setValidationErrors({
+        monthlyBudget: false,
+        expectedRAM: false,
+        databaseService: false,
+        databaseSize: false,
+        cloudStorage: false,
+        storageSize: false,
+        // networkPerformance: false,
+        dnsConnection: false,
+        cdnConnection: false,
+        scalability: false,
+        location: false,
+      });
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [validationErrors]);
+
+  // Determine if Database Size and Storage Size should be disabled
+  // const isDatabaseDisabled = !formData.databaseService || formData.databaseService === "noDatabase";
+  // const isStorageDisabled = !formData.cloudStorage || formData.cloudStorage === "No Storage";
 
   return (
     <Container maxWidth="md">
@@ -260,11 +341,10 @@ const AdvancedForm = () => {
                   error={validationErrors.databaseSize}
                 >
                   <MenuItem value="">Select...</MenuItem>
-                  <MenuItem value="small">Small (under 1 TB)</MenuItem>
-                  <MenuItem value="medium">Medium (1-10 TB)</MenuItem>
-                  <MenuItem value="large">Large (10-100 TB)</MenuItem>
-                  <MenuItem value="veryLarge">Very Large (over 100 TB)</MenuItem>
-                  <MenuItem value="notSure">Not Sure/No Specific Requirements</MenuItem>
+                  <MenuItem value="small">10GB</MenuItem>
+                  <MenuItem value="medium">100GB</MenuItem>
+                  <MenuItem value="large">1TB</MenuItem>
+                  <MenuItem value="noDatabase">Not database required</MenuItem>
                 </Select>
                 {validationErrors.databaseSize && (
                   <FormHelperText error>Please select database size</FormHelperText>
@@ -357,9 +437,9 @@ const AdvancedForm = () => {
                   disabled={isStorageDisabled} // Disable based on condition
                 >
                   <MenuItem value="">Select...</MenuItem>
-                  <MenuItem value="small">Small (under 1 TB)</MenuItem>
-                  <MenuItem value="medium">Medium (1-10 TB)</MenuItem>
-                  <MenuItem value="large">Large (10-100 TB)</MenuItem>
+                  <MenuItem value="small">Small (1 TB)</MenuItem>
+                  <MenuItem value="medium">Medium (10 TB)</MenuItem>
+                  <MenuItem value="large">Large (100 TB)</MenuItem>
                 </Select>
                 {validationErrors.storageSize && (
                   <FormHelperText error>Please select storage size</FormHelperText>

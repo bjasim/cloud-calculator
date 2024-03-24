@@ -369,24 +369,23 @@ const BasicForm = () => {
             {/* Data Storage Size */}
             {/* <Grid item xs={10}>
               <FormControl fullWidth variant="outlined">
-                <InputLabel id="data-storage-size-label">Data Storage Size</InputLabel>
+                <InputLabel id="data-storage-type-label">What type of data do you work with ?</InputLabel>
                 <Select
-                  labelId="data-storage-size-label"
-                  id="data-storage-size-select"
-                  value={formData.dataStorageSize}
+                  labelId="data-storage-type-label"
+                  id="data-storage-type-select"
+                  value={formData.dataStorageType}
                   onChange={handleChange}
-                  label="Data Storage Size"
-                  name="dataStorageSize"
-                  error={validationErrors.dataStorageSize}
+                  label="Data Storage Type"
+                  name="dataStorageType"
+                  error={validationErrors.dataStorageType}
                 >
                   <MenuItem value="">Select...</MenuItem>
-                  <MenuItem value="small">Small: Up to 100GB of data storage</MenuItem>
-                  <MenuItem value="medium">Medium: 100GB to 1TB of data storage</MenuItem>
-                  <MenuItem value="large">Large: More than 1TB of data storage</MenuItem>
-                  <MenuItem value="verylarge">Very Large: More than 100 TB of data</MenuItem>
+                  <MenuItem value="files">Files</MenuItem>
+                  <MenuItem value="databases">Databases</MenuItem>
+                  <MenuItem value="multimedia">Multimedia</MenuItem>
                 </Select>
-                {validationErrors.dataStorageSize && (
-                  <FormHelperText error>Please select data storage size</FormHelperText>
+                {validationErrors.dataStorageType && (
+                  <FormHelperText error>Please select data storage type</FormHelperText>
                 )}
               </FormControl>
             </Grid>  */}

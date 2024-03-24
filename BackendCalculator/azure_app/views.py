@@ -302,13 +302,19 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
     # Retrieve the SKU from the mapping based on the expected_ram
     expected_sku = ram_to_sku_mapping.get(expected_ram)
 
-    # Retrieve data from the database based on the provided SKU and location
+        # Retrieve data from the database based on the provided SKU and location
     if expected_sku:
         compute_instance = ComputeSpecifications.objects.filter(sku=expected_sku).first()
         if compute_instance:
-             # Append '+ load balancer' to the name if scalability is essential
-            instance_name = compute_instance.name + " + Azure Standard Load Balancer" if scalability == 'essential' else compute_instance.name
-            # Compute price
+            # Base instance name with location
+            base_name_with_location = f"{compute_instance.name} [US East (N. Virginia)]"
+
+            # Append '+ Azure Standard Load Balancer' if scalability is essential
+            if scalability == 'essential':
+                instance_name = f"{base_name_with_location} + Azure Standard Load Balancer"
+            else:
+                instance_name = base_name_with_location
+
             compute_price = float(compute_instance.price_monthly)
 
             computed_data['compute'] = {
@@ -319,7 +325,8 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
                 'sku': compute_instance.sku,
                 'provider': compute_instance.provider.name,
                 'cloud_service': compute_instance.cloud_service.service_type,
-                'price_monthly': compute_instance.price_monthly
+                'price_monthly': compute_instance.price_monthly,
+                'created_at': compute_instance.created_at.isoformat() if compute_instance.created_at else None,
             }
 
     # Assuming these are price multipliers for different service tiers or capacities
@@ -409,7 +416,8 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
                 'unit_of_storage': database_instance.unit_of_storage,
                 'data_type': database_instance.data_type,
                 'provider': database_instance.provider.name,
-                'cloud_service': database_instance.cloud_service.service_type
+                'cloud_service': database_instance.cloud_service.service_type,
+                'created_at': database_instance.created_at.isoformat() if database_instance.created_at else None,
             }
         else:
             computed_data['database'] = 'No matching database found'
@@ -495,7 +503,8 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
                 'sku': storage_instance.sku,
                 'provider': storage_instance.provider.name,
                 'cloud_service': storage_instance.cloud_service.service_type,
-                'unit_of_storage': storage_instance.unit_of_storage
+                'unit_of_storage': storage_instance.unit_of_storage,
+                'created_at': storage_instance.created_at.isoformat() if storage_instance.created_at else None,
             }
         else:
             computed_data['storage'] = 'No matching storage found'
@@ -537,6 +546,7 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
                     'provider': dns_instance.provider.name,
                     'cloud_service': dns_instance.cloud_service.service_type,
                     'unit_of_measure': dns_instance.unit_of_measure,
+                    'created_at': dns_instance.created_at.isoformat() if dns_instance.created_at else None,
                 }
 
     # Fetch CDN information if CDN connection is enabled
@@ -565,6 +575,7 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
                         'provider': f"{computed_data['networking']['provider']} & {cdn_instance.provider.name}",
                         'cloud_service': f"{computed_data['networking']['cloud_service']} & {cdn_instance.cloud_service.service_type}",
                         'unit_of_measure': f"{computed_data['networking']['unit_of_measure']} & {cdn_instance.unit_of_measure}",
+                        'created_at': cdn_instance.created_at.isoformat() if cdn_instance.created_at else None,
                     }
                 else:
                     computed_data['networking'] = {
@@ -574,6 +585,7 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
                         'provider': cdn_instance.provider.name,
                         'cloud_service': cdn_instance.cloud_service.service_type,
                         'unit_of_measure': cdn_instance.unit_of_measure,
+                        'created_at': cdn_instance.created_at.isoformat() if cdn_instance.created_at else None,
                     }
 
 
@@ -609,22 +621,25 @@ def calculated_data_Azure_basic(compute_complexity, expected_users, data_storage
     # Retrieve the SKU from the mapping based on the expected_ram
     expected_sku = ram_to_sku_mapping.get(compute_complexity)
 
-    # Retrieve data from the database based on the provided SKU and location
+        # Retrieve data from the database based on the provided SKU
     if expected_sku:
         compute_instance = ComputeSpecifications.objects.filter(sku=expected_sku).first()
         if compute_instance:
+            # Base instance name with location
+            instance_name = f"{compute_instance.name} [US East (N. Virginia)]"
 
             compute_price = float(compute_instance.price_monthly)
 
             computed_data['compute'] = {
-                'name': compute_instance.name,
+                'name': instance_name,
                 'unit_price': compute_instance.price_monthly,
                 'cpu': compute_instance.cpu,
                 'memory': compute_instance.memory,
                 'sku': compute_instance.sku,
                 'provider': compute_instance.provider.name,
                 'cloud_service': compute_instance.cloud_service.service_type,
-                'price_monthly': compute_instance.price_monthly
+                'price_monthly': compute_instance.price_monthly,
+                'created_at': compute_instance.created_at.isoformat() if compute_instance.created_at else None,
             }
 
 
@@ -714,7 +729,8 @@ def calculated_data_Azure_basic(compute_complexity, expected_users, data_storage
                 'unit_of_storage': database_instance.unit_of_storage,
                 'data_type': database_instance.data_type,
                 'provider': database_instance.provider.name,
-                'cloud_service': database_instance.cloud_service.service_type
+                'cloud_service': database_instance.cloud_service.service_type,
+                'created_at': database_instance.created_at.isoformat() if database_instance.created_at else None,
             }
         else:
             computed_data['database'] = 'No matching database found'
@@ -800,7 +816,8 @@ def calculated_data_Azure_basic(compute_complexity, expected_users, data_storage
                 'sku': storage_instance.sku,
                 'provider': storage_instance.provider.name,
                 'cloud_service': storage_instance.cloud_service.service_type,
-                'unit_of_storage': storage_instance.unit_of_storage
+                'unit_of_storage': storage_instance.unit_of_storage,
+                'created_at': storage_instance.created_at.isoformat() if storage_instance.created_at else None,
             }
         else:
             computed_data['storage'] = 'No matching storage found'
@@ -842,6 +859,7 @@ def calculated_data_Azure_basic(compute_complexity, expected_users, data_storage
                     'provider': dns_instance.provider.name,
                     'cloud_service': dns_instance.cloud_service.service_type,
                     'unit_of_measure': dns_instance.unit_of_measure,
+                    'created_at': dns_instance.created_at.isoformat() if dns_instance.created_at else None,
                 }
 
     # Fetch CDN information if CDN connection is enabled
@@ -870,6 +888,8 @@ def calculated_data_Azure_basic(compute_complexity, expected_users, data_storage
                         'provider': f"{computed_data['networking']['provider']} & {cdn_instance.provider.name}",
                         'cloud_service': f"{computed_data['networking']['cloud_service']} & {cdn_instance.cloud_service.service_type}",
                         'unit_of_measure': f"{computed_data['networking']['unit_of_measure']} & {cdn_instance.unit_of_measure}",
+                        'created_at': cdn_instance.created_at.isoformat() if cdn_instance.created_at else None,
+
                     }
                 else:
                     computed_data['networking'] = {
@@ -879,6 +899,7 @@ def calculated_data_Azure_basic(compute_complexity, expected_users, data_storage
                         'provider': cdn_instance.provider.name,
                         'cloud_service': cdn_instance.cloud_service.service_type,
                         'unit_of_measure': cdn_instance.unit_of_measure,
+                        'created_at': cdn_instance.created_at.isoformat() if cdn_instance.created_at else None,
                     }
 
 

@@ -12,7 +12,7 @@ const RecommendedPlans = ({ responseData }) => {
     "Google Cloud": GoogleCloudLogo,
     Oracle: OracleLogo,
   };
-
+  const [azureCreatedAt, setAzureCreatedAt] = useState("");
   const [loading, setLoading] = useState(true);
   const [plans, setPlans] = useState([]);
 
@@ -21,11 +21,18 @@ const RecommendedPlans = ({ responseData }) => {
       console.log("Received Response Data:", responseData);
 
       let newPlans = [];
+      let azureCreatedAtTemp = "";
       if (responseData.AWS) {
         newPlans.push({ provider: "AWS", ...responseData.AWS });
       }
       if (responseData.Azure) {
         newPlans.push({ provider: "Microsoft Azure", ...responseData.Azure });
+        const azureServices = responseData.Azure;
+        azureCreatedAtTemp =
+          azureServices.compute?.created_at ||
+          azureServices.storage?.created_at ||
+          azureServices.database?.created_at ||
+          azureServices.networking?.created_at;
       }
       if (responseData.Google) {
         newPlans.push({ provider: "Google Cloud", ...responseData.Google });
@@ -37,6 +44,7 @@ const RecommendedPlans = ({ responseData }) => {
       console.log("New Plans:", newPlans);
       setPlans(newPlans);
       setLoading(false);
+      setAzureCreatedAt(azureCreatedAtTemp);
     }
   }, [responseData]);
 
@@ -46,6 +54,9 @@ const RecommendedPlans = ({ responseData }) => {
 
   return (
     <Box sx={{ display: "flex", justifyContent: "center", p: 4, flexWrap: "wrap" }}>
+      <Typography variant="h6" gutterBottom sx={{ width: "100%", textAlign: "center" }}>
+        Data Updated On: {azureCreatedAt}
+      </Typography>
       {plans.map((plan, index) => {
         const name = plan.provider;
         return (
