@@ -29,10 +29,10 @@ const RecommendedPlans = ({ responseData }) => {
         newPlans.push({ provider: "Microsoft Azure", ...responseData.Azure });
         const azureServices = responseData.Azure;
         azureCreatedAtTemp =
-          azureServices.compute?.created_at ||
+          azureServices.networking?.created_at ||
           azureServices.storage?.created_at ||
           azureServices.database?.created_at ||
-          azureServices.networking?.created_at;
+          azureServices.compute?.created_at;
       }
       if (responseData.Google) {
         newPlans.push({ provider: "Google Cloud", ...responseData.Google });
