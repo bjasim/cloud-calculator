@@ -2,12 +2,6 @@ import json
 import yaml
 import uuid
 from databaseServer.models import DatabaseSpecifications, CloudService, Provider, ComputeSpecifications, StorageSpecifications, NetworkingSpecifications
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials  
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError  
-import os.path
 import requests
 from django.http import HttpResponse
 
@@ -21,14 +15,14 @@ API_KEY = "AIzaSyB6TLXAdnJCDoCBX_tPm8zU_PBA-jj7MG8"
 #DATABASE
 service_filter = "service=\"services/9662-B51E-5089\"" #cloud sql service
 desired_categories = ['MySQL', 'Postgres', 'SQL Server']
-output_file_path = 'C:/Users/Joseph/cloud-calculator/cloud-calculator/BackendCalculator/google_app/specs_info.json'
-output_file_path2 = 'C:/Users/Joseph/cloud-calculator/cloud-calculator/BackendCalculator/google_app/price_info.json'
-combined_info= 'C:/Users/Joseph/cloud-calculator/cloud-calculator/BackendCalculator/google_app/combined_info.json'
+output_file_path = 'google_app/specs_info.json'
+output_file_path2 = 'google_app/price_info.json'
+combined_info= 'google_app/combined_info.json'
 
 #STORAGE 
 service_filter_storage="service=\"services/95FF-2EF5-5EA1\"" #cloud storage
-storage_combined = "C:/Users/Joseph/Documents/storageprice.json"
-output_file_Storage="C:/Users/Joseph/Documents/storageinfo.json"
+storage_combined = "google_app/storageprice.json"
+output_file_Storage="google_app/storageinfo.json"
 
 # Skus for all relevant  services, the following array includes Skus for Cloud CDN and Cloud DNS
 loadbalacer_skus = [
