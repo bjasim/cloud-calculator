@@ -99,25 +99,25 @@ def main():
     #DATABASE
 
     service_name = "services/9662-B51E-5089"  # CloudSQL 
-    #get_specs(endpoint_url, API_KEY, service_filter, desired_categories, output_file_path)
-    #get_prices()
+    get_specs(endpoint_url, API_KEY, service_filter, desired_categories, output_file_path)
+    get_prices()
     combine_json_data(output_file_path, output_file_path2,combined_info)
     #Firestore information
-    #fetch_save(API_KEY, 'F17B-412E-CB64',firestore_skus)
+    fetch_save(API_KEY, 'F17B-412E-CB64',firestore_skus)
     
     #COMPUTE
-    #computeinfo()
+    computeinfo()
     
     
     #Getting storage specs
-    #get_storage_specs(endpoint_url,API_KEY,service_filter_storage,output_file_Storage)
-    #retrieve_prices_from_json(output_file_Storage,API_KEY,storage_combined)
-    #fetch_save(API_KEY, '6F81-5844-456A',block_storage_skus) # Block storage, Persistant Disk
-    #fetch_save(API_KEY, 'D97E-AB26-5D95',filestore_skus) # Cloud File Store 
+    get_storage_specs(endpoint_url,API_KEY,service_filter_storage,output_file_Storage)
+    prices_from_json(output_file_Storage,API_KEY,storage_combined)
+    fetch_save(API_KEY, '6F81-5844-456A',block_storage_skus) # Block storage, Persistant Disk
+    fetch_save(API_KEY, 'D97E-AB26-5D95',filestore_skus) # Cloud File Store 
     
     
     #NETWORKING
-    #fetch_save(API_KEY,'E505-1604-58F8',loadbalacer_skus)
+    fetch_save(API_KEY,'E505-1604-58F8',loadbalacer_skus)
    
 # Getting the price for CloudSQL services
 def get_prices():
@@ -310,7 +310,8 @@ def computeinfo():
 
     cloud_service_type = 'Compute'  # Assuming 'Database' is the service_type for database-related services
     cloud_service, _ = CloudService.objects.get_or_create(provider=provider, service_type=cloud_service_type)
-
+    ComputeSpecifications.objects.filter(provider=provider).delete()
+    
     if response.status_code == 200:
         with open(destination_file, 'wb') as f:
             f.write(response.content)
@@ -395,7 +396,7 @@ def get_google_cloud_sku_prices(sku_id, api_key, page_size=5000, page_token=None
     return data
 
 #goes through each one of the skuid in the file and then sends that skuid to the function above to get price and saved t he information into a django database
-def retrieve_prices_from_json(json_file, api_key, output_file):
+def prices_from_json(json_file, api_key, output_file):
     with open(json_file) as f:
         skus_data = json.load(f)
 
@@ -413,6 +414,12 @@ def retrieve_prices_from_json(json_file, api_key, output_file):
         json.dump(combined_data, outfile, indent=2)
 
     print(f'All SKUs saved to {output_file}')
+    provider_name = 'GCP'
+    provider, _ = Provider.objects.get_or_create(name=provider_name)
+
+    cloud_service_type = 'Storage'  # Assuming 'Storage' is the service_type for database-related services
+    cloud_service, _ = CloudService.objects.get_or_create(provider=provider, service_type=cloud_service_type)
+    StorageSpecifications.objects.filter(provider=provider).delete()
 
     # Insert combined information into the database
     for sku_id, data in combined_data.items():
@@ -455,23 +462,6 @@ def retrieve_prices_from_json(json_file, api_key, output_file):
 
         print(f"Information for SKU ID {sku_id} inserted into the database.")
 
-# def retrieve_prices_from_json(json_file, api_key, output_file):
-#     with open(json_file) as f:
-#         skus_data = json.load(f)
-
-#     combined_data = {}
-#     for sku_info in skus_data:
-#         sku_id = sku_info['skuId']
-#         print("Retrieving prices for SKU ID:", sku_id)
-#         prices_data = get_google_cloud_sku_prices(sku_id, api_key)
-#         combined_data[sku_id] = {
-#             'sku_info': sku_info,
-#             'prices_data': prices_data
-#         }
-#         with open(output_file, 'w') as outfile:
-#             json.dump(combined_data, outfile, indent=2)
-
-#         print(f'All SKUs saved to {output_file}')     
 
 def fetch_save(api_key, service_id, all_skus):
     all_skus = set(all_skus)
@@ -537,6 +527,12 @@ def fetch_save(api_key, service_id, all_skus):
                         
                     elif service_id == 'E505-1604-58F8':
                         # Save to StorageSpecifications table
+                        provider_name = 'GCP'
+                        provider, _ = Provider.objects.get_or_create(name=provider_name)
+
+                        cloud_service_type = 'Network'  # Assuming 'Database' is the service_type for database-related services
+                        cloud_service, _ = CloudService.objects.get_or_create(provider=provider, service_type=cloud_service_type)
+                        NetworkingSpecifications.objects.filter(provider=provider).delete()
                         network_spec = NetworkingSpecifications.objects.create(
                             sku=sku_id,
                             name=description,  # Insert description as name value
@@ -871,10 +867,32 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
 
     return computed_data
 
-def callmain(request):
-    main()
-    return HttpResponse("Main function called successfully.")
 
+# URL functions for Google Cloud Pricing API
+def callmain(request):
+    fetch_save(API_KEY, 'F17B-412E-CB64',firestore_skus)
+    fetch_save(API_KEY, '6F81-5844-456A',block_storage_skus) # Block storage, Persistant Disk
+    fetch_save(API_KEY, 'D97E-AB26-5D95',filestore_skus) # Cloud File Store 
+    fetch_save(API_KEY,'E505-1604-58F8',loadbalacer_skus)
+    return HttpResponse("fetch_save functions called successfully.")
+def db_spec(request):
+    get_specs(endpoint_url, API_KEY, service_filter, desired_categories, output_file_path)
+    return HttpResponse("get_specs function called successfully.")
+def db_price(request):
+    get_prices()
+    return HttpResponse("get_prices function called successfully.")
+def db_combine(request):
+    combine_json_data(output_file_path, output_file_path2,combined_info)
+    return HttpResponse("combine_json_data function called successfully.")
+def gcp_compute(request):
+    computeinfo()
+    return HttpResponse("computeinfo function called successfully.")
+def storage_specs(request):
+    get_storage_specs(endpoint_url,API_KEY,service_filter_storage,output_file_Storage)
+    return HttpResponse("get_storage_specs function called successfully.")
+def prices_json(request):
+    prices_from_json(output_file_Storage,API_KEY,storage_combined)
+    return HttpResponse("prices_from_json function called successfully.")
 if __name__ == "__main__":
     main()
 
