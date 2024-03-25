@@ -418,9 +418,9 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
 
     # Define size to price multiplier mapping, adjust as needed
     size_multiplier_mapping_storage = {
-        'small': 100,      # For 1 TB
-        'medium': 1000,    # For 10 TB
-        'large': 10000,    # For 100 TB
+        'small': 10,      # For 1 TB
+        'medium': 100,    # For 10 TB
+        'large': 1000,    # For 100 TB
         'notSure': 1,    # Default or unsure case
     }
 

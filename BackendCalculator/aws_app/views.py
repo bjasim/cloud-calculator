@@ -1,5 +1,6 @@
 import boto3
 import json
+import os
 from django.http import HttpResponse
 from django.utils import timezone
 from django.http import JsonResponse, HttpResponse
@@ -127,7 +128,16 @@ def get_pricing(request):
     # return JsonResponse(pricing_data, safe=False, json_dumps_params={'indent': 4})
 
 def fetch_pricing_data(sku, service_code):
-    client = boto3.client('pricing', region_name='us-east-1')
+    aws_access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
+    aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
+    
+
+    client = boto3.client(
+        'pricing',
+        region_name='us-east-1', 
+        aws_access_key_id=aws_access_key_id,
+        aws_secret_access_key=aws_secret_access_key
+    )
     response = client.get_products(
         ServiceCode=service_code,
         Filters=[{'Type': 'TERM_MATCH', 'Field': 'sku', 'Value': sku}],
@@ -490,7 +500,16 @@ def process_and_save_data(sku, service_code, pricing_data):
 
 #----------------------------------------------------------------------------------------------------
 def aws_compute_fetch(request):
-    client = boto3.client('pricing', region_name='us-east-1')
+    aws_access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
+    aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
+
+    
+    client = boto3.client(
+        'pricing',
+        region_name='us-east-1',
+        aws_access_key_id=aws_access_key_id,
+        aws_secret_access_key=aws_secret_access_key
+    )
     # max_records = 500
     regions = [
         'us-east-1', 'us-east-2', 'us-west-1', 'us-west-2', 'af-south-1', 'ap-east-1', 'ap-south-2', 'ap-southeast-3', 
@@ -576,7 +595,16 @@ def aws_compute_fetch(request):
     return JsonResponse({"message": "AWS EC2 data processed for all regions"}, safe=False)
 #----------------------------------------------------------------------------------------------------------------------
 def aws_storage_fetch(request):
-    client = boto3.client('pricing', region_name='us-east-1')
+    aws_access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
+    aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
+
+    client = boto3.client(
+        'pricing',
+        region_name='us-east-1',
+        aws_access_key_id=aws_access_key_id,
+        aws_secret_access_key=aws_secret_access_key
+    )
+
     storage_services = ['AmazonEFS', 'AmazonS3']
     total_records_processed = 0
     region = ''
@@ -603,7 +631,17 @@ def aws_storage_fetch(request):
     return JsonResponse({"message": f"AWS Storage data processed. Total records: {total_records_processed}"}, safe=False)
 #--------------------------------------------------------------------------------------------------------------------------
 def aws_rds_fetch(request):
-    client = boto3.client('pricing', region_name='us-east-1')
+    
+    
+    aws_access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
+    aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
+
+    client = boto3.client(
+        'pricing',
+        region_name='us-east-1',
+        aws_access_key_id=aws_access_key_id,
+        aws_secret_access_key=aws_secret_access_key
+    )
     databases = ['AmazonRDS' ,'AmazonDynamoDB']
     region = 'us-east-1'  # Define the region variable
     # service_code = ''
@@ -631,7 +669,17 @@ def aws_rds_fetch(request):
 
 #---------------------------------------------------------------------------------------------------------------------------
 def aws_networking_fetch(request, service_code):
-    client = boto3.client('pricing', region_name='us-east-1')
+    aws_access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
+    aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
+
+    
+    client = boto3.client(
+        'pricing',
+        region_name='us-east-1',
+        aws_access_key_id=aws_access_key_id,
+        aws_secret_access_key=aws_secret_access_key
+    )
+    
     max_records = 500
     records_processed = 0
     region = ''

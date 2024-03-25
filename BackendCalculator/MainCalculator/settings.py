@@ -10,9 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import os 
 from pathlib import Path
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -25,7 +26,8 @@ SECRET_KEY = 'django-insecure-tbe-5l69ogamm94tnh7(hj=cc76)6w34l-4%a-@9n+36*49&au
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -55,8 +57,13 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
+#-------------------------
+# STATICFILES_DIRS = (str(BASE_DIR.joinpath('static')),)
 ROOT_URLCONF = 'MainCalculator.urls'
+
+STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 
 TEMPLATES = [
     {
@@ -122,7 +129,6 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -146,6 +152,18 @@ SPECTACULAR_SETTINGS = {
     # OTHER SETTINGS
 }
 
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:3000",
+# ]
+
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
+    "https://cloudarchitecture.work",
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True
+
+
+
+# import os
+if 'WEBSITE_HOSTNAME' in os.environ: # Running on Azure
+    from .azure import *

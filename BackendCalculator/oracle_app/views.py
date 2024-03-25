@@ -64,8 +64,10 @@ sku_to_category = {
 
     #NoSQL
     'B89739': 'database',
-    #PostgreSQL
+    #PostgreSQL Gigabyte
     'B99062': 'database',
+    #PostgreSQL Compute
+    'B99060': 'database',
     #SQL
     'B92426': 'database',
 }
@@ -269,13 +271,13 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
         if compute_service:
 
             #Calculate the unit price based on the configuration.
-            compute_total_price = round(((float(compute_service.unit_price) * config["multiplier"]) * 744) + (config["ram_cost_per_unit"] * config["ram_cost_multiplier"] * 744))
+            compute_total_price = round(((float(compute_service.unit_price) * config["multiplier"]) * 720) + (config["ram_cost_per_unit"] * config["ram_cost_multiplier"] * 720))
 
             #Update computed_data with the fetched details.
             computed_data['compute'] = {
                 'name': f"{name_override + config["name_override"]} {name_scalability} - {location}",
                 'sku': f"{compute_service.sku} CPU - {ram_sku} RAM",
-                'unit_price': f"{compute_total_price} USD Monthly",
+                'unit_price': f"{compute_total_price}",
             }
 
 #------------------------------------------------------------------------------------------------
@@ -319,6 +321,36 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
             "complex": "B99062", #postgresql
         }
 
+        ocpuPerHour = 0
+
+        #POSTGRE Compute calculation
+        # 1vCPU-2RAM
+        if expected_cpu == "1vCPU":
+            ocpuPerHour = 1
+        # 2vCPU-4RAM
+        if expected_cpu == "2vCPUs":
+            ocpuPerHour = 1
+
+        # 4vCPU-16RAM
+        if expected_cpu == "4vCPUs":
+            ocpuPerHour = 2
+
+        # 8vCPU-32RAM
+        if expected_cpu == "8vCPUs":
+            ocpuPerHour = 4
+
+        # 12vCPU-48RAM
+        if expected_cpu == "12vCPUs":
+            ocpuPerHour = 6
+
+        # 16vCPU-64RAM
+        if expected_cpu == "16vCPUs":
+            ocpuPerHour = 8
+
+        #postgre calculations (multiplies by ocpu, then by 720 hours)
+        ocpuPostgre = DatabaseSpecifications.objects.filter(sku="B99060").first()
+        postgrePerMonth = round(((float(ocpuPostgre.unit_price) * ocpuPerHour) * 720))
+
         #Get the SKU for the current cloud_storage type.
         sku = sku_mapping.get(database_service)
 
@@ -329,13 +361,14 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
             database_instance = DatabaseSpecifications.objects.filter(sku=sku).first()
             if database_instance:
 
-              
-
                 #Change names
                 if sku == "B89739":
                     name_override = "Oracle NoSQL"
                 elif sku == "B99062":
+
+                    #COMPUTE FOR POSTGRE: B99060
                     name_override = "DB with PostgreSQL"
+
                 elif sku == "B92426":
                     name_override = "Oracle MySQL"
                 else:
@@ -350,13 +383,18 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
                     db_size = 1000
 
                 #Trunicated to 2 decimal points 
-                database_total_price = int(float(database_instance.unit_price) * db_size * 100) / 100.0
+                database_total_price = int(float(database_instance.unit_price) * db_size * 100) / 100.0 + postgrePerMonth
+
+                if sku == "B99062":
+                    postgreOcpuSku = " GB - B99060 CPU"
+                else:
+                    postgreOcpuSku = ""
 
                 computed_data['database'] = {
-                    'name': f"{name_override} - {db_size}GB - {location}",
-                    'unit_price': f"{database_total_price} USD Monthly",
+                    'name': f"{name_override} - {db_size}GB",
+                    'unit_price': f"{database_total_price}",
                     'unit_of_storage': database_instance.unit_of_storage,
-                    'sku': database_instance.sku,
+                    'sku': f"{database_instance.sku}{postgreOcpuSku}",
                     'provider': database_instance.provider.name,
                     'cloud_service': database_instance.cloud_service.service_type
                 }
@@ -449,8 +487,8 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
 
                 #Display to frontend.
                 computed_data['storage'] = {
-                    'name': f"{name_override} - {st_name} - {location}",
-                    'unit_price': f"{storage_total_price} USD Monthly",
+                    'name': f"{name_override} - {st_name}",
+                    'unit_price': f"{storage_total_price}",
                     'unit_of_storage': storage_instance.unit_of_storage,
                     'sku': storage_instance.sku,
                     'provider': storage_instance.provider.name,

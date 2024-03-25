@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework.routers import DefaultRouter
 from azure_app.views import ViewHello
@@ -18,7 +18,7 @@ from aws_app.views import aws_cloudfront_fetch
 
 
 
-
+    
 from testing.views import testing
 # from django.urls import include
 from databaseServer.views import handle_advanced_form_submission
@@ -45,7 +45,8 @@ urlpatterns = [
     path('storage-fetch/', storage_fetch_view, name='fetch-storage'),
     path('networking-fetch/', networking_fetch_view, name='fetch-networking'),
     path('database-fetch/', database_fetch_view, name='fetch-database'),
-    
+    path('', include('aws_app.urls')),
+
     # AWS related--------------------------------------------------
     path('aws/', get_pricing, name='get-pricing'),   #fetch pricing details to database tables for all services
     path('aws-compute-fetch/', aws_compute_fetch, name='aws-compute-fetch'),    # Fetch to db for compute only
