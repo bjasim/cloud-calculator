@@ -423,7 +423,7 @@ def prices_from_json(json_file, api_key, output_file):
         # Extract relevant information
         name = sku_info.get('displayName', '')
         provider_id = 1  # Assuming you have a default provider with id=1
-        cloud_service_id = 1  # Assuming you have a default cloud service with id=1
+        cloud_service = cloud_service # Assuming you have a default cloud service with id=1
         tiered_rates = prices_data['prices'][0]['rate']['tiers'][0]
         unit_price_nanos = tiered_rates['listPrice'].get('nanos', 0)
         unit_price_units = tiered_rates['listPrice'].get('units', 0)
@@ -441,7 +441,7 @@ def prices_from_json(json_file, api_key, output_file):
         StorageSpecifications.objects.create(
             name=name,
             provider_id=provider_id,
-            cloud_service_id=cloud_service_id,
+            cloud_service=cloud_service,
             sku=sku_id,
             unit_price=unit_price,
             unit_of_storage=unit_of_storage,
@@ -488,14 +488,20 @@ def fetch_save(api_key, service_id, all_skus):
                     unit_of_storage = sku.get('pricingInfo', [{}])[0].get('pricingExpression', {}).get('usageUnit', '')
                     region = ', '.join(sku.get('serviceRegions', []))
                     description = sku.get('description', '')
+                    provider_name = 'GCP'
+                    #provider_id = provider_id
+                    provider, _ = Provider.objects.get_or_create(name=provider_name)
+                    
 
                     # Determine where to save the information based on the service ID
                     if service_id == 'F17B-412E-CB64':
+                        cloud_service_type= "Database"
+                        cloud_service, _ = CloudService.objects.get_or_create(provider=provider, service_type=cloud_service_type)
                         # Save to DatabaseSpecifications table
                         db_spec = DatabaseSpecifications.objects.create(
                             name=name,
                             data_type=data_type,
-                            cloud_service_id=1,
+                            cloud_service=cloud_service,
                             sku=sku_id,
                             unit_price=str(unit_price),
                             unit_of_storage=unit_of_storage,
@@ -506,11 +512,13 @@ def fetch_save(api_key, service_id, all_skus):
                         db_spec.save()
                     elif service_id == '6F81-5844-456A' or service_id == 'D97E-AB26-5D95':
                         # Save to StorageSpecifications table
+                        cloud_service_type= "Storage"
+                        cloud_service, _ = CloudService.objects.get_or_create(provider=provider, service_type=cloud_service_type)
                         storage_spec = StorageSpecifications.objects.create(
                             sku=sku_id,
                             name=name,
                             provider_id=1,  # Assuming default provider id
-                            cloud_service_id=1,  # Assuming default cloud service id
+                            cloud_service=cloud_service,  # Assuming default cloud service id
                             unit_price=str(unit_price),
                             unit_of_storage=unit_of_storage,
                             region=region,
@@ -520,17 +528,14 @@ def fetch_save(api_key, service_id, all_skus):
                         storage_spec.save()
                         
                     elif service_id == 'E505-1604-58F8':
-                        # Save to StorageSpecifications table
-                        provider_name = 'GCP'
-                        provider, _ = Provider.objects.get_or_create(name=provider_name)
-
-                        cloud_service_type = 'Network'  # Assuming 'Database' is the service_type for database-related services
+                        # Save to NetworkSpecifications table
+                        cloud_service_type= "Network"
                         cloud_service, _ = CloudService.objects.get_or_create(provider=provider, service_type=cloud_service_type)
                         network_spec = NetworkingSpecifications.objects.create(
                             sku=sku_id,
                             name=description,  # Insert description as name value
-                            provider_id=1,  # Assuming default provider id
-                            cloud_service_id=1,  # Assuming default cloud service id
+                            #provider_id=provider_id,  # Assuming default provider id
+                            cloud_service=cloud_service,  # Assuming default cloud service id
                             unit_price=str(unit_price),
                             unit_of_measure=unit_of_storage,
                             region=region,
@@ -569,9 +574,9 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
     elif location == 'us-west-2':
         location = 'us-west2'
         city= 'Los Angeles'
-    elif location == 'us-west3':
+    elif location == 'us-west-3':
         city= 'Salt Lake City'
-    elif location == 'us-west4':
+    elif location == 'us-west-4':
         city= 'Las Vegas'
     elif location == 'ap-east-1':
         location = 'asia-east2'
