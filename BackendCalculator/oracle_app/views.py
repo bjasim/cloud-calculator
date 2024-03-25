@@ -271,7 +271,7 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
         if compute_service:
 
             #Calculate the unit price based on the configuration.
-            compute_total_price = round(((float(compute_service.unit_price) * config["multiplier"]) * 720) + (config["ram_cost_per_unit"] * config["ram_cost_multiplier"] * 744))
+            compute_total_price = round(((float(compute_service.unit_price) * config["multiplier"]) * 720) + (config["ram_cost_per_unit"] * config["ram_cost_multiplier"] * 720))
 
             #Update computed_data with the fetched details.
             computed_data['compute'] = {
@@ -391,7 +391,7 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
                     postgreOcpuSku = ""
 
                 computed_data['database'] = {
-                    'name': f"{name_override} - {db_size}GB - {location}",
+                    'name': f"{name_override} - {db_size}GB",
                     'unit_price': f"{database_total_price}",
                     'unit_of_storage': database_instance.unit_of_storage,
                     'sku': f"{database_instance.sku}{postgreOcpuSku}",
@@ -487,7 +487,7 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
 
                 #Display to frontend.
                 computed_data['storage'] = {
-                    'name': f"{name_override} - {st_name} - {location}",
+                    'name': f"{name_override} - {st_name}",
                     'unit_price': f"{storage_total_price}",
                     'unit_of_storage': storage_instance.unit_of_storage,
                     'sku': storage_instance.sku,
