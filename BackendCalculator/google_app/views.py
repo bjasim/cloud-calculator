@@ -526,7 +526,6 @@ def fetch_save(api_key, service_id, all_skus):
 
                         cloud_service_type = 'Network'  # Assuming 'Database' is the service_type for database-related services
                         cloud_service, _ = CloudService.objects.get_or_create(provider=provider, service_type=cloud_service_type)
-                        NetworkingSpecifications.objects.filter(provider=provider).delete()
                         network_spec = NetworkingSpecifications.objects.create(
                             sku=sku_id,
                             name=description,  # Insert description as name value
