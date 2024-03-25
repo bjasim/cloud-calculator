@@ -426,9 +426,9 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
 
     # Define size to price multiplier mapping, adjust as needed
     size_multiplier_mapping_storage = {
-        'small': 1,      # For 1 TB
-        'medium': 10,    # For 10 TB
-        'large': 100,    # For 100 TB
+        'small': 10,      # For 1 TB
+        'medium': 100,    # For 10 TB
+        'large': 1000,    # For 100 TB
         'notSure': 1,    # Default or unsure case
     }
 
@@ -483,7 +483,7 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
             gb_keywords = ['gb', 'gib/month', 'gb/month', '1/month']
 
             if any(keyword in unit_of_storage for keyword in gb_keywords):
-                base_price = unit_price * 1024  # Convert to GB for consistency
+                base_price = unit_price  # Convert to GB for consistency
             elif '10k/month' in unit_of_storage or '10k' in unit_of_storage:
                 # Assuming '10k' means 10,000 KB and calculating for 1 TB
                 kb_in_tb = 1024 * 1024 * 1024  # Total KB in 1 TB
