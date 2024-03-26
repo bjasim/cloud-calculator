@@ -68,7 +68,7 @@ const RecommendedPlans = ({ responseData }) => {
       {plans.map((plan, index) => {
         const name = plan.provider;
         return (
-          <Card key={index} sx={{ maxWidth: 305, m: 2, display: "flex", flexDirection: "column" }}>
+          <Card key={index} sx={{ maxWidth: 250, m: 2, display: "flex", flexDirection: "column" }}>
             <Box
               sx={{
                 height: 200,
@@ -213,13 +213,22 @@ const RecommendedPlans = ({ responseData }) => {
             </CardContent>
             {plan && (
               <CardContent>
-                <div style={{ fontSize: "1.3rem" }}>
-                  ============== <br />
-                  <span style={{ fontSize: "1.2rem" }}>
-                    Monthly Total: {plan.monthly || "-"}
-                  </span>{" "}
+                <div style={{ fontSize: "1.2rem", textAlign: "center" }}>
+                  <strong>Monthly Total: </strong> 
+                  <span style={{
+                    color: plan.budget === "yes" ? "green" : plan.budget === "no" ? "red" : "black",
+                    fontSize: "1.2rem"
+                  }}>
+                    {plan.monthly || "-"}
+                  </span> 
                   <br />
-                  <span style={{ fontSize: "1.2rem" }}>Annual Total: {plan.annual || "-"}</span>
+                  <strong>Annual Total: </strong>
+                  <span style={{
+                    color: plan.budget === "yes" ? "green" : plan.budget === "no" ? "red" : "black",
+                    fontSize: "1.2rem"
+                  }}>
+                    {plan.annual || "-"}
+                  </span>
                 </div>
               </CardContent>
             )}
