@@ -50,7 +50,7 @@ const Footer = ({ style }) => {
             spacing={2}
             sx={{ marginBottom: "-15px" }}
           >
-            <Link href="#" sx={{ color: "#000000", mx: 2, fontSize: "19px" }}>
+            {/* <Link href="#" sx={{ color: "#000000", mx: 2, fontSize: "19px" }}>
               <FacebookIcon sx={{ fontSize: "inherit" }} />
             </Link>
             <Link href="#" sx={{ color: "#000000", mx: 2, fontSize: "19px" }}>
@@ -61,7 +61,7 @@ const Footer = ({ style }) => {
             </Link>
             <Link href="#" sx={{ color: "#000000", mx: 2, fontSize: "19px" }}>
               <LinkedInIcon sx={{ fontSize: "inherit" }} />
-            </Link>
+            </Link> */}
           </Grid>
         </Grid>
         <Typography

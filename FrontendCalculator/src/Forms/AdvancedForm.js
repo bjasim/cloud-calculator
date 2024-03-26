@@ -144,7 +144,7 @@ const AdvancedForm = () => {
     if (isValid) {
       setLoading(true); // Ensure loading is set to true before starting the fetch
       try {
-        const response = await fetch("https://backend-test-new.azurewebsites.net/api/submit-advanced-form/", {
+        const response = await fetch("http://localhost:8000/api/submit-advanced-form/", {
           method: "POST",
           headers: {  
             "Content-Type": "application/json",

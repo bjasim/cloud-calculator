@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Box, Card, CardContent, Typography, CardMedia } from "@mui/material";
+import { Box, Card, CardContent, Typography, CardMedia, Tooltip} from "@mui/material";
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import GoogleCloudLogo from "../Assets/google.png";
 import AwsLogo from "../Assets/aws.png";
 import AzureLogo from "../Assets/azure.png";
@@ -12,7 +13,7 @@ const RecommendedPlans = ({ responseData }) => {
     "Google Cloud": GoogleCloudLogo,
     Oracle: OracleLogo,
   };
-
+  const [azureCreatedAt, setAzureCreatedAt] = useState("");
   const [loading, setLoading] = useState(true);
   const [plans, setPlans] = useState([]);
 
@@ -21,11 +22,18 @@ const RecommendedPlans = ({ responseData }) => {
       console.log("Received Response Data:", responseData);
 
       let newPlans = [];
+      let azureCreatedAtTemp = "";
       if (responseData.AWS) {
         newPlans.push({ provider: "AWS", ...responseData.AWS });
       }
       if (responseData.Azure) {
         newPlans.push({ provider: "Microsoft Azure", ...responseData.Azure });
+        const azureServices = responseData.Azure;
+        azureCreatedAtTemp =
+          azureServices.networking?.created_at ||
+          azureServices.storage?.created_at ||
+          azureServices.database?.created_at ||
+          azureServices.compute?.created_at;
       }
       if (responseData.Google) {
         newPlans.push({ provider: "Google Cloud", ...responseData.Google });
@@ -37,6 +45,7 @@ const RecommendedPlans = ({ responseData }) => {
       console.log("New Plans:", newPlans);
       setPlans(newPlans);
       setLoading(false);
+      setAzureCreatedAt(azureCreatedAtTemp);
     }
   }, [responseData]);
 
@@ -45,41 +54,43 @@ const RecommendedPlans = ({ responseData }) => {
   }
 
   return (
-    <Box sx={{ display: "flex", justifyContent: "center", p: 2, flexWrap: "wrap" }}>
-        {plans.map((plan, index) => {
-          const name = plan.provider;
-          return (
-            <Card 
-              key={index} 
-              sx={{ 
-                width: 'calc(25% - 16px)', // Adjusting width to 25% and subtracting total horizontal margin
-                m: 2, 
-                display: "flex", 
-                flexDirection: "column" 
+  <Box sx={{ p: 4 }}>
+      <Box sx={{ textAlign: 'center', mt: 4, position: 'relative', zIndex: 2 }}>
+        <Tooltip title="- - - * All prices in USD * - - - When configuring the services for your architecture, make sure to change the monthly hours to 720 - - -">
+          <HelpOutlineIcon sx={{ cursor: 'pointer', fontSize: 24 }} />
+        </Tooltip>
+        <Typography variant="h6" gutterBottom>
+          Data Updated On: {azureCreatedAt}
+        </Typography>
+      </Box>
+    <Box sx={{ display: "flex", justifyContent: "center", p: 4, flexWrap: "wrap" }}>
+
+      {plans.map((plan, index) => {
+        const name = plan.provider;
+        return (
+          <Card key={index} sx={{ maxWidth: 250, m: 2, display: "flex", flexDirection: "column" }}>
+            <Box
+              sx={{
+                height: 200,
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: "#fff",
               }}
             >
-              <Box
+              <CardMedia
+                component="img"
                 sx={{
-                  height: 200,
-                  width: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: "#fff",
+                  height: "auto",
+                  width: "auto",
+                  maxHeight: 140,
+                  maxWidth: 400,
                 }}
-              >
-                <CardMedia
-                  component="img"
-                  sx={{
-                    height: "auto",
-                    width: "auto",
-                    maxHeight: 140,
-                    maxWidth: 400,
-                  }}
-                  image={logos[name]}
-                  alt={`${name} logo`}
-                />
-                </Box>
+                image={logos[name]}
+                alt={`${name} logo`}
+              />
+            </Box>
             <CardContent sx={{ flexGrow: 1, paddingTop: "0px" }}>
               <Typography gutterBottom variant="h5" component="div" align="center">
                 {name}
@@ -216,15 +227,17 @@ const RecommendedPlans = ({ responseData }) => {
         );
       })}
       {/* Add additional placeholder cards if plans array is empty */}
-      {!Array.isArray(plans) || (plans.length === 0 && (
-        <Card sx={{ maxWidth: 345, m: 2, display: "flex", flexDirection: "column" }}>
-          <CardContent>
-            <Typography align="center">No data available</Typography>
-          </CardContent>
-        </Card>
-      ))}
+      {!Array.isArray(plans) ||
+        (plans.length === 0 && (
+          <Card sx={{ maxWidth: 345, m: 2, display: "flex", flexDirection: "column" }}>
+            <CardContent>
+              <Typography align="center">No data available</Typography>
+            </CardContent>
+          </Card>
+        ))}
     </Box>
+  </Box>
   );
 };
 
-export default RecommendedPlans;
+export default RecommendedPlans
