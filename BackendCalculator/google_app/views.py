@@ -870,6 +870,23 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
     computed_data['monthly'] = round(plan_monthly_price, 2)
     computed_data['annual'] = round(plan_annual_price, 2)
 
+
+    
+    if monthly_budget == "lessThan500" or monthly_budget == "under50":
+        monthly_budget = 500
+    if monthly_budget == "500to2000" or monthly_budget == "under50":
+        monthly_budget = 2000
+    if monthly_budget == "2000to5000":
+        monthly_budget = 5000
+    if monthly_budget == "moreThan5000" or monthly_budget == "over5000":
+        monthly_budget = 5000
+
+    if monthly_budget < plan_monthly_price:
+        computed_data['budget'] = "no"
+    if monthly_budget > plan_monthly_price:
+        computed_data['budget'] = "yes"
+    
+
     return computed_data
 
 

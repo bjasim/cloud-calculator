@@ -426,9 +426,9 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
 
     # Define size to price multiplier mapping, adjust as needed
     size_multiplier_mapping_storage = {
-        'small': 10,      # For 1 TB
-        'medium': 100,    # For 10 TB
-        'large': 1000,    # For 100 TB
+        'small': 1000,      # For 1 TB
+        'medium': 10000,    # For 10 TB
+        'large': 100000,    # For 100 TB
         'notSure': 1,    # Default or unsure case
     }
 
@@ -596,6 +596,24 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
     # Adding monthly and annual totals to the computed_data dictionary
     computed_data['monthly'] = f'{monthly:.2f}'
     computed_data['annual'] = f'{annual:.2f}'
+    
+    
+
+    if monthly_budget == "lessThan500" or monthly_budget == "under50":
+        monthly_budget = 500
+    if monthly_budget == "500to2000" or monthly_budget == "under50":
+        monthly_budget = 2000
+    if monthly_budget == "2000to5000":
+        monthly_budget = 5000
+    if monthly_budget == "moreThan5000" or monthly_budget == "over5000":
+        monthly_budget = 5000
+
+    if monthly_budget < monthly:
+        computed_data['budget'] = "no"
+    if monthly_budget > monthly:
+        computed_data['budget'] = "yes"
+    
+
 
     return computed_data
 
@@ -740,9 +758,9 @@ def calculated_data_Azure_basic(compute_complexity, expected_users, data_storage
 
     # Define size to price multiplier mapping, adjust as needed
     size_multiplier_mapping_storage = {
-        '1000': 10,    # 50 GB
-        '5000': 100,  # 200 GB
-        '10000': 1000,  # 1000 T
+        '1000': 1000,    # 50 GB
+        '5000': 10000,  # 200 GB
+        '10000': 100000,  # 1000 T
     }
 
         # Define storage type to name, SKU, region, and unit of storage mapping with primary and secondary options
@@ -910,5 +928,22 @@ def calculated_data_Azure_basic(compute_complexity, expected_users, data_storage
     # Adding monthly and annual totals to the computed_data dictionary
     computed_data['monthly'] = f'{monthly:.2f}'
     computed_data['annual'] = f'{annual:.2f}'
+    
+    
+    if budget == "lessThan500" or budget == "under50":
+        budget = 500
+    if budget == "500to2000" or budget == "under50":
+        budget = 2000
+    if budget == "2000to5000":
+        budget = 5000
+    if budget == "moreThan5000" or budget == "over5000":
+        budget = 5000
+
+    if budget < monthly:
+        computed_data['budget'] = "no"
+    if budget > monthly:
+        computed_data['budget'] = "yes"
+    
+
 
     return computed_data

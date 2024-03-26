@@ -1141,9 +1141,9 @@ def calculated_data_AWS(monthly_budget, expected_cpu, database_service, database
         if storage_size == "small":
             str_size = 1000
         elif storage_size == "medium":
-            str_size = 5000
-        elif storage_size == "large":
             str_size = 10000
+        elif storage_size == "large":
+            str_size = 100000
         elif storage_size == "veryLarge":
             str_size = 100000
         # elif storage_size == "notSure":
@@ -1301,6 +1301,24 @@ def calculated_data_AWS(monthly_budget, expected_cpu, database_service, database
     print("Total Annual Plan Cost: ", plan_annual_price)
     computed_data['monthly'] = round(plan_monthly_price)
     computed_data['annual'] = round(plan_annual_price)
+    
+    
+    
+    if monthly_budget == "lessThan500" or monthly_budget == "under50":
+        monthly_budget = 500
+    if monthly_budget == "500to2000" or monthly_budget == "under50":
+        monthly_budget = 2000
+    if monthly_budget == "2000to5000":
+        monthly_budget = 5000
+    if monthly_budget == "moreThan5000" or monthly_budget == "over5000":
+        monthly_budget = 5000
+
+    if monthly_budget < plan_monthly_price:
+        computed_data['budget'] = "no"
+    if monthly_budget > plan_monthly_price:
+        computed_data['budget'] = "yes"
+    
+
 
     return computed_data
 
@@ -1752,7 +1770,20 @@ def calculated_data_AWS_basic(monthly_budget, expected_cpu, database_service, da
     computed_data['monthly'] = round(plan_monthly_price)
     computed_data['annual'] = round(plan_annual_price)
 
-            
+    if monthly_budget == "lessThan500" or monthly_budget == "under50":
+        monthly_budget = 500
+    if monthly_budget == "500to2000" or monthly_budget == "under50":
+        monthly_budget = 2000
+    if monthly_budget == "2000to5000":
+        monthly_budget = 5000
+    if monthly_budget == "moreThan5000" or monthly_budget == "over5000":
+        monthly_budget = 5000
+
+    if monthly_budget < plan_monthly_price:
+        computed_data['budget'] = "no"
+    if monthly_budget > plan_monthly_price:
+        computed_data['budget'] = "yes"
+    
             
     return computed_data
 

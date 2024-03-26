@@ -144,7 +144,8 @@ const AdvancedForm = () => {
     if (isValid) {
       setLoading(true); // Ensure loading is set to true before starting the fetch
       try {
-        const response = await fetch("https://backend-test-new.azurewebsites.net/api/submit-advanced-form/", {
+        // const response = await fetch("https://backend-test-new.azurewebsites.net/api/submit-advanced-form/", {
+        const response = await fetch("http://localhost:8000/api/submit-advanced-form/", {
           method: "POST",
           headers: {  
             "Content-Type": "application/json",
@@ -586,10 +587,13 @@ const AdvancedForm = () => {
             </Grid>
             {/* Submit Button */}
             <Grid item xs={12}>
-              <Box mt={3} textAlign="center">
-                <Button variant="contained" color="primary" type="submit">
+            <Box mt={3} textAlign="center" position="relative">
+                <Button variant="contained" color="primary" type="submit" disabled={loading}>
                   Calculate
                 </Button>
+                {loading && (
+                  <CircularProgress size={24} style={{ position: "absolute", top: "5px" }} />
+                )}
               </Box>
             </Grid>
           </Grid>
