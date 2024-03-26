@@ -2,12 +2,6 @@ import json
 import yaml
 import uuid
 from databaseServer.models import DatabaseSpecifications, CloudService, Provider, ComputeSpecifications, StorageSpecifications, NetworkingSpecifications
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials  
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError  
-import os.path
 import requests
 from django.http import HttpResponse
 
@@ -21,14 +15,14 @@ API_KEY = "AIzaSyB6TLXAdnJCDoCBX_tPm8zU_PBA-jj7MG8"
 #DATABASE
 service_filter = "service=\"services/9662-B51E-5089\"" #cloud sql service
 desired_categories = ['MySQL', 'Postgres', 'SQL Server']
-output_file_path = 'E:\Personal Portfolio\My branch\merge with gcp\cloud-calculator\BackendCalculator\google_app\specs_info.json'
-output_file_path2 = 'E:\Personal Portfolio\My branch\merge with gcp\cloud-calculator\BackendCalculator\google_app\price_info.json'
-combined_info= 'E:\Personal Portfolio\My branch\merge with gcp\cloud-calculator\BackendCalculator\google_app\combined_info.json'
+output_file_path = 'google_app/specs_info.json'
+output_file_path2 = 'google_app/price_info.json'
+combined_info= 'google_app/combined_info.json'
 
 #STORAGE 
 service_filter_storage="service=\"services/95FF-2EF5-5EA1\"" #cloud storage
-storage_combined = "E:\Personal Portfolio\My branch\merge with gcp\cloud-calculator\BackendCalculator\google_app\storageprice.json"
-output_file_Storage="E:\Personal Portfolio\My branch\merge with gcp\cloud-calculator\BackendCalculator\google_app\storageinfo.json"
+storage_combined = "google_app/storageprice.json"
+output_file_Storage="google_app/storageinfo.json"
 
 # Skus for all relevant  services, the following array includes Skus for Cloud CDN and Cloud DNS
 loadbalacer_skus = [
@@ -60,7 +54,7 @@ loadbalacer_skus = [
     'D683-33F2-5C47', 'D727-6F37-F264', 'D83A-C047-F3B5',
     'DCE9-C1CA-81B2', 'E4FD-CE95-F940', 'EBCE-61F1-6CE7',
     'F051-558E-CBE7', 'F0C7-4A86-E056', 'F0DD-1D41-B68D',
-    'F2A9-01F4-E934', '0CAB-FE26-F2C6'
+    'F2A9-01F4-E934', '0CAB-FE26-F2C6', '620D-FE53-4BA9'
 ]
 
 block_storage_skus = ["0306-B164-A7B7","0572-568A-4FC4","17A8-D0A4-D7E5","1F1F-0EF5-15BE","23BD-C186-EF37","28D0-437A-CEAD","320C-7688-1A62","5334-92F9-3E7F","5881-96B1-93E3","5A6A-4A16-F865","7A7B-EA46-2897","7EA3-FF02-75C9","80E2-7FF9-979E","83E4-C062-FDEC","8AF1-1146-E7DA","92E5-B76E-D04B","95EE-349E-CA35","9917-39D5-DB38","9917-39D5-DB38","9977-2BC5-386A","9CB9-1019-8019","A084-03C1-A923","A9A2-174F-91A0","AE8C-46C3-4994","B287-C627-C943","B749-AAF2-5AC4","BF1A-6647-009D","BF8D-1C96-EE1C","CEF4-0773-7924","D279-B8D7-090F","D619-8E03-F681","DF49-E005-E705","E083-93C6-55CD","E45C-6460-E782","E763-1A59-7698","EEFE-F863-E07A","F993-B67E-E316","D973-5D65-BAB2"]
@@ -103,17 +97,17 @@ def main():
     get_prices()
     combine_json_data(output_file_path, output_file_path2,combined_info)
     #Firestore information
-    # fetch_save(API_KEY, 'F17B-412E-CB64',firestore_skus)
+    fetch_save(API_KEY, 'F17B-412E-CB64',firestore_skus)
     
-    # COMPUTE
-    # computeinfo()
+    #COMPUTE
+    computeinfo()
     
     
     #Getting storage specs
-    # get_storage_specs(endpoint_url,API_KEY,service_filter_storage,output_file_Storage)
-    # retrieve_prices_from_json(output_file_Storage,API_KEY,storage_combined)
-    # fetch_save(API_KEY, '6F81-5844-456A',block_storage_skus) # Block storage, Persistant Disk
-    # fetch_save(API_KEY, 'D97E-AB26-5D95',filestore_skus) # Cloud File Store 
+    get_storage_specs(endpoint_url,API_KEY,service_filter_storage,output_file_Storage)
+    prices_from_json(output_file_Storage,API_KEY,storage_combined)
+    fetch_save(API_KEY, '6F81-5844-456A',block_storage_skus) # Block storage, Persistant Disk
+    fetch_save(API_KEY, 'D97E-AB26-5D95',filestore_skus) # Cloud File Store 
     
     
     #NETWORKING
@@ -126,13 +120,13 @@ def get_prices():
 
         # Initialize next page token
         next_page_token = None
-
+        
         while True:
             # Send GET request to the API endpoint with API key as parameter
             params = {"key": API_KEY}
             if next_page_token:
                 params["pageToken"] = next_page_token
-
+                
             response = requests.get(endpoint_url2, params=params)
 
             # Check if the request was successful
@@ -160,8 +154,8 @@ def get_prices():
             else:
                 print(f"Error: {response.status_code} - {response.reason}")
                 break  # Exit loop on error
-
-# Save the formatted information to a JSON file
+            
+        # Save the formatted information to a JSON file
         with open(output_file_path2, 'w') as json_file:
             json.dump(formatted_skus, json_file, indent=2)
 
@@ -223,7 +217,7 @@ def combine_json_data(file1_path, file2_path, output_file_path):
     cloud_service, _ = CloudService.objects.get_or_create(provider=provider, service_type=cloud_service_type)
     
     DatabaseSpecifications.objects.filter(provider=provider).delete()
-
+    
     
     # Load the content of the first JSON file
     with open(file1_path, 'r') as spec_file:
@@ -310,7 +304,8 @@ def computeinfo():
 
     cloud_service_type = 'Compute'  # Assuming 'Database' is the service_type for database-related services
     cloud_service, _ = CloudService.objects.get_or_create(provider=provider, service_type=cloud_service_type)
-
+    ComputeSpecifications.objects.filter(provider=provider).delete()
+    
     if response.status_code == 200:
         with open(destination_file, 'wb') as f:
             f.write(response.content)
@@ -367,7 +362,7 @@ def get_storage_specs(endpoint_url, api_key, service_filter, output_file_path):
 
             # Extract information from the response and filter based on category
             skus = data.get('skus', [])
-            filtered_skus = [sku for sku in skus if any(category.get('category') in ['Nearline', 'Coldline', 'Archive', 'Standard'] for category in sku.get('productTaxonomy', {}).get('taxonomyCategories', []))]
+            filtered_skus = [sku for sku in skus if any(category.get('category') in ['Standard'] for category in sku.get('productTaxonomy', {}).get('taxonomyCategories', []))]
             all_skus.extend(filtered_skus)
 
             # Check if there is a next page token
@@ -395,7 +390,7 @@ def get_google_cloud_sku_prices(sku_id, api_key, page_size=5000, page_token=None
     return data
 
 #goes through each one of the skuid in the file and then sends that skuid to the function above to get price and saved t he information into a django database
-def retrieve_prices_from_json(json_file, api_key, output_file):
+def prices_from_json(json_file, api_key, output_file):
     with open(json_file) as f:
         skus_data = json.load(f)
 
@@ -413,6 +408,16 @@ def retrieve_prices_from_json(json_file, api_key, output_file):
         json.dump(combined_data, outfile, indent=2)
 
     print(f'All SKUs saved to {output_file}')
+# Retrieve or create the Provider instance
+    provider_name = 'GCP'
+    provider, _ = Provider.objects.get_or_create(name=provider_name)
+
+    # Retrieve or create the CloudService instance for the 'Storage' service type
+    cloud_service_type = 'Storage'
+    cloud_service, _ = CloudService.objects.get_or_create(provider=provider, service_type=cloud_service_type)
+
+    # Delete existing StorageSpecifications associated with the provider
+    StorageSpecifications.objects.filter(provider=provider).delete()
 
     # Insert combined information into the database
     for sku_id, data in combined_data.items():
@@ -422,7 +427,7 @@ def retrieve_prices_from_json(json_file, api_key, output_file):
         # Extract relevant information
         name = sku_info.get('displayName', '')
         provider_id = 1  # Assuming you have a default provider with id=1
-        cloud_service_id = 1  # Assuming you have a default cloud service with id=1
+        cloud_service = cloud_service # Assuming you have a default cloud service with id=1
         tiered_rates = prices_data['prices'][0]['rate']['tiers'][0]
         unit_price_nanos = tiered_rates['listPrice'].get('nanos', 0)
         unit_price_units = tiered_rates['listPrice'].get('units', 0)
@@ -437,41 +442,27 @@ def retrieve_prices_from_json(json_file, api_key, output_file):
         price_monthly = unit_price
         
         # Insert into StorageSpecifications table
-        StorageSpecifications.objects.create(
-            name=name,
-            provider_id=provider_id,
-            cloud_service_id=cloud_service_id,
-            sku=sku_id,
-            unit_price=unit_price,
-            unit_of_storage=unit_of_storage,
-            region=region,
-            description=description,
-            durability=durability,
-            service_code=service_code,
-            storage_class=storage_class,
-            volume_type=volume_type,
-            price_monthly=price_monthly
+        try:
+            # Insert into StorageSpecifications table
+            StorageSpecifications.objects.create(
+                name=name,
+                provider=provider,  # Assign the provider instance
+                cloud_service=cloud_service,  # Assign the cloud service instance
+                sku=sku_id,
+                unit_price=unit_price,
+                unit_of_storage=unit_of_storage,
+                region=region,
+                description=description,
+                durability=durability,
+                service_code=service_code,
+                storage_class=storage_class,
+                volume_type=volume_type,
+                price_monthly=price_monthly
             )
+            print(f"Information for SKU ID {sku_id} inserted into the database.")
+        except Exception as e:
+            print(f"Error inserting information for SKU ID {sku_id}: {e}")
 
-        print(f"Information for SKU ID {sku_id} inserted into the database.")
-
-# def retrieve_prices_from_json(json_file, api_key, output_file):
-#     with open(json_file) as f:
-#         skus_data = json.load(f)
-
-#     combined_data = {}
-#     for sku_info in skus_data:
-#         sku_id = sku_info['skuId']
-#         print("Retrieving prices for SKU ID:", sku_id)
-#         prices_data = get_google_cloud_sku_prices(sku_id, api_key)
-#         combined_data[sku_id] = {
-#             'sku_info': sku_info,
-#             'prices_data': prices_data
-#         }
-#         with open(output_file, 'w') as outfile:
-#             json.dump(combined_data, outfile, indent=2)
-
-#         print(f'All SKUs saved to {output_file}')     
 
 def fetch_save(api_key, service_id, all_skus):
     all_skus = set(all_skus)
@@ -504,14 +495,20 @@ def fetch_save(api_key, service_id, all_skus):
                     unit_of_storage = sku.get('pricingInfo', [{}])[0].get('pricingExpression', {}).get('usageUnit', '')
                     region = ', '.join(sku.get('serviceRegions', []))
                     description = sku.get('description', '')
+                    provider_name = 'GCP'
+                    provider, _ = Provider.objects.get_or_create(name=provider_name)
+                    
 
                     # Determine where to save the information based on the service ID
                     if service_id == 'F17B-412E-CB64':
+                        cloud_service_type= "Database"
+                        cloud_service, _ = CloudService.objects.get_or_create(provider=provider, service_type=cloud_service_type)
                         # Save to DatabaseSpecifications table
-                        db_spec = DatabaseSpecifications.objects.create(
+                        db_spec = DatabaseSpecifications.objects.update_or_create(
                             name=name,
-                            data_type=data_type,
-                            cloud_service_id=1,
+                            # data_type=data_type,
+                            provider=provider,  # Ensure that the provider is assigned
+                            cloud_service=cloud_service,
                             sku=sku_id,
                             unit_price=str(unit_price),
                             unit_of_storage=unit_of_storage,
@@ -519,14 +516,16 @@ def fetch_save(api_key, service_id, all_skus):
                             description=description
                             # Add other fields as needed
                         )
-                        db_spec.save()
+                        # db_spec.save()
                     elif service_id == '6F81-5844-456A' or service_id == 'D97E-AB26-5D95':
                         # Save to StorageSpecifications table
+                        cloud_service_type= "Storage"
+                        cloud_service, _ = CloudService.objects.get_or_create(provider=provider, service_type=cloud_service_type)
                         storage_spec = StorageSpecifications.objects.create(
                             sku=sku_id,
                             name=name,
-                            provider_id=1,  # Assuming default provider id
-                            cloud_service_id=1,  # Assuming default cloud service id
+                            provider=provider,  # Ensure that the provider is assigned
+                            cloud_service=cloud_service,  # Assuming default cloud service id
                             unit_price=str(unit_price),
                             unit_of_storage=unit_of_storage,
                             region=region,
@@ -536,12 +535,14 @@ def fetch_save(api_key, service_id, all_skus):
                         storage_spec.save()
                         
                     elif service_id == 'E505-1604-58F8':
-                        # Save to StorageSpecifications table
+                        # Save to NetworkSpecifications table
+                        cloud_service_type= "Network"
+                        cloud_service, _ = CloudService.objects.get_or_create(provider=provider, service_type=cloud_service_type)
                         network_spec = NetworkingSpecifications.objects.create(
                             sku=sku_id,
                             name=description,  # Insert description as name value
-                            provider_id=1,  # Assuming default provider id
-                            cloud_service_id=1,  # Assuming default cloud service id
+                            provider=provider,  # Ensure that the provider is assigned
+                            cloud_service=cloud_service,  # Assuming default cloud service id
                             unit_price=str(unit_price),
                             unit_of_measure=unit_of_storage,
                             region=region,
@@ -556,90 +557,6 @@ def fetch_save(api_key, service_id, all_skus):
         else:
             print(f"Failed to fetch data from API. Status code: {response.status_code}")
             return
-    
-    
-# def fetch_and_save_blockstorage(api_key, service_id,block_storage_skus):
-#     block_storage_skus = set(block_storage_skus)
-#     skus_saved = []
-#     page_token = None
-
-#     while True:
-#         url = f"https://cloudbilling.googleapis.com/v1/services/{service_id}/skus?key={api_key}"
-#         if page_token:
-#             url += f"&pageToken={page_token}"
-
-#         response = requests.get(url)
-#         if response.status_code == 200:
-#             api_data = response.json()
-#             skus = api_data.get('skus', [])
-#             for sku in skus:
-#                 sku_id = sku.get('skuId')
-#                 if   sku_id in block_storage_skus:
-#                     # Extract relevant information from the SKU
-#                     name = sku.get('description', '')
-#                     service_display_name = sku.get('category', {}).get('serviceDisplayName', '')
-#                     resource_family = sku.get('category', {}).get('resourceFamily', '')
-#                     resource_group = sku.get('category', {}).get('resourceGroup', '')
-#                     usage_type = sku.get('category', {}).get('usageType', '')
-#                     service_regions = sku.get('serviceRegions', [])
-#                     pricing_info = sku.get('pricingInfo', [])
-                    
-#                     # Check if pricing_info list is not empty
-#                     if pricing_info:
-#                         pricing_info = pricing_info[0]
-#                         unit_price_nanos = pricing_info.get('pricingExpression', {}).get('tieredRates', [{}])[0].get('unitPrice', {}).get('nanos', 0)
-#                         unit_price = unit_price_nanos / 1000000000 if unit_price_nanos else 0.0
-#                         effective_time = pricing_info.get('effectiveTime', '')
-#                     else:
-#                         unit_price = 0.0
-#                         effective_time = ''
-#                     # Create an if statement that checks which service is being used then use appropriate django table
-#                     if service_id == 'F17B-412E-CB64':
-#                         #save the information to the Database table 
-#                         print("saving to db")
-#                         pass 
-#                     elif service_id == '6F81-5844-456A':
-#                         # Save the information to the database
-#                         storage_spec = StorageSpecifications.objects.create(
-#                             sku=sku_id,
-#                             name=name,
-#                             provider_id=1,  # Assuming default provider id
-#                             cloud_service_id=1,  # Assuming default cloud service id
-#                             unit_price=unit_price,
-#                             unit_of_storage=usage_type,
-#                             region=service_regions[0] if service_regions else '',
-#                             description=name,
-#                             durability=resource_group,
-#                             service_code=service_regions[0] if service_regions else '',
-#                             storage_class=resource_group,
-#                             volume_type=resource_group,
-#                             price_monthly=unit_price,
-#                             # Add more fields as needed
-#                         )
-#                         storage_spec.save()
-
-#             page_token = api_data.get('nextPageToken')
-#             if not page_token:
-#                 break
-#         else:
-#             print(f"Failed to fetch data from API. Status code: {response.status_code}")
-#             return
-
-#THE CODE BELOW IS LOGIC 
-
-
-# def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location):
-#     # Query Compute Specifications based on expected CPU and location
-#     compute_services = ComputeSpecifications.objects.filter(provider__name='GCP', cpu__gte=expected_cpu, region=location)
-
-#     totalprice=0.0
-#     for compute_service in compute_services:
-#         total_price += float(compute_service.unit_price)
-        
-#     gcp_data = {
-#         "compute_services" : list(compute_services.values())
-#     }
-#     return gcp_data
 
 def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location):
     
@@ -664,9 +581,9 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
     elif location == 'us-west-2':
         location = 'us-west2'
         city= 'Los Angeles'
-    elif location == 'us-west3':
+    elif location == 'us-west-3':
         city= 'Salt Lake City'
-    elif location == 'us-west4':
+    elif location == 'us-west-4':
         city= 'Las Vegas'
     elif location == 'ap-east-1':
         location = 'asia-east2'
@@ -788,7 +705,7 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
             query = query_temp % city  # Perform string formatting if city is provided
         else:
             query = query_temp
-        print(query)
+        
         # Query for the first storage instance based on the query_temp
         storage_instance = StorageSpecifications.objects.filter(name__contains=query).first()
         storage_total_price=float(storage_instance.unit_price)* storage_size  
@@ -955,10 +872,31 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
 
     return computed_data
 
-def callmain(request):
-    main()
-    return HttpResponse("Main function called successfully.")
 
+# URL functions for Google Cloud Pricing API
+def callmain(request):
+    fetch_save(API_KEY, 'F17B-412E-CB64',firestore_skus)
+    fetch_save(API_KEY, '6F81-5844-456A',block_storage_skus) # Block storage, Persistant Disk
+    fetch_save(API_KEY, 'D97E-AB26-5D95',filestore_skus) # Cloud File Store 
+    fetch_save(API_KEY,'E505-1604-58F8',loadbalacer_skus)
+    return HttpResponse("fetch_save functions called successfully.")
+def db_spec(request):
+    get_specs(endpoint_url, API_KEY, service_filter, desired_categories, output_file_path)  
+    return HttpResponse("get_specs function called successfully.")
+def db_price(request):
+    get_prices()
+    return HttpResponse("get_prices function called successfully.")
+def db_combine(request):
+    combine_json_data(output_file_path, output_file_path2,combined_info)
+    return HttpResponse("combine_json_data function called successfully.")
+def gcp_compute(request):
+    computeinfo()
+    return HttpResponse("computeinfo function called successfully.")
+def storage_specs(request):
+    get_storage_specs(endpoint_url,API_KEY,service_filter_storage,output_file_Storage)
+    return HttpResponse("get_storage_specs function called successfully.")
+def prices_json(request):
+    prices_from_json(output_file_Storage,API_KEY,storage_combined)
+    return HttpResponse("prices_from_json function called successfully.")
 if __name__ == "__main__":
     main()
-

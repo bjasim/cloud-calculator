@@ -152,13 +152,13 @@ SPECTACULAR_SETTINGS = {
     # OTHER SETTINGS
 }
 
-# CORS_ALLOWED_ORIGINS = [
-#     "http://localhost:3000",
-# ]
-
 CORS_ALLOWED_ORIGINS = [
-    "https://cloudarchitecture.work",
+    "http://localhost:3000",
 ]
+
+# CORS_ALLOWED_ORIGINS = [
+    # "https://budgetcloud.ca",
+# ]
 
 CORS_ALLOW_ALL_ORIGINS = True
 

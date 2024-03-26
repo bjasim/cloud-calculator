@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.utils import timezone
 # Create your models here.
 class Provider(models.Model):
     name = models.CharField(max_length=100)
@@ -35,6 +35,7 @@ class ComputeSpecifications(models.Model):
     currency = models.CharField(max_length=10, default='USD')
     region = models.CharField(max_length=50, default='No region provided')
     price_monthly = models.CharField(max_length=50,default='0.0')
+    created_at = models.DateField(default=timezone.now)
 
 
 
@@ -57,6 +58,7 @@ class StorageSpecifications(models.Model):
     storage_class = models.CharField(max_length=50, default='No class provided.')
     volume_type = models.CharField(max_length=50, default='No type provided.')  # e.g., General Purpose SSD, Provisioned IOPS SSD
     price_monthly = models.CharField(max_length=50,default='0.0')
+    created_at = models.DateField(default=timezone.now)
 
 
     def __str__(self):
@@ -72,6 +74,7 @@ class NetworkingSpecifications(models.Model):
     unit_of_measure = models.CharField(max_length=50)
     region = models.CharField(max_length=50, default='No region provided')
     price_monthly = models.CharField(max_length=50,default='0.0')
+    created_at = models.DateField(default=timezone.now)
 
     def __str__(self):
         return self.name if self.name else 'Unnamed Networking Specification'
@@ -80,7 +83,7 @@ class NetworkingSpecifications(models.Model):
 # Database Specifications Table
 class DatabaseSpecifications(models.Model):
     name = models.CharField(max_length=100, default='')  # Provide default value
-    provider = models.ForeignKey(Provider,  on_delete=models.CASCADE, null=False, default=1)
+    provider = models.ForeignKey(Provider, on_delete=models.CASCADE, null=False)
     cloud_service = models.ForeignKey(CloudService, related_name='database_specs', on_delete=models.CASCADE, null=False)
     data_type = models.CharField(max_length=50)
     sku = models.CharField(max_length=50)
@@ -97,6 +100,7 @@ class DatabaseSpecifications(models.Model):
     memory = models.CharField(max_length=50, default='No memory provided.')
     network_performance = models.CharField(max_length=50, default='No network provided.')
     price_monthly = models.CharField(max_length=50,default='0.0')
+    created_at = models.DateField(default=timezone.now)
 
 
     def __str__(self):

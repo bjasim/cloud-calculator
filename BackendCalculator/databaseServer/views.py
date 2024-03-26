@@ -91,13 +91,13 @@ def handle_advanced_form_submission(request):
         #Write the code for dealing with logic in here GCP
         #azure_data = calculated_data_Azure(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location)
         #aws_data = calculated_data_AWS(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location)
-        # google_data = calculated_data_gcp(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location)
+        google_data = calculated_data_gcp(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location)
         #Oracle_data = calculated_data_Oracle(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location)
 
         combined_data = {
             'Azure': azure_data,
             'AWS': aws_data,
-            # 'Google': google_data,
+            'Google': google_data,
             'Oracle': Oracle_data
         }
 
@@ -146,7 +146,7 @@ def handle_basic_form_submission(request):
         #aws_data = calculated_data_AWS(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location)
         # google_data = calculated_data_Google(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location)
         Oracle_data = calculated_data_Oracle(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location)
-        # google_data = calculated_data_gcp(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location)
+        google_data = calculated_data_gcp(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location)
 
         compute_complexity = form_data.get('computeComplexity')
         expected_users = form_data.get('expectedUsers')  # Assuming the CPU field stores RAM information
@@ -165,7 +165,7 @@ def handle_basic_form_submission(request):
         combined_data = {
             'Azure': azure_data,
             'AWS': aws_data,
-            # 'Google': google_data,
+            'Google': google_data,
             'Oracle': Oracle_data
         }
 

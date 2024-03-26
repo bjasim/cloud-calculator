@@ -74,7 +74,7 @@ const BasicForm = () => {
     if (isValid) {
       setLoading(true); // Start loading before the request
       try {
-        const response = await fetch("http://localhost:8000/api/submit-basic-form/", {
+        const response = await fetch("https://backend-test-new.azurewebsites.net/api/submit-basic-form/", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

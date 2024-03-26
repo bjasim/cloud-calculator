@@ -23,10 +23,12 @@ from testing.views import testing
 # from django.urls import include
 from databaseServer.views import handle_advanced_form_submission
 from databaseServer.views import handle_basic_form_submission
-from google_app.views import callmain
+# from google_app.views import callmain
 
 #Oracle
 from oracle_app.views import get_oracle_pricing
+from google_app.views import callmain, db_spec, db_price, db_combine, gcp_compute, storage_specs, prices_json
+
 
 router = DefaultRouter()
 router.register("api/results", ViewHello, basename="ViewHello")
@@ -63,7 +65,13 @@ urlpatterns = [
 
     
     #gcp
-    path('gcpdb/',callmain,name='callmain'),
+    path('db-spec/',db_spec,name='db_spec'),
+    path('db-price/',db_price,name='db_price'),
+    path('db-combine/',db_combine,name='db_combine'),
+    path('gcp-compute/',gcp_compute,name='gcp_compute'),
+    path('storage-specs/',storage_specs,name='storage_specs'),
+    path('prices_from_json/',prices_json,name='prices_from_json'),
+    path('gcpdb/',callmain,name='callmain')
 ] + router.urls
 
 
