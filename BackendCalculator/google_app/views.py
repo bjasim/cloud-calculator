@@ -54,7 +54,7 @@ loadbalacer_skus = [
     'D683-33F2-5C47', 'D727-6F37-F264', 'D83A-C047-F3B5',
     'DCE9-C1CA-81B2', 'E4FD-CE95-F940', 'EBCE-61F1-6CE7',
     'F051-558E-CBE7', 'F0C7-4A86-E056', 'F0DD-1D41-B68D',
-    'F2A9-01F4-E934', '0CAB-FE26-F2C6'
+    'F2A9-01F4-E934', '0CAB-FE26-F2C6', '620D-FE53-4BA9'
 ]
 
 block_storage_skus = ["0306-B164-A7B7","0572-568A-4FC4","17A8-D0A4-D7E5","1F1F-0EF5-15BE","23BD-C186-EF37","28D0-437A-CEAD","320C-7688-1A62","5334-92F9-3E7F","5881-96B1-93E3","5A6A-4A16-F865","7A7B-EA46-2897","7EA3-FF02-75C9","80E2-7FF9-979E","83E4-C062-FDEC","8AF1-1146-E7DA","92E5-B76E-D04B","95EE-349E-CA35","9917-39D5-DB38","9917-39D5-DB38","9977-2BC5-386A","9CB9-1019-8019","A084-03C1-A923","A9A2-174F-91A0","AE8C-46C3-4994","B287-C627-C943","B749-AAF2-5AC4","BF1A-6647-009D","BF8D-1C96-EE1C","CEF4-0773-7924","D279-B8D7-090F","D619-8E03-F681","DF49-E005-E705","E083-93C6-55CD","E45C-6460-E782","E763-1A59-7698","EEFE-F863-E07A","F993-B67E-E316","D973-5D65-BAB2"]
@@ -362,7 +362,7 @@ def get_storage_specs(endpoint_url, api_key, service_filter, output_file_path):
 
             # Extract information from the response and filter based on category
             skus = data.get('skus', [])
-            filtered_skus = [sku for sku in skus if any(category.get('category') in ['Nearline', 'Coldline', 'Archive', 'Standard'] for category in sku.get('productTaxonomy', {}).get('taxonomyCategories', []))]
+            filtered_skus = [sku for sku in skus if any(category.get('category') in ['Standard'] for category in sku.get('productTaxonomy', {}).get('taxonomyCategories', []))]
             all_skus.extend(filtered_skus)
 
             # Check if there is a next page token
@@ -408,11 +408,15 @@ def prices_from_json(json_file, api_key, output_file):
         json.dump(combined_data, outfile, indent=2)
 
     print(f'All SKUs saved to {output_file}')
+# Retrieve or create the Provider instance
     provider_name = 'GCP'
     provider, _ = Provider.objects.get_or_create(name=provider_name)
 
-    cloud_service_type = 'Storage'  # Assuming 'Storage' is the service_type for database-related services
+    # Retrieve or create the CloudService instance for the 'Storage' service type
+    cloud_service_type = 'Storage'
     cloud_service, _ = CloudService.objects.get_or_create(provider=provider, service_type=cloud_service_type)
+
+    # Delete existing StorageSpecifications associated with the provider
     StorageSpecifications.objects.filter(provider=provider).delete()
 
     # Insert combined information into the database
@@ -438,23 +442,26 @@ def prices_from_json(json_file, api_key, output_file):
         price_monthly = unit_price
         
         # Insert into StorageSpecifications table
-        StorageSpecifications.objects.create(
-            name=name,
-            provider_id=provider_id,
-            cloud_service=cloud_service,
-            sku=sku_id,
-            unit_price=unit_price,
-            unit_of_storage=unit_of_storage,
-            region=region,
-            description=description,
-            durability=durability,
-            service_code=service_code,
-            storage_class=storage_class,
-            volume_type=volume_type,
-            price_monthly=price_monthly
+        try:
+            # Insert into StorageSpecifications table
+            StorageSpecifications.objects.create(
+                name=name,
+                provider=provider,  # Assign the provider instance
+                cloud_service=cloud_service,  # Assign the cloud service instance
+                sku=sku_id,
+                unit_price=unit_price,
+                unit_of_storage=unit_of_storage,
+                region=region,
+                description=description,
+                durability=durability,
+                service_code=service_code,
+                storage_class=storage_class,
+                volume_type=volume_type,
+                price_monthly=price_monthly
             )
-
-        print(f"Information for SKU ID {sku_id} inserted into the database.")
+            print(f"Information for SKU ID {sku_id} inserted into the database.")
+        except Exception as e:
+            print(f"Error inserting information for SKU ID {sku_id}: {e}")
 
 
 def fetch_save(api_key, service_id, all_skus):
@@ -489,7 +496,6 @@ def fetch_save(api_key, service_id, all_skus):
                     region = ', '.join(sku.get('serviceRegions', []))
                     description = sku.get('description', '')
                     provider_name = 'GCP'
-                    #provider_id = provider_id
                     provider, _ = Provider.objects.get_or_create(name=provider_name)
                     
 
@@ -498,9 +504,10 @@ def fetch_save(api_key, service_id, all_skus):
                         cloud_service_type= "Database"
                         cloud_service, _ = CloudService.objects.get_or_create(provider=provider, service_type=cloud_service_type)
                         # Save to DatabaseSpecifications table
-                        db_spec = DatabaseSpecifications.objects.create(
+                        db_spec = DatabaseSpecifications.objects.update_or_create(
                             name=name,
-                            data_type=data_type,
+                            # data_type=data_type,
+                            provider=provider,  # Ensure that the provider is assigned
                             cloud_service=cloud_service,
                             sku=sku_id,
                             unit_price=str(unit_price),
@@ -509,7 +516,7 @@ def fetch_save(api_key, service_id, all_skus):
                             description=description
                             # Add other fields as needed
                         )
-                        db_spec.save()
+                        # db_spec.save()
                     elif service_id == '6F81-5844-456A' or service_id == 'D97E-AB26-5D95':
                         # Save to StorageSpecifications table
                         cloud_service_type= "Storage"
@@ -517,7 +524,7 @@ def fetch_save(api_key, service_id, all_skus):
                         storage_spec = StorageSpecifications.objects.create(
                             sku=sku_id,
                             name=name,
-                            provider_id=1,  # Assuming default provider id
+                            provider=provider,  # Ensure that the provider is assigned
                             cloud_service=cloud_service,  # Assuming default cloud service id
                             unit_price=str(unit_price),
                             unit_of_storage=unit_of_storage,
@@ -534,7 +541,7 @@ def fetch_save(api_key, service_id, all_skus):
                         network_spec = NetworkingSpecifications.objects.create(
                             sku=sku_id,
                             name=description,  # Insert description as name value
-                            #provider_id=provider_id,  # Assuming default provider id
+                            provider=provider,  # Ensure that the provider is assigned
                             cloud_service=cloud_service,  # Assuming default cloud service id
                             unit_price=str(unit_price),
                             unit_of_measure=unit_of_storage,
@@ -597,7 +604,8 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
         city= 'Mumbai'
     elif location == 'asia-south2':
         city= 'Delhi'
-    elif location == 'asia-southeast1':
+    elif location == 'ap-southeast-1':
+        location= 'asia-southeast1'
         city= 'Singapore'
     elif location == 'asia-southeast2':
         city= 'Jakarta'
@@ -615,7 +623,8 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
         city= 'Belgium' #None for PostgreSql Storage
     elif location == 'europe-west2':
         city= 'London'
-    elif location == 'europe-west3':
+    elif location == 'eu-central-1':
+        location='europe-west3'
         city= 'Frankfurt'
     elif location == 'europe-west4':
         city= 'Netherlands'
@@ -732,6 +741,7 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
         computed_data['storage'] = None
  #-------------------------------------------------------------------------------------------------------------------------------------------------------------                    
     # #Database Logic
+    database_total_price= 0
     if database_service != 'noDatabase':
         if database_size == 'large' or database_size == '10000':
             database_size = 1000
@@ -761,9 +771,12 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
             else:
                 query = query_template
         # Query for the first database instance
-    
-        database_instance = DatabaseSpecifications.objects.filter(name=query).first()
-        database_total_price= float(database_instance.unit_price)*database_size # be sure to change the price in the database, some of the values have not been formated correctly.
+        database_instance = DatabaseSpecifications.objects.filter(name__contains=query).first()
+        if database_service != 'nodatabase':
+            database_total_price= float(database_instance.unit_price)*database_size 
+        else:
+            database_total_price= 0
+        #database_total_price= float(database_instance.unit_price)*database_size # be sure to change the price in the database, some of the values have not been formated correctly.
         if database_instance:
             computed_data['database'] = {
                 'name': database_instance.name,
@@ -778,7 +791,6 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
             computed_data['database'] = None
     else:
         computed_data['database'] = None
-        database_total_price= 0
         
         
     #Networking Logic
@@ -874,7 +886,7 @@ def callmain(request):
     fetch_save(API_KEY,'E505-1604-58F8',loadbalacer_skus)
     return HttpResponse("fetch_save functions called successfully.")
 def db_spec(request):
-    get_specs(endpoint_url, API_KEY, service_filter, desired_categories, output_file_path)
+    get_specs(endpoint_url, API_KEY, service_filter, desired_categories, output_file_path)  
     return HttpResponse("get_specs function called successfully.")
 def db_price(request):
     get_prices()
@@ -893,4 +905,3 @@ def prices_json(request):
     return HttpResponse("prices_from_json function called successfully.")
 if __name__ == "__main__":
     main()
-
