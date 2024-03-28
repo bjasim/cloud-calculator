@@ -337,6 +337,12 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
         'noDatabase': 0,
     }
 
+        # Define size to description mapping
+    database_size_description = {
+        'small': '10 GB',
+        'medium': '100 GB',
+        'large': '1 TB'
+    }
 
     service_to_name_and_sku_mapping = {
         'noSQL': {
@@ -427,7 +433,8 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
             total_price = unit_price  * size_multiplier + monthly_price # Assuming price needs to be calculated per TB
             database_price = float(total_price)
             # Add "2 vCPU" to the instance name
-            modified_name = f"{database_instance.name} - Compute Gen5"
+            size_label = database_size_description.get(database_size, 'Unknown size')
+            modified_name = f"{database_instance.name} - Compute Gen5 - {size_label}"
 
             computed_data['database'] = {
                 'name': modified_name,
@@ -454,6 +461,11 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
         'notSure': 1,    # Default or unsure case
     }
 
+    storage_size_description = {
+    'small': '1 TB',
+    'medium': '10 TB',
+    'large': '100 TB'
+    }
         # Define storage type to name, SKU, region, and unit of storage mapping with primary and secondary options
     storage_to_name_and_sku_mapping_storage = {
         'Object Storage': {
@@ -517,9 +529,11 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
             size_multiplier = size_multiplier_mapping_storage.get(storage_size, 1)
             price_monthly = base_price * size_multiplier
             storage_pice = float(price_monthly)
+            size_label = storage_size_description.get(storage_size, 'Unknown size')
+            modified_name = f"{storage_instance.name} - {size_label}"
 
             computed_data['storage'] = {
-                'name': storage_instance.name,
+                'name': modified_name,
                 'unit_price': f'{price_monthly:.2f}',  # Per unit price
                 'price_monthly': f'{price_monthly:.2f}',  # Total monthly price based on size
                 'sku': storage_instance.sku,
@@ -685,9 +699,16 @@ def calculated_data_Azure_basic(compute_complexity, expected_users, data_storage
 
    # Assuming these are price multipliers for different service tiers or capacities
     size_multiplier_mapping = {
-        '1000': 10,    # 50 GB
-        '5000': 100,  # 200 GB
-        '10000': 1000,  # 1000 T
+        '1000': 10,    # 10 GB
+        '5000': 100,  # 100 GB
+        '10000': 1000,  # 1 TB
+    }
+
+        # Define size to description mapping based on numeric selections
+    size_to_description = {
+        '1000': '10 GB',    # For 10 GB
+        '5000': '100 GB',   # For 100 GB
+        '10000': '1 TB',    # For 1 TB
     }
 
     service_to_name_and_sku_mapping = {
@@ -779,7 +800,9 @@ def calculated_data_Azure_basic(compute_complexity, expected_users, data_storage
             total_price = unit_price  * size_multiplier + monthly_price # Assuming price needs to be calculated per TB
             database_price = float(total_price)
             # Add "2 vCPU" to the instance name
-            modified_name = f"{database_instance.name} - Compute Gen5"
+            # Add the size description to the instance name based on expected_users
+            size_label = size_to_description.get(expected_users, 'Unknown size')
+            modified_name = f"{database_instance.name} - Compute Gen5 - {size_label}"
 
             computed_data['database'] = {
                 'name': modified_name,
@@ -804,6 +827,12 @@ def calculated_data_Azure_basic(compute_complexity, expected_users, data_storage
         '1000': 1000,    # 50 GB
         '5000': 10000,  # 200 GB
         '10000': 100000,  # 1000 T
+    }
+
+    size_to_description = {
+    '1000': '1 TB',   # Mapping 1000 to 10 GB
+    '5000': '10 TB',  # Mapping 5000 to 100 GB
+    '10000': '100 TB',   # Mapping 10000 to 1 TB
     }
 
         # Define storage type to name, SKU, region, and unit of storage mapping with primary and secondary options
@@ -869,9 +898,12 @@ def calculated_data_Azure_basic(compute_complexity, expected_users, data_storage
             size_multiplier = size_multiplier_mapping_storage.get(expected_users, 1)
             price_monthly = base_price * size_multiplier
             storage_pice = float(price_monthly)
+            # Append the size description to the instance name
+            size_label = size_to_description.get(expected_users, 'Unknown size')
+            modified_name = f"{storage_instance.name} - {size_label}"
 
             computed_data['storage'] = {
-                'name': storage_instance.name,
+                'name': modified_name,
                 'unit_price': f'{price_monthly:.2f}',  # Per unit price
                 'price_monthly': f'{price_monthly:.2f}',  # Total monthly price based on size
                 'sku': storage_instance.sku,
