@@ -331,11 +331,12 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
 
     # Assuming these are price multipliers for different service tiers or capacities
     size_multiplier_mapping = {
-        'small': 10,    # 1 TB
-        'medium': 100,  # 10 TB
-        'large': 1000,  # 100 TB
+        'small': 10,    # 10 GB
+        'medium': 100,  # 100 GB
+        'large': 1000,  # 1 TB
         'noDatabase': 0,
     }
+
 
     service_to_name_and_sku_mapping = {
         'noSQL': {
@@ -354,16 +355,16 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
         },
         'sql': {
             'secondary': {
-                'name': 'SQL Database Standard - Storage',
+                'name': 'Azure Database for PostgreSQL Standard Storage',
                 'sku': 'Standard',
                 'region': 'eastus',
                 'unit_of_storage': '1 GB/Month'
             },
             'primary': {
-                'name': 'SQL Database Premium - Storage',
-                'sku': 'Premium',
+                'name': 'Azure Cosmos DB for PostgreSQL General Purpose Storage',
+                'sku': 'General Purpose',
                 'region': 'eastus',
-                'unit_of_storage': '1 GB/Month'
+                'unit_of_storage': '1 GiB/Month'
             }
         },
         'noDatabase': {
@@ -381,6 +382,25 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
             }
         }
     }
+
+    # Specific data criteria
+    specific_name = 'Azure Database for PostgreSQL Single Server General Purpose - Compute Gen5'
+    specific_sku = '2 vCore'
+    specific_region = 'eastus'
+    specific_storage = '1 Hour'
+
+    # Perform the query based on the specific criteria
+    specific_database_instances = DatabaseSpecifications.objects.filter(
+        name=specific_name,
+        sku=specific_sku,
+        region=specific_region,
+        unit_of_storage=specific_storage
+    ).first()
+
+    if specific_database_instances:
+        # Assuming the unit_price is given per hour and we need to calculate for the month
+        hourly_price = float(specific_database_instances.unit_price)  # Get the price per hour
+        monthly_price = hourly_price * 720  # Convert hourly price to monthly
 
     service_info = service_to_name_and_sku_mapping.get(database_service)
 
@@ -404,11 +424,13 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
             size_multiplier = size_multiplier_mapping.get(database_size, 1)
             unit_price = float(database_instance.unit_price)  # Assume this gives price per GB/Month
             # Calculate the price for the selected size
-            total_price = unit_price  * size_multiplier  # Assuming price needs to be calculated per TB
+            total_price = unit_price  * size_multiplier + monthly_price # Assuming price needs to be calculated per TB
             database_price = float(total_price)
+            # Add "2 vCPU" to the instance name
+            modified_name = f"{database_instance.name} - Compute Gen5"
 
             computed_data['database'] = {
-                'name': database_instance.name,
+                'name': modified_name,
                 'unit_price': f'{total_price:.2f}',
                 'total_price': f'{total_price:.2f}',
                 'sku': database_instance.sku,
@@ -426,9 +448,9 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
 
     # Define size to price multiplier mapping, adjust as needed
     size_multiplier_mapping_storage = {
-        'small': 10,      # For 1 TB
-        'medium': 100,    # For 10 TB
-        'large': 1000,    # For 100 TB
+        'small': 1000,      # For 1 TB
+        'medium': 10000,    # For 10 TB
+        'large': 100000,    # For 100 TB
         'notSure': 1,    # Default or unsure case
     }
 
@@ -597,6 +619,24 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
     computed_data['monthly'] = f'{monthly:.2f}'
     computed_data['annual'] = f'{annual:.2f}'
 
+
+
+    if monthly_budget == "lessThan500" or monthly_budget == "under50":
+        monthly_budget = 500
+    if monthly_budget == "500to2000" or monthly_budget == "under50":
+        monthly_budget = 2000
+    if monthly_budget == "2000to5000":
+        monthly_budget = 5000
+    if monthly_budget == "moreThan5000" or monthly_budget == "over5000":
+        monthly_budget = 5000
+
+    if monthly_budget < monthly:
+        computed_data['budget'] = "no"
+    if monthly_budget > monthly:
+        computed_data['budget'] = "yes"
+
+
+
     return computed_data
 
 
@@ -643,7 +683,7 @@ def calculated_data_Azure_basic(compute_complexity, expected_users, data_storage
             }
 
 
-    # Assuming these are price multipliers for different service tiers or capacities
+   # Assuming these are price multipliers for different service tiers or capacities
     size_multiplier_mapping = {
         '1000': 10,    # 50 GB
         '5000': 100,  # 200 GB
@@ -695,6 +735,25 @@ def calculated_data_Azure_basic(compute_complexity, expected_users, data_storage
         }
     }
 
+    # Specific data criteria
+    specific_name = 'Azure Database for PostgreSQL Single Server General Purpose - Compute Gen5'
+    specific_sku = '2 vCore'
+    specific_region = 'eastus'
+    specific_storage = '1 Hour'
+
+    # Perform the query based on the specific criteria
+    specific_database_instances = DatabaseSpecifications.objects.filter(
+        name=specific_name,
+        sku=specific_sku,
+        region=specific_region,
+        unit_of_storage=specific_storage
+    ).first()
+
+    if specific_database_instances:
+        # Assuming the unit_price is given per hour and we need to calculate for the month
+        hourly_price = float(specific_database_instances.unit_price)  # Get the price per hour
+        monthly_price = hourly_price * 720  # Convert hourly price to monthly
+
     service_info = service_to_name_and_sku_mapping.get(database_service)
 
     if service_info:
@@ -717,11 +776,13 @@ def calculated_data_Azure_basic(compute_complexity, expected_users, data_storage
             size_multiplier = size_multiplier_mapping.get(expected_users, 1)
             unit_price = float(database_instance.unit_price)  # Assume this gives price per GB/Month
             # Calculate the price for the selected size
-            total_price = unit_price * size_multiplier  # Assuming price needs to be calculated per TB
+            total_price = unit_price  * size_multiplier + monthly_price # Assuming price needs to be calculated per TB
             database_price = float(total_price)
+            # Add "2 vCPU" to the instance name
+            modified_name = f"{database_instance.name} - Compute Gen5"
 
             computed_data['database'] = {
-                'name': database_instance.name,
+                'name': modified_name,
                 'unit_price': f'{total_price:.2f}',
                 'total_price': f'{total_price:.2f}',
                 'sku': database_instance.sku,
@@ -740,9 +801,9 @@ def calculated_data_Azure_basic(compute_complexity, expected_users, data_storage
 
     # Define size to price multiplier mapping, adjust as needed
     size_multiplier_mapping_storage = {
-        '1000': 10,    # 50 GB
-        '5000': 100,  # 200 GB
-        '10000': 1000,  # 1000 T
+        '1000': 1000,    # 50 GB
+        '5000': 10000,  # 200 GB
+        '10000': 100000,  # 1000 T
     }
 
         # Define storage type to name, SKU, region, and unit of storage mapping with primary and secondary options
@@ -910,5 +971,22 @@ def calculated_data_Azure_basic(compute_complexity, expected_users, data_storage
     # Adding monthly and annual totals to the computed_data dictionary
     computed_data['monthly'] = f'{monthly:.2f}'
     computed_data['annual'] = f'{annual:.2f}'
+
+
+    if budget == "lessThan500" or budget == "under50":
+        budget = 500
+    if budget == "500to2000" or budget == "under50":
+        budget = 2000
+    if budget == "2000to5000":
+        budget = 5000
+    if budget == "moreThan5000" or budget == "over5000":
+        budget = 5000
+
+    if budget < monthly:
+        computed_data['budget'] = "no"
+    if budget > monthly:
+        computed_data['budget'] = "yes"
+
+
 
     return computed_data
