@@ -24,7 +24,7 @@ const ContactPage = () => {
             Introduction to Cloud Computing
           </Typography>
           <Typography variant="body1" style={{ marginBottom: "2px" }}>
-          Cloud computing is like renting technology services — computing power, storage, and more — over the internet. It lets you access and store data without owning physical hardware. Think of it as subscribing to a streaming service instead of buying DVDs.
+          &emsp; Cloud computing is like renting technology services — computing power, storage, and more — over the internet. It lets you access and store data without owning physical hardware. Think of it as subscribing to a streaming service instead of buying DVDs.
           </Typography>
         </Grid>
         <Grid item xs={12}>
@@ -35,7 +35,7 @@ const ContactPage = () => {
           The Flexibility of Cloud Costs          
           </Typography>
           <Typography variant="body1" style={{ marginBottom: "2px" }}>
-          Unlike traditional IT where you invest heavily upfront in servers and infrastructure, the cloud operates on a pay-as-you-go model. This means you only pay for the computing resources you use, similar to how a utility bill works for electricity or water.
+          &emsp; Unlike traditional IT where you invest heavily upfront in servers and infrastructure, the cloud operates on a pay-as-you-go model. This means you only pay for the computing resources you use, similar to how a utility bill works for electricity or water.
           </Typography>
         </Grid>
         <Grid item xs={12}>
@@ -43,7 +43,7 @@ const ContactPage = () => {
           Scalability: Match Demand with Supply
           </Typography>
           <Typography variant="body1" style={{ marginBottom: "0rem" }}>
-          One of the cloud's biggest advantages is scalability. You can easily increase your computing resources during peak times and decrease them when they're not needed, ensuring efficient use of your budget.
+          &emsp; One of the cloud's biggest advantages is scalability. You can easily increase your computing resources during peak times and decrease them when they're not needed, ensuring efficient use of your budget.
           </Typography>
         </Grid>
         <Grid item xs={12}>
@@ -53,13 +53,13 @@ const ContactPage = () => {
           <Typography variant="h5" gutterBottom>
           On-Premises Explained          </Typography>
           <Typography variant="body1" style={{ marginBottom: "1rem" }}>
-          On-premises solutions involve setting up and maintaining your IT infrastructure within your physical premises. This approach gives you full control over your data and hardware but requires significant capital investment and ongoing maintenance costs.
+          &emsp; Choosing on-prem solutions means you keep and look after your IT setup right where your business is. You get complete control over your data and equipment but need to be ready for a big initial investment and regular costs to keep everything running smoothly. A basic setup with decent quality servers usually falls between $5,000 and $15,000 each. Adding a reliable backup system adds on about $2,000 more. Also, there are software licenses, Microsoft for example, can cost roughly $1,500 per server, plus more fees for each user and special software like Microsoft SQL. Starting with 2 to 3 servers, the initial investment could be around $25,000, but remember, the price must be adjusted to your specific needs.
           </Typography>
           <Typography variant="h5" gutterBottom>
           Advantages of Cloud Solutions          
           </Typography>
           <Typography variant="body1" style={{ marginBottom: "0rem" }}>
-          Cloud computing removes the need for physical hardware, reducing capital expenditure. It offers robust scalability, improved disaster recovery, and flexible work practices since services can be accessed from anywhere, anytime.
+          &emsp; Cloud computing removes the need for physical hardware, reducing capital expenditure. It offers robust scalability, improved disaster recovery, and flexible work practices since services can be accessed from anywhere, anytime.
           </Typography>
         </Grid>
         <Grid item xs={12}>
@@ -69,13 +69,13 @@ const ContactPage = () => {
           <Typography variant="h5" gutterBottom>
           Potential Overlooked Expenses          </Typography>
           <Typography variant="body1" style={{ marginBottom: "1rem" }}>
-          When migrating to or scaling within the cloud, be mindful of hidden costs such as data egress fees, storage retrieval costs, and support services. Planning and utilizing cost management tools provided by cloud services can mitigate unexpected expenses.
+          &emsp; When migrating to or scaling within the cloud, be mindful of hidden costs such as data egress fees, storage retrieval costs, and support services. Planning and utilizing cost management tools provided by cloud services can mitigate unexpected expenses.
           </Typography>
           <Typography variant="h5" gutterBottom>
           Migrating to the Cloud          
           </Typography>
           <Typography variant="body1" style={{ marginBottom: "5rem" }}>
-          Transitioning to the cloud requires careful planning. Assess your current IT infrastructure, determine what you need in the cloud, and choose a provider that fits your needs. Many cloud providers offer migration tools to simplify the process.
+          &emsp; Transitioning to the cloud requires careful planning. Assess your current IT infrastructure, determine what you need in the cloud, and choose a provider that fits your needs. Many cloud providers offer migration tools to simplify the process.
           </Typography>
         </Grid>
       </Grid>

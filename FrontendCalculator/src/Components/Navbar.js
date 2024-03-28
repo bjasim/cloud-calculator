@@ -13,7 +13,7 @@ import {
 import { Link } from "react-router-dom"; // Import Link component
 import HomeIcon from "@mui/icons-material/Home";
 import InfoIcon from "@mui/icons-material/Info";
-import CommentRoundedIcon from "@mui/icons-material/CommentRounded";
+// import CommentRoundedIcon from "@mui/icons-material/CommentRounded";
 import PhoneRoundedIcon from "@mui/icons-material/PhoneRounded";
 
 const Navbar = () => {
@@ -29,14 +29,14 @@ const Navbar = () => {
       icon: <InfoIcon />,
       path: "/about",
     },
+    // {
+    //   text: "Testimonials",
+    //   icon: <CommentRoundedIcon />,
+    //   path: "/testimonials",
+    // },
     {
-      text: "Testimonials",
-      icon: <CommentRoundedIcon />,
-      path: "/testimonials",
-    },
-    {
-      text: "Contact",
-      icon: <PhoneRoundedIcon />,
+      text: "Learn More",
+      // icon: < />,
       path: "/contact",
     },
   ];
@@ -54,7 +54,7 @@ const Navbar = () => {
         <a href="/">Home</a>
         <a href="/about">About Us</a>
         {/* <a href="/testimonials">Testimonials</a> */}
-        <a href="/contact">Contact</a>
+        <a href="/contact">Learn More</a>
         <Link to="/form" className="primary-button">
           Calculate
         </Link>

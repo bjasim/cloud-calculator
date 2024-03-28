@@ -367,9 +367,9 @@ const AdvancedForm = () => {
                   disabled={isDatabaseDisabled} // Disable based on condition
                 >
                   <MenuItem value="">Select...</MenuItem>
-                  <MenuItem value="small">Small (under 1 TB)</MenuItem>
-                  <MenuItem value="medium">Medium (10 TB)</MenuItem>
-                  <MenuItem value="large">Large (100 TB)</MenuItem>
+                  <MenuItem value="small">Small (10 GB)</MenuItem>
+                  <MenuItem value="medium">Medium (100 GB)</MenuItem>
+                  <MenuItem value="large">Large (1 TB)</MenuItem>
                 </Select>
                 {validationErrors.databaseSize && (
                   <FormHelperText error>Please select database size</FormHelperText>

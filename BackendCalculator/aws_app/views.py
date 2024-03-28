@@ -79,6 +79,12 @@ from databaseServer.models import (
 #         return HttpResponse(f"No pricing information found for SKU {sku}", content_type='text/plain')
 #--------------------------------------------------------------------------------------------------------------------------------------------
 # from django.db import IntegrityError
+# sku_to_service_code = {
+#     "3DG6WFZ5QW4JAAHJ": "AmazonEC2", "us-east-1"  # 1 vCPU - 2 RAM (Standard)
+#     "3K59PVQYWBTWXEHT": "AmazonEC2",  "us-east-2"# 2 vCPU - 4 RAM (Standard)
+#     "7WVK4XHSDKCTP5FX": "AmazonEC2", "eu-north-1" # 1 vCPU - 2 RAM (Standard)
+#     "4QB2537CEAFFV88T": "AmazonEC2", "me-south-1" # 2 vCPU - 4 RAM (Standard)
+# }
 
 # # Dictionary mapping SKU to Service Code
 sku_to_service_code = {
@@ -1105,13 +1111,14 @@ def calculated_data_AWS(monthly_budget, expected_cpu, database_service, database
 
         # 'unit_price': unit_price,
         'unit_price': compute_total_price,
-        'cpu': 'CPU and RAM: ' + compute_instance.cpu,
+        'cpu': f"CPU and RAM: {compute_instance.cpu} vCPU",
         'memory': compute_instance.memory,
         'sku': compute_instance.sku,
         'provider': compute_instance.provider.name,
         'cloud_service': compute_instance.cloud_service.service_type,
         'description': compute_instance.description  # Assuming there's a description field
         }        
+        # f"{compute_instance.memory} GiB"
         print("-------------------------------------------------------------")
         print(f"Compute unit price is:  {compute_unit_price}")
         print(f"Compute total price is:  {compute_total_price}")
@@ -1193,7 +1200,9 @@ def calculated_data_AWS(monthly_budget, expected_cpu, database_service, database
                 db_size = 0
 
         if database_service == "sql":
-            sku = 'MV3A7KKN6HB749EA'
+            # sku = 'MV3A7KKN6HB749EA'
+            sku = '4PGJSRCJ7V3KWVEN'
+
         else:
             sku = 'F3E2EDSYC6ZNW7XP'
         try:
@@ -1577,13 +1586,22 @@ def calculated_data_AWS_basic(monthly_budget, expected_cpu, database_service, da
 
     if database_size:
         if database_size == "1000":
-            size = 50
+            storage_size_name = "1TB"
+            database_size_name = "10GB"
+            size = 10
+            storage_size = 1000
             scaling = ""
         elif database_size == "5000":
-            size = 200
+            storage_size_name = "10TB"
+            database_size_name = "100GB"
+            size = 100
+            storage_size = 10000
             scaling = ""
         elif database_size == "10000":
+            storage_size_name = "100TB"
+            database_size_name = "1TB"
             size = 1000
+            storage_size = 100000
             print('essential')
             scaling = " + Auto Scaling & Load Balancing"
         # else: 
@@ -1601,13 +1619,15 @@ def calculated_data_AWS_basic(monthly_budget, expected_cpu, database_service, da
 
         # 'unit_price': unit_price,
         'unit_price': compute_total_price,
-        'cpu': 'CPU and RAM: ' + compute_instance.cpu,
-        'memory': compute_instance.memory,
+        'cpu': f"CPU and RAM: {compute_instance.cpu} vCPU",
+        'memory': f" {compute_instance.memory}",
         'sku': compute_instance.sku,
         'provider': compute_instance.provider.name,
         'cloud_service': compute_instance.cloud_service.service_type,
         'description': compute_instance.description  # Assuming there's a description field
         }        
+        
+        
         print("-------------------------------------------------------------")
         print(f"Compute unit price is:  {compute_unit_price}")
         print(f"Compute total price is:  {compute_total_price}")
@@ -1630,11 +1650,11 @@ def calculated_data_AWS_basic(monthly_budget, expected_cpu, database_service, da
         # Make sure storage_unit_price is a float
         storage_unit_price = float(storage_instance.unit_price)
         # Now calculate the total price
-        storage_total_price = round(storage_unit_price * size)
+        storage_total_price = round(storage_unit_price * storage_size)
 
         if storage_instance:
             computed_data['storage'] = {
-                'name': storage_name,
+                'name': f"{storage_name} - {storage_size_name}",
                 'unit_price': storage_total_price,
                 'unit_of_storage': storage_instance.unit_of_storage,
                 'sku': storage_instance.sku,
@@ -1659,11 +1679,11 @@ def calculated_data_AWS_basic(monthly_budget, expected_cpu, database_service, da
         # if database_service == "nodatabase":
         #     sku = ''
         db_storage_sku = 'F3E2EDSYC6ZNW7XP' if database_service == 'basic' else 'QVD35TA7MPS92RBC'
-        db_instance_sku = 'MV3A7KKN6HB749EA' if database_service == 'complex' else None
-        database_name = "DynamoDB" if database_service == 'basic' else "SQL Instance and Storage"
+        db_instance_sku = '4PGJSRCJ7V3KWVEN' if database_service == 'complex' else None
+        database_name = "DynamoDB" if database_service == 'basic' else "PostgreSQL Instance and Storage"
 
         if database_service == "complex":
-            sku = 'MV3A7KKN6HB749EA'
+            sku = '4PGJSRCJ7V3KWVEN'
         else:
             sku = 'F3E2EDSYC6ZNW7XP'
         try:
@@ -1683,7 +1703,7 @@ def calculated_data_AWS_basic(monthly_budget, expected_cpu, database_service, da
 
         total_db_price = db_storage_total_price + db_instance_total_price
         computed_data['database'] = {
-            'name': database_name,
+            'name': f"{database_name} - {database_size_name}",
             'sku': sku,
             # 'instance_price': db_instance_total_price,
             'unit_price': total_db_price

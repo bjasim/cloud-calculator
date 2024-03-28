@@ -198,7 +198,7 @@ const BasicForm = () => {
                 >
                   <MenuItem value="">Select...</MenuItem>
                   <MenuItem value="files">Files</MenuItem>
-                  <MenuItem value="databases">Databases</MenuItem>
+                  {/* <MenuItem value="databases">Databases</MenuItem> */}
                   <MenuItem value="multimedia">Multimedia</MenuItem>
                 </Select>
                 {validationErrors.dataStorageType && (

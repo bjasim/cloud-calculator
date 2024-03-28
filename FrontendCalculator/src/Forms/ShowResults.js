@@ -56,7 +56,7 @@ const RecommendedPlans = ({ responseData }) => {
   return (
   <Box sx={{ p: 4 }}>
       <Box sx={{ textAlign: 'center', mt: 4, position: 'relative', zIndex: 2 }}>
-        <Tooltip title="- - - * All prices in USD * - - - When configuring the services for your architecture, make sure to change the monthly hours to 720 - - -">
+        <Tooltip title="- - - * All prices in USD * - - - * 720 hours monthly * - - -">
           <HelpOutlineIcon sx={{ cursor: 'pointer', fontSize: 24 }} />
         </Tooltip>
         <Typography variant="h6" gutterBottom>
@@ -114,7 +114,7 @@ const RecommendedPlans = ({ responseData }) => {
                         </div>
                         <div style={{ textAlign: "left" }}>
                           <span style={{ fontSize: "1.1rem" }}>
-                            {plan.compute.cpu} - {plan.compute.memory}
+                            {plan.compute.cpu} -{plan.compute.memory}
                           </span>
                         </div>
                         <div style={{ fontSize: "1.2rem", textAlign: "left" }}>
@@ -144,7 +144,7 @@ const RecommendedPlans = ({ responseData }) => {
                           <span style={{ fontSize: "1.1rem" }}>Sku: {plan.storage.sku}</span>
                         </div>
                         <div style={{ fontSize: "1.2rem", textAlign: "left" }}>
-                          Price/Monthly: {plan.storage.unit_price}
+                          Price/Monthly: ${plan.storage.unit_price}
                         </div>
                       </>
                     ) : (
@@ -168,7 +168,7 @@ const RecommendedPlans = ({ responseData }) => {
                             <span style={{ fontSize: "1.1rem" }}>Sku: {plan.database.sku}</span>{" "}
                           </div>
                           <div style={{ fontSize: "1.2rem", textAlign: "left" }}>
-                            Price/Monthly: {plan.database.unit_price}
+                            Price/Monthly: ${plan.database.unit_price}
                           </div>
                         </div>
                       </>
@@ -197,7 +197,7 @@ const RecommendedPlans = ({ responseData }) => {
                           <span style={{ fontSize: "1.1rem" }}>Sku: {plan.networking.sku}</span>
                         </div>
                         <div style={{ fontSize: "1.2rem", textAlign: "left" }}>
-                          Price/Monthly: {plan.networking.unit_price}
+                          Price: ${plan.networking.unit_price}
                         </div>
                       </>
                     ) : (
@@ -219,7 +219,7 @@ const RecommendedPlans = ({ responseData }) => {
                     color: plan.budget === "yes" ? "green" : plan.budget === "no" ? "red" : "black",
                     fontSize: "1.2rem"
                   }}>
-                    {plan.monthly || "-"}
+                     ${plan.monthly || "-"}
                   </span> 
                   <br />
                   <strong>Annual Total: </strong>
@@ -227,7 +227,7 @@ const RecommendedPlans = ({ responseData }) => {
                     color: plan.budget === "yes" ? "green" : plan.budget === "no" ? "red" : "black",
                     fontSize: "1.2rem"
                   }}>
-                    {plan.annual || "-"}
+                     ${plan.annual || "-"}
                   </span>
                 </div>
               </CardContent>

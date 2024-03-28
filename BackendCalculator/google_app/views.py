@@ -671,8 +671,8 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
     computed_data['compute'] = {
         'name': compute_instance.name + scale,
         'unit_price': round(compute_total_cost, 2),
-        'cpu': f"{compute_instance.cpu} vCPU",
-        'memory': compute_instance.memory,
+        'cpu': 'CPU and RAM: 'f"{compute_instance.cpu} vCPU",
+        'memory': f"{compute_instance.memory} GiB",
         'sku': compute_instance.sku,
         'provider': compute_instance.provider.name,
         'cloud_service': compute_instance.cloud_service.service_type
@@ -805,19 +805,21 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
         name = ""
     price_val=""
     if dns_connection == 'Yes':
-        name += " DNS"
+        name = "DNS"
         dns_query='0CAB-FE26-F2C6'
         dns_instance= NetworkingSpecifications.objects.filter(sku=dns_query).first()
         dns_instance.unit_price=float(dns_instance.unit_price)* 1000000
-        price_val=f'{dns_instance.unit_price}/ per 1000000 queries'
+        price_val=f'{dns_instance.unit_price} Per 1,000,000 queries'
     else:
         name=""
         
         
     if cdn_connection == 'Yes':
-        name += " CDN"
+        name = "CDN"
         cdn_query='620D-FE53-4BA9'
         cdn_instance= NetworkingSpecifications.objects.filter(sku=cdn_query).first()
+        price_val=f'{cdn_instance.unit_price} Per 1,000,000 queries'
+
     else :
         name +=""
     network_total_price=0
@@ -830,13 +832,15 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
         print(network_total_price)
         
         
-        
+        if cdn_connection == "Yes" and dns_connection == "Yes":
+            name = "DNS & CDN"
+ 
 
         sku_components = [component.sku if component else "" for component in [inbound_lb, outbound_lb, dns_instance, cdn_instance]]
         sku_comp = " + ".join(filter(None, sku_components))
         computed_data['networking'] = {
         'name': name,
-        'unit_price': f"{price_val}| Total price: {round(network_total_price,2)}",
+        'unit_price': f"{price_val}",
         'sku': sku_comp
     }
     else:
