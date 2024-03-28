@@ -219,6 +219,7 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     #
 
     #Configuration for compute types.
+    #Configuration for compute types.
     cpu_configurations = {
         "1vCPU": {"multiplier": 1, "ram_cost_multiplier": 2, "ram_cost_per_unit": 0.015, "name_override": "1 vCPU(1oCPU)"},
         "2vCPUs": {"multiplier": 1, "ram_cost_multiplier": 4, "ram_cost_per_unit": 0.015, "name_override": "2 vCPU(1oCPU)"},
@@ -281,7 +282,6 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
                 'cpu': f'CPU and RAM: {config["name_override"]}',
                 'memory': f'{config["multiplier"] * 2} GiB',
             }
-
 
 #------------------------------------------------------------------------------------------------
 
@@ -350,6 +350,9 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
         if expected_cpu == "16vCPUs":
             ocpuPerHour = 8
 
+        # standard postgre server
+            # ocpuPerHour = 2
+        
         #postgre calculations (multiplies by ocpu, then by 720 hours)
         ocpuPostgre = DatabaseSpecifications.objects.filter(sku="B99060").first()
         postgrePerMonth = round(((float(ocpuPostgre.unit_price) * ocpuPerHour) * 720))
@@ -386,7 +389,11 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
                     db_size = 1000
 
                 #Trunicated to 2 decimal points 
-                database_total_price = int(float(database_instance.unit_price) * db_size * 100) / 100.0 + postgrePerMonth
+                if database_service == "complex" or database_service == "sql":
+                    database_total_price = int(float(database_instance.unit_price) * db_size * 100) / 100.0 + postgrePerMonth
+                else:
+                    database_total_price = int(float(database_instance.unit_price) * db_size * 100) / 100.0
+    
 
                 if sku == "B99062":
                     postgreOcpuSku = " GB - B99060 CPU"
@@ -558,7 +565,7 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
             computed_data['networking'] = {
                 'name': "DNS",
                 'sku': dns_service.sku,
-                'unit_price': f"| {dns_service.unit_price} USD Per 1,000,000 queries"
+                'unit_price': f"{dns_service.unit_price} Per 1,000,000 queries"
             }          
 
     #-----------------IF DNS AND CDN SELECTED---------------------------------------
@@ -571,9 +578,9 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
 
             #Update the DNS section within the networking part of computed_data with the fetched details.
             computed_data['networking'] = {
-                'name': "CDN & DNS",
+                'name': "DNS & CDN",
                 'sku': f" DNS:{dns_service.sku} CDN: Varnish-Enterprise-6",
-                'unit_price': f"| DNS = {dns_service.unit_price} USD Per 1,000,000 queries | CDN = OCI Marketplace |" 
+                'unit_price': f"| DNS = {dns_service.unit_price} Per 1,000,000 queries | CDN = OCI Marketplace |" 
             }          
    
     #-----------------IF NIETHER SELECTED---------------------------------------
@@ -613,11 +620,11 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
 
     computed_data['monthly'] = plan_monthly_price
     computed_data['annual'] = plan_annual_price
-
+    
     if monthly_budget == "lessThan500" or monthly_budget == "under50":
         monthly_budget = 500
     if monthly_budget == "500to2000" or monthly_budget == "under50":
-        monthly_budget = 2000       
+        monthly_budget = 2000
     if monthly_budget == "2000to5000":
         monthly_budget = 5000
     if monthly_budget == "moreThan5000" or monthly_budget == "over5000":
@@ -629,4 +636,3 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
         computed_data['budget'] = "yes"
 
     return computed_data
-    
