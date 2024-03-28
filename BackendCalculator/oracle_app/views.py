@@ -220,12 +220,12 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
 
     #Configuration for compute types.
     cpu_configurations = {
-        "1vCPU": {"multiplier": 1, "ram_cost_multiplier": 2, "ram_cost_per_unit": 0.015, "name_override": "1oCPU(1vCPU)-2RAM"},
-        "2vCPUs": {"multiplier": 1, "ram_cost_multiplier": 4, "ram_cost_per_unit": 0.015, "name_override": "1oCPU(2vCPU)-4RAM"},
-        "4vCPUs": {"multiplier": 2, "ram_cost_multiplier": 16, "ram_cost_per_unit": 0.015, "name_override": "2oCPU(4vCPU)-16RAM"},
-        "8vCPUs": {"multiplier": 4, "ram_cost_multiplier": 32, "ram_cost_per_unit": 0.015, "name_override": "4oCPU(8vCPU)-32RAM"},
-        "12vCPUs": {"multiplier": 6, "ram_cost_multiplier": 48, "ram_cost_per_unit": 0.015, "name_override": "6oCPU(12vCPU)-48RAM"},
-        "16vCPUs": {"multiplier": 8, "ram_cost_multiplier": 64, "ram_cost_per_unit": 0.015, "name_override": "8oCPU(16vCPU)-64RAM"},
+        "1vCPU": {"multiplier": 1, "ram_cost_multiplier": 2, "ram_cost_per_unit": 0.015, "name_override": "1 vCPU(1oCPU)"},
+        "2vCPUs": {"multiplier": 1, "ram_cost_multiplier": 4, "ram_cost_per_unit": 0.015, "name_override": "2 vCPU(1oCPU)"},
+        "4vCPUs": {"multiplier": 2, "ram_cost_multiplier": 16, "ram_cost_per_unit": 0.015, "name_override": "4 vCPU(2oCPU)"},
+        "8vCPUs": {"multiplier": 4, "ram_cost_multiplier": 32, "ram_cost_per_unit": 0.015, "name_override": "8 vCPU(4oCPU)"},
+        "12vCPUs": {"multiplier": 6, "ram_cost_multiplier": 48, "ram_cost_per_unit": 0.015, "name_override": "12 vCPU(6oCPU)"},
+        "16vCPUs": {"multiplier": 8, "ram_cost_multiplier": 64, "ram_cost_per_unit": 0.015, "name_override": "16 vCPU(8oCPU)"},
     }
 
     #For basic form calculation.
@@ -251,12 +251,12 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
         #Check database size and select compute instance based off that.
         if database_size in ["small", "medium", "1000", "5000", None]:
             compute_sku = "B93113"
-            name_override = "AMD Standard E4 - "  
+            name_override = "AMD Standard E4 "  
             ram_sku = "B93114"
 
         elif database_size in ["large", "10000"]:
             compute_sku = "B97384"
-            name_override = "AMD Standard E5 - "
+            name_override = "AMD Standard E5 "
             ram_sku = "B97385"
 
         #Fetch RAM pricing details using the selected RAM SKU.
@@ -275,10 +275,13 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
 
             #Update computed_data with the fetched details.
             computed_data['compute'] = {
-                'name': f"{name_override + config["name_override"]} {name_scalability} - {location}",
-                'sku': f"{compute_service.sku} CPU - {ram_sku} RAM",
+                'name': f"{name_override} {name_scalability} - {location}",
+                'sku': f"CPU:{compute_service.sku}  - RAM:{ram_sku}",
                 'unit_price': f"{compute_total_price}",
+                'cpu': f'CPU and RAM: {config["name_override"]}',
+                'memory': f'{config["multiplier"] * 2} GiB',
             }
+
 
 #------------------------------------------------------------------------------------------------
 
