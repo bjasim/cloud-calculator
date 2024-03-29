@@ -302,14 +302,16 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
 
     #Check for the "No Storage" option first.
     if database_service == "noDatabase" or database_service == "nodatabase" or database_size == None:
-        computed_data['database'] = {
-            'name': "No Database",
-            'unit_price': "N/A",
-            'unit_of_storage': None,
-            'sku': "N/A",
-            'provider': None,
-            'cloud_service': None
-        }
+        # computed_data['database'] = {
+        #     'name': "No Database",
+        #     'unit_price': "N/A",
+        #     'unit_of_storage': None,
+        #     'sku': "N/A",
+        #     'provider': None,
+        #     'cloud_service': None
+        # }
+        computed_data['database'] = None
+
     else:
         #Map cloud storage types to their corresponding SKU.
         sku_mapping = {
@@ -439,14 +441,16 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
 
     #Check for the "No Storage" option first
     if cloud_storage == "No Storage" or cloud_storage == None:
-        computed_data['storage'] = {
-            'name': "No Storage",
-            'unit_price': "N/A",
-            'unit_of_storage': None,
-            'sku': "N/A",
-            'provider': None,
-            'cloud_service': None
-        }
+        # computed_data['storage'] = {
+        #     'name': "No Storage",
+        #     'unit_price': "N/A",
+        #     'unit_of_storage': None,
+        #     'sku': "N/A",
+        #     'provider': None,
+        #     'cloud_service': None
+        # }
+        computed_data['storage'] = None
+
     else:
         #Map cloud storage types to their corresponding SKU
         sku_mapping = {
@@ -587,10 +591,11 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
     if dns_connection == "No" and cdn_connection == "No":
 
         #Update the DNS section within the networking part of computed_data with the fetched details.
-            computed_data['networking'] = {
-                'name': "[none selected]",
-            }
-    
+            # computed_data['networking'] = {
+            #     'name': "[none selected]",
+            # }
+        computed_data['networking'] = None
+
     #Question #9:
     #--Answer Options--:
     # 

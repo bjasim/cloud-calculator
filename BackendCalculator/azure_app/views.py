@@ -6,6 +6,7 @@ from azure.mgmt.resource import SubscriptionClient
 from rest_framework.response import Response
 from django.http import HttpResponse
 from databaseServer.models import Provider, CloudService, StorageSpecifications, NetworkingSpecifications, DatabaseSpecifications, ComputeSpecifications
+import os 
 
 
 class ViewHello(viewsets.ViewSet):
@@ -24,8 +25,7 @@ def compute_fetch_view(request):
 
     # Delete only ComputeSpecifications entries that are related to the 'Compute' CloudService under 'Azure'
     ComputeSpecifications.objects.filter(cloud_service__in=compute_services).delete()
-
-    subscription_id = "677918b9-22da-46ac-abd1-1fb1807ebaef"  # Replace with your actual subscription ID
+    subscription_id = [os.environ['AZURE_CREDENTIAL']]
     credential = DefaultAzureCredential()
     compute_client = ComputeManagementClient(credential, subscription_id)
     subscription_client = SubscriptionClient(credential)
@@ -543,7 +543,7 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
                 'created_at': storage_instance.created_at.isoformat() if storage_instance.created_at else None,
             }
         else:
-            computed_data['storage'] = 'No matching storage found'
+            computed_data['storage'] = None
 
 
         # Define networking type to name, SKU, unit of storage, and region mapping

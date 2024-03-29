@@ -111,18 +111,9 @@ urlpatterns = [
 #"Do you have a website or application with global users and want to minimize delays in loading web content?"
 # yes or no CDN
 
-#Resource group: drop it
 
 
 
 
 
-# Modify Advanced form questions
-# Modify Basic Form Questions
-# Write backend Logic for Advanced form questions
-# Write backend Logic for Basic form questions
-# Automate database updates using task scheduler, etc
-# UI has to be finished
-# Modify UI to make it look better 
-# Figure out hosting
 

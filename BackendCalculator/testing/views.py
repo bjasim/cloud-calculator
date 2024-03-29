@@ -72,7 +72,7 @@ def testing(request):
         # ServiceCode='AmazonS3',
         # ServiceCode='AmazonEFS',
         # ServiceCode='AmazonEC2',  
-        ServiceCode='AmazonBalancer',
+        ServiceCode='AmazonCloudFront',
         
 
         Filters=[

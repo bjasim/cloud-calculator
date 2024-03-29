@@ -568,8 +568,8 @@ const AdvancedForm = () => {
                   <MenuItem value="ap-southeast-2">Asia Pacific (Sydney)</MenuItem>
                   <MenuItem value="ap-northeast-1">Asia Pacific (Tokyo)</MenuItem>
                   <MenuItem value="ca-central-1">Canada (Central)</MenuItem>
-                  <MenuItem value="cn-north-1">China (Beijing)</MenuItem>
-                  <MenuItem value="cn-northwest-1">China (Ningxia)</MenuItem>
+                  {/* <MenuItem value="cn-north-1">China (Beijing)</MenuItem>
+                  <MenuItem value="cn-northwest-1">China (Ningxia)</MenuItem> */}
                   <MenuItem value="eu-central-1">EU (Frankfurt)</MenuItem>
                   <MenuItem value="eu-west-1">EU (Ireland)</MenuItem>
                   <MenuItem value="eu-west-2">EU (London)</MenuItem>

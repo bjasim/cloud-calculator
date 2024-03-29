@@ -197,7 +197,7 @@ const RecommendedPlans = ({ responseData }) => {
                           <span style={{ fontSize: "1.1rem" }}>Sku: {plan.networking.sku}</span>
                         </div>
                         <div style={{ fontSize: "1.2rem", textAlign: "left" }}>
-                          Price: ${plan.networking.unit_price}
+                          Price: {plan.networking.unit_price}
                         </div>
                       </>
                     ) : (

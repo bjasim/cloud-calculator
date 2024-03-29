@@ -88,19 +88,304 @@ from databaseServer.models import (
 
 # # Dictionary mapping SKU to Service Code
 sku_to_service_code = {
-    "3DG6WFZ5QW4JAAHJ": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "TRA7PTVEJVQKCP4S": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "TRA7PTVEJVQKCP4S": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "ZYU3DJATRUWSY3JP": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "U7958F68RYJ58KTG": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "KA7V3NDRQ93YB2TU": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "FC2J7R2YJJRVMC5C": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "XC5KUBT9PC2AF5FX": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "F5ZRJYM277794AQ6": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "UGYXPVB2PRPZDGHB": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "X7QR4YZ756X4R88M": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "ZJRR3TDYXRW4KT2W": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "3DG6WFZ5QW4JAAHJ": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "HZXG5A8JF66Q56EG": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "A64VFHU7JPNG5B96": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "V8WSYF86JEFGDE7X": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "NF8Q8XQYYTPQ9Y2Q": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "NGA3WYAKBQCKSMH4": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "36RQDKEV7N7DFNC6": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "5C37YTXFG3U6MFME": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "F3N4RX7TVEA3NSFV": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "ZARW2CVKAGDA9CH7": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "G3MWKTTASN4YDV9G": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "2YBVU66CE3ZCB3MN": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "95AQPMX9Z2Q79CUA": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "YPN5EFDYK7EWBYFS": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
     "3K59PVQYWBTWXEHT": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "8EJHB83R33SUFQ6N": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "DTJZW7BSSC22H47Y": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "8JC7KPKJGZQW9XE8": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "25QKCHCQ2X6PQ4SK": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "D7Y7SA65JHNJ8TVK": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "39XEARFEZ6AR38HF": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "9D4UM5M4CKKUMC7F": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "3DG6WFZ5QW4JAAHJ": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "3K59PVQYWBTWXEHT": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "HTENM5U4FF46JJX4": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "SWBFZA9T9TPE7BTW": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "3SNYTU7RS77EZVEV": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "GUCTAJJ2UBWCYGBV": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "42YK6425MDNNXXYK": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "2R36JA9UAT77F3QS": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "WJYZVWCTJV8GR994": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "5S6YRHGH44SE49ND": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "NX93MRPARN4BNZB3": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "F6EP448JAPXAJH3C": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "D95TVMK2QRETXJRD": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
     "7WVK4XHSDKCTP5FX": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "AHYPQ2ZMAMJPWEAF": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "F24BUQQWM54MWK6M": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "ZBNZW4PVZFHAPSK2": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "32WSSSHCG7J7YPJF": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "CKRY6X69QHGSEZY4": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "PAHJK42PZPEUG3CP": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "RP4FBZ6CSC25PSBU": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "BVJUTKEM4PVV7SWJ": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "3DG6WFZ5QW4JAAHJ": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "37W67QR78D2YXMS9": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "QK5BBBTQJTBKF66K": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "4DEP2JYTXWPVZWXH": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "3W4GYVT2GDGEKC3J": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "QSSSFFEJ5CBBZFGP": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "ZGHU7JVDXSW26XE7": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "U73F4AAR7CHEFDXV": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "ZQPHCSTDQEK6TZCF": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "3HTHMVA46DUVMPKP": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "P37Q5U4XP3NAK2W5": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
     "4QB2537CEAFFV88T": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
-    
-    "F3E2EDSYC6ZNW7XP": "AmazonDynamoDB",  # $0.25/gb storage  >>databasestoragevolume table
-    "MV3A7KKN6HB749EA": "AmazonRDS",  #8 GiB memory singe AZ SQL Server >>databaseSpecifications table
-    "QVD35TA7MPS92RBC": "AmazonRDS",   # SQL   Single-AZ )multiply with the size of the database ex. 100gb = 0.12-gb/month * 100GB = $12 a month ServiceCode= AmazonRDS >>databasestoragevolume table
+    "9ADVHZJRUPF5J82B": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "EB4NSNHN8RZWNQ9A": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "5ZA9M9B4FYCU8WF4": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "VNC3YEB9P8E6Z5JY": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "P8XRUVFG33JR4PK4": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "QYCDQVDKVPX7T5FQ": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "KCQSMEZWEQ6BAHRC": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "EKN7XE2H44U8E8NC": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "XSJ4F6YSZ5TMX3ZV": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "3DG6WFZ5QW4JAAHJ": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "N4HZ49HZM3XYD2U5": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "UQZYXZ3XSGNKGCZE": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "C3HTATWN6KJN775T": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "BPSU5UBW7WWXGUCJ": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "XN9FQ9WYKTPB2YSA": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "3UZ4XBKSANQ7KPR7": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "7GB2W3ARTW8WNZE8": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "WWRX68SGEEHPB7NZ": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "NBMYQQ4T7RUGXKGV": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "VK86JGUHZDKPDQ5H": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "MNT8E9UPH9UED9CH": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "5JDCGRWQKGBF2BMZ": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "JDPBT3HK3VYY5GDZ": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "4AN7U3MT6PTQEWPX": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "F8S9V4AFZWV8D3GZ": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "FWYVFG3F58THURK8": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "U96QB8APJGH8DHWZ": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "9CJASSHCPRCXRSXF": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "6PUNFSDQQS9GWQWQ": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "7VNFXSHAQYW7AQHC": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "Q9BFE6EA4544M38X": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "2D6MD5K8FY3WJ8FZ": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "GNUB6XWN2VHXGFKR": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "R2Z2U7QW2959AQTN": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "E94TGFKCTYWVDGTR": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "GUTY5ZHF27FQNDY6": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "9V8KU27YTW9M56YP": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "XPU62JHUXR6YGHM7": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "UK4G6YTCGUXQ95FV": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "84X58QT58C94M9S4": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "QWP5HGDJCPK7M5HX": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "2EY9Q93X25CP4JPH": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "MHVW6ECJ79TE8898": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "2W2HPS86C3XU5Z5N": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "9G5PTTCAG64KWYW3": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "7DK3DEGTAJSARFB3": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "XZ3QNZ72MHT2FCNN": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "MBE4DX6V4944MUSG": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    "NKSRA2MGJ26488D9": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "FTKRMY28NATVFRT8": "AmazonEC2",  # 2 vCPU - 4 RAM (Standard)
+    "U4DM5KKKH38Q93SY": "AmazonEC2",  # 1 vCPU - 2 RAM (Standard)
+    # "F3E2EDSYC6ZNW7XP": "AmazonDynamoDB",  # $0.25/gb storage  >>databasestoragevolume table
+    # "MV3A7KKN6HB749EA": "AmazonRDS",  #8 GiB memory singe AZ SQL Server >>databaseSpecifications table
+    # "QVD35TA7MPS92RBC": "AmazonRDS",   # SQL   Single-AZ )multiply with the size of the database ex. 100gb = 0.12-gb/month * 100GB = $12 a month ServiceCode= AmazonRDS >>databasestoragevolume table
 
-    "WP9ANXZGBYYSGJEA": "AmazonS3",  # $$0.022/GB monthly
-    "YFV3RHAD3CDDP3VE": "AmazonEFS",  #standard storage general purpose, $0.30 per GB-Mo
-    "HY3BZPP2B6K8MSJF": "AmazonEC2",   # gp2-general purpose storage 0.10 per GB-Mo
+    # "WP9ANXZGBYYSGJEA": "AmazonS3",  # $$0.022/GB monthly
+    # "YFV3RHAD3CDDP3VE": "AmazonEFS",  #standard storage general purpose, $0.30 per GB-Mo
+    # "HY3BZPP2B6K8MSJF": "AmazonEC2",   # gp2-general purpose storage 0.10 per GB-Mo
 }
+
+# sku_to_service_code_ec2 = {
+#     "TRA7PTVEJVQKCP4S": ("AmazonEC2", "us-east-1"),  # 1 vCPU - 2 RAM (Standard)
+#     "TRA7PTVEJVQKCP4S": ("AmazonEC2", "us-east-2"),  # 2 vCPU - 4 RAM (Standard)
+#     "ZYU3DJATRUWSY3JP": ("AmazonEC2", "us-west-1"), # 1 vCPU - 2 RAM (Standard)
+#     "U7958F68RYJ58KTG": ("AmazonEC2", "us-west-2"), # 2 vCPU - 4 RAM (Standard)
+#     "KA7V3NDRQ93YB2TU": ("AmazonEC2", "ap-east-1"),  # 1 vCPU - 2 RAM (Standard)
+#     "FC2J7R2YJJRVMC5C": ("AmazonEC2", "ap-south-1"),  # 2 vCPU - 4 RAM (Standard)
+#     "XC5KUBT9PC2AF5FX": ("AmazonEC2", "ap-northeast-3"), # 1 vCPU - 2 RAM (Standard)
+#     "NTRGN3U6F4VGTHS7": ("AmazonEC2", "ap-northeast-2"), # 2 vCPU - 4 RAM (Standard)
+#     "F5ZRJYM277794AQ6": ("AmazonEC2", "ap-southeast-1"),  # 1 vCPU - 2 RAM (Standard)
+#     "UGYXPVB2PRPZDGHB": ("AmazonEC2", "ap-southeast-2"),  # 2 vCPU - 4 RAM (Standard)
+#     "X7QR4YZ756X4R88M": ("AmazonEC2", "ap-northeast-1"), # 1 vCPU - 2 RAM (Standard)
+#     "ZJRR3TDYXRW4KT2W": ("AmazonEC2", "ca-central-1"), # 2 vCPU - 4 RAM (Standard)
+#     "3DG6WFZ5QW4JAAHJ": ("AmazonEC2", "eu-central-1"),  # 1 vCPU - 2 RAM (Standard)
+#     "HZXG5A8JF66Q56EG": ("AmazonEC2", "eu-west-1"),  # 2 vCPU - 4 RAM (Standard)
+#     "A64VFHU7JPNG5B96": ("AmazonEC2", "eu-west-2"), # 1 vCPU - 2 RAM (Standard)
+#     "V8WSYF86JEFGDE7X": ("AmazonEC2", "eu-south-1"), # 2 vCPU - 4 RAM (Standard)
+#     "NF8Q8XQYYTPQ9Y2Q": ("AmazonEC2", "eu-west-3"),  # 1 vCPU - 2 RAM (Standard)
+#     "NGA3WYAKBQCKSMH4": ("AmazonEC2", "eu-north-1"),  # 2 vCPU - 4 RAM (Standard)
+#     "36RQDKEV7N7DFNC6": ("AmazonEC2", "me-south-1"), # 1 vCPU - 2 RAM (Standard)
+#     "5C37YTXFG3U6MFME": ("AmazonEC2", "sa-east-1"), # 2 vCPU - 4 RAM (Standard)
+#     "F3N4RX7TVEA3NSFV": ("AmazonEC2", "af-south-1"),  # 1 vCPU - 2 RAM (Standard)
+#     "ZARW2CVKAGDA9CH7": ("AmazonEC2", "us-east-1"),  # 2 vCPU - 4 RAM (Standard)
+#     "G3MWKTTASN4YDV9G": ("AmazonEC2", "us-east-2"), # 1 vCPU - 2 RAM (Standard)
+#     "2YBVU66CE3ZCB3MN": ("AmazonEC2", "us-west-1"), # 2 vCPU - 4 RAM (Standard)
+#     "95AQPMX9Z2Q79CUA": ("AmazonEC2", "us-west-2"),  # 1 vCPU - 2 RAM (Standard)
+#     "YPN5EFDYK7EWBYFS": ("AmazonEC2", "ap-east-1"),  # 2 vCPU - 4 RAM (Standard)
+#     "8EJHB83R33SUFQ6N": ("AmazonEC2", "ap-south-1"), # 1 vCPU - 2 RAM (Standard)
+#     "DTJZW7BSSC22H47Y": ("AmazonEC2", "ap-northeast-3"), # 2 vCPU - 4 RAM (Standard)
+#     "8EJHB83R33SUFQ6N": ("AmazonEC2", "ap-south-1"),  # 2 vCPU - 4 RAM (Standard)
+#     "DTJZW7BSSC22H47Y": ("AmazonEC2", "ap-northeast-3"), # 1 vCPU - 2 RAM (Standard)
+#     "8JC7KPKJGZQW9XE8": ("AmazonEC2", "ap-northeast-2"), # 2 vCPU - 4 RAM (Standard)
+#     "25QKCHCQ2X6PQ4SK": ("AmazonEC2", "ap-southeast-1"),  # 1 vCPU - 2 RAM (Standard)
+#     "D7Y7SA65JHNJ8TVK": ("AmazonEC2", "ap-southeast-2"),  # 2 vCPU - 4 RAM (Standard)
+#     "3K59PVQYWBTWXEHT": ("AmazonEC2", "eu-central-1"), # 1 vCPU - 2 RAM (Standard)
+#     "HTENM5U4FF46JJX4": ("AmazonEC2", "eu-west-1"), # 2 vCPU - 4 RAM (Standard)
+#     "SWBFZA9T9TPE7BTW": ("AmazonEC2", "eu-west-2"),  # 1 vCPU - 2 RAM (Standard)
+#     "GUCTAJJ2UBWCYGBV": ("AmazonEC2", "eu-west-3"),  # 2 vCPU - 4 RAM (Standard)
+#     "42YK6425MDNNXXYK": ("AmazonEC2", "eu-north-1"), # 1 vCPU - 2 RAM (Standard)
+#     "2R36JA9UAT77F3QS": ("AmazonEC2", "me-south-1"), # 2 vCPU - 4 RAM (Standard)
+#     "WJYZVWCTJV8GR994": ("AmazonEC2", "sa-east-1"), # 2 vCPU - 4 RAM (Standard)
+#     "5S6YRHGH44SE49ND": ("AmazonEC2", "af-south-1"),  # 1 vCPU - 2 RAM (Standard)
+#     "NX93MRPARN4BNZB3": ("AmazonEC2", "us-east-1"),  # 2 vCPU - 4 RAM (Standard)
+#     "F6EP448JAPXAJH3C": ("AmazonEC2", "us-east-2"), # 1 vCPU - 2 RAM (Standard)
+#     "D95TVMK2QRETXJRD": ("AmazonEC2", "us-west-1"), # 2 vCPU - 4 RAM (Standard)
+#     "7WVK4XHSDKCTP5FX": ("AmazonEC2", "us-west-2"),  # 1 vCPU - 2 RAM (Standard)
+#     "AHYPQ2ZMAMJPWEAF": ("AmazonEC2", "ap-east-1"),  # 2 vCPU - 4 RAM (Standard)
+#     "F24BUQQWM54MWK6M": ("AmazonEC2", "ap-south-1"), # 1 vCPU - 2 RAM (Standard)
+#     "ZBNZW4PVZFHAPSK2": ("AmazonEC2", "ap-northeast-3"), # 2 vCPU - 4 RAM (Standard)
+#     "32WSSSHCG7J7YPJF": ("AmazonEC2", "ap-northeast-2"), # 1 vCPU - 2 RAM (Standard)
+#     "CKRY6X69QHGSEZY4": ("AmazonEC2", "ap-southeast-1"), # 2 vCPU - 4 RAM (Standard)
+#     "PAHJK42PZPEUG3CP": ("AmazonEC2", "ap-southeast-2"), # 2 vCPU - 4 RAM (Standard)
+#     "5S6YRHGH44SE49ND": ("AmazonEC2", "af-south-1"),  # 1 vCPU - 2 RAM (Standard)
+    
+#     "NX93MRPARN4BNZB3": ("AmazonEC2", "us-east-1"),  # 2 vCPU - 4 RAM (Standard)
+    
+#     "F6EP448JAPXAJH3C": ("AmazonEC2", "us-east-2"), # 1 vCPU - 2 RAM (Standard)
+    
+#     "D95TVMK2QRETXJRD": ("AmazonEC2", "us-west-1"), # 2 vCPU - 4 RAM (Standard)
+    
+#     "7WVK4XHSDKCTP5FX": ("AmazonEC2", "us-west-2"),  # 1 vCPU - 2 RAM (Standard)
+    
+#     "AHYPQ2ZMAMJPWEAF": ("AmazonEC2", "ap-east-1"),  # 2 vCPU - 4 RAM (Standard)
+    
+#     "F24BUQQWM54MWK6M": ("AmazonEC2", "ap-south-1"), # 1 vCPU - 2 RAM (Standard)
+    
+#     "ZBNZW4PVZFHAPSK2": ("AmazonEC2", "ap-northeast-3"), # 2 vCPU - 4 RAM (Standard)
+
+
+# }
+
+def get_pricing_ec2(request):
+    for sku, (service_code) in sku_to_service_code.items():
+        # Fetch Pricing Data for each SKU
+        region = 'us-east-1'
+        pricing_data = fetch_pricing_data_ec2(sku, service_code, region)
+        if pricing_data:
+            # Process and Save Data for each SKU
+            process_ec2_data_ec2(sku, pricing_data, region)
+
+    return HttpResponse("All SKUs have been processed.")
+
+def fetch_pricing_data_ec2(sku, service_code, region):
+    aws_access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
+    aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
+
+    client = boto3.client(
+        'pricing',
+        region_name='us-east-1',  # Use a central region for Pricing API
+        aws_access_key_id=aws_access_key_id,
+        aws_secret_access_key=aws_secret_access_key 
+    )
+    response = client.get_products(
+        ServiceCode=service_code,
+        Filters=[{'Type': 'TERM_MATCH', 'Field': 'sku', 'Value': sku}],
+        MaxResults=1
+    )
+    if response['PriceList']:
+        return json.loads(response['PriceList'][0])
+    return None
+
+
+def process_ec2_data_ec2(sku, pricing_data, region):
+    # AWS Provider and Compute CloudService setup
+    provider_name = 'AWS'
+    provider, _ = Provider.objects.get_or_create(name=provider_name)
+
+    cloud_service_type = 'Compute'
+    cloud_service, _ = CloudService.objects.get_or_create(
+        provider=provider, 
+        service_type=cloud_service_type,
+        defaults={'description': 'AWS EC2 Service'}
+    )
+
+    # EC2 specific data extraction
+    attributes = pricing_data.get('product', {}).get('attributes', {})
+    instance_type = attributes.get('instanceType', 'No type provided.')
+    operating_system = attributes.get('operatingSystem', 'Ubuntu Pro')
+    cpu = attributes.get('vcpu', None)
+    memory = attributes.get('memory', None)
+    region = attributes.get('location', 'Not specified')
+
+    if cpu is not None and memory is not None and memory != 'NA':
+        try:
+            cpu_value = int(cpu)
+            memory_value = float(memory.split()[0])  # Extract numeric part of memory and convert to float
+        except ValueError:
+            print(f"Invalid data for SKU: {sku}, skipping.")
+            return  # Skip this record
+
+
+        # Check if the instance matches the criteria
+        if cpu_value <= 16 and memory_value <= 64:
+            # Extract price and description
+            price_list = pricing_data.get('terms', {}).get('OnDemand', {})
+            for sku_details in price_list.values():
+                for offer_term_code, offer_term_details in sku_details.get('priceDimensions', {}).items():
+                    description = offer_term_details.get('description', 'No description provided.')
+                    price_per_unit = offer_term_details.get('pricePerUnit', {}).get('USD')
+
+                    # Update or create new ComputeSpecifications entry
+                    compute_spec, created = ComputeSpecifications.objects.update_or_create(
+                        sku=sku,
+                        defaults={
+                            'provider': provider,
+                            'cloud_service': cloud_service,
+                            'instance_type': instance_type,
+                            'operating_system': operating_system,
+                            'cpu': cpu,
+                            'memory': memory,
+                            'network_performance': attributes.get('networkPerformance', 'No network provided.'),
+                            'tenancy': attributes.get('tenancy', 'Not specified'),
+                            'description': description,
+                            'unit_price': price_per_unit or 0.0,
+                            'currency': 'USD',
+                            'region': region  # Saving the region information
+                        }
+                    )
+                    print(f"New data created for SKU: {sku} in region: {region}")
+                    break
+                break
+        else:
+            print(f"Skipping SKU: {sku} as it does not meet the criteria.")
+    else:
+        print(f"CPU or memory information missing for SKU: {sku}. Skipping.")
+
+    return HttpResponse("AWS data processed successfully.")
+
+
+
+
 def get_pricing(request):
 
     # Iterate over each SKU in the sku_to_service_code dictionary
@@ -806,293 +1091,422 @@ def calculated_data_AWS(monthly_budget, expected_cpu, database_service, database
         if expected_cpu == "1vCPU":
             if location == "us-east-1": # Virginia
                 compute_sku = "TRA7PTVEJVQKCP4S"
+                region_display = "N.Virginia"
             elif location == "us-east-2": #Ohio
                 compute_sku = "TRA7PTVEJVQKCP4S"
+                region_display = "Ohio"
             elif location == "us-west-1":   # California
                 compute_sku = "ZYU3DJATRUWSY3JP"
+                region_display = "California"
             elif location == "us-west-2": # Oregon
                 compute_sku = "U7958F68RYJ58KTG"    
             elif location == "ap-east-1": # Hong Kong
+                region_display = "Hong Kong"
                 compute_sku = "KA7V3NDRQ93YB2TU" 
             elif location == "ap-south-1": # Mumbai
                 compute_sku = "FC2J7R2YJJRVMC5C"
+                region_display = "California"
             elif location == "ap-northeast-3": # Osaka
                 compute_sku = "XC5KUBT9PC2AF5FX"
+                region_display = "California"
             elif location == "ap-northeast-2": # Seoul
                 compute_sku = "NTRGN3U6F4VGTHS7"
+                region_display = "California"
             elif location == "ap-southeast-1": # Singapore
                 compute_sku = "F5ZRJYM277794AQ6"
+                region_display = "California"
             elif location == "ap-southeast-2":  # Sydney
                 compute_sku = "UGYXPVB2PRPZDGHB"
+                region_display = "California"
             elif location == "ap-northeast-1":  # Tokyo
                 compute_sku = "X7QR4YZ756X4R88M"
+                region_display = "California"
             elif location == "ca-central-1":  # Canada central, may we should add calgary region as well
                 compute_sku = "ZJRR3TDYXRW4KT2W"
+                region_display = "California"
             elif location == "cn-north-1":    # Chine not available in this api calls
                 compute_sku = ""
             elif location == "cn-northwest-1":  # Not available 
                 compute_sku = ""
             elif location == "eu-central-1": # Frankfurt
                 compute_sku = "3DG6WFZ5QW4JAAHJ" # keep thisssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
+                region_display = "California"
             elif location == "eu-west-1":  # Ireland
                 compute_sku = "HZXG5A8JF66Q56EG"
+                region_display = "California"
             elif location == "eu-west-2":   # London
                 compute_sku = "A64VFHU7JPNG5B96"
+                region_display = "California"
             elif location == "eu-south-1":   # Milan
                 compute_sku = "V8WSYF86JEFGDE7X"
+                region_display = "California"
             elif location == "eu-west-3":  # Paris
                 compute_sku = "NF8Q8XQYYTPQ9Y2Q"
             elif location == "eu-north-1":   # Stockholm
                 compute_sku = "NGA3WYAKBQCKSMH4"
+                region_display = "California"
             elif location == "me-south-1":  # Bahrain
                 compute_sku = "36RQDKEV7N7DFNC6"
+                region_display = "California"
             elif location == "sa-east-1":   # São Paulo
                 compute_sku = "5C37YTXFG3U6MFME"
+                region_display = "California"
             elif location == "af-south-1":   # Cape Town
                 compute_sku = "F3N4RX7TVEA3NSFV"
+                region_display = "California"
 
         elif expected_cpu == "2vCPUs":
             if location == "us-east-1": # Virginia
                 compute_sku = "ZARW2CVKAGDA9CH7"
+                region_display = "California"
             elif location == "us-east-2": # Ohio
                 compute_sku = "G3MWKTTASN4YDV9G"
+                region_display = "California"
             elif location == "us-west-1":   # California
                 compute_sku = "2YBVU66CE3ZCB3MN"
+                region_display = "California"
             elif location == "us-west-2": # Oregon
                 compute_sku = "95AQPMX9Z2Q79CUA"    
+                region_display = "California"
             elif location == "ap-east-1": # Hong Kong
                 compute_sku = "YPN5EFDYK7EWBYFS" 
+                region_display = "California"
             elif location == "ap-south-1": # Mumbai
                 compute_sku = "8EJHB83R33SUFQ6N"
+                region_display = "California"
             elif location == "ap-northeast-3": # Osaka
                 compute_sku = "DTJZW7BSSC22H47Y"
+                region_display = "California"
             elif location == "ap-northeast-2": # Seoul
                 compute_sku = "8JC7KPKJGZQW9XE8"
+                region_display = "California"
             elif location == "ap-southeast-1": # Singapore
                 compute_sku = "25QKCHCQ2X6PQ4SK"
+                region_display = "California"
             elif location == "ap-southeast-2":  # Sydney
                 compute_sku = "D7Y7SA65JHNJ8TVK"
+                region_display = "California"
             elif location == "ap-northeast-1":  # Tokyo
                 compute_sku = "39XEARFEZ6AR38HF"
+                region_display = "California"
             elif location == "ca-central-1":  # Canada central, may we should add calgary region as well
                 compute_sku = "9D4UM5M4CKKUMC7F"
+                region_display = "California"
             elif location == "cn-north-1":    # Chine not available in this api calls
                 compute_sku = ""
             elif location == "cn-northwest-1":  # Not available 
                 compute_sku = "3DG6WFZ5QW4JAAHJ"
+                region_display = "California"
             elif location == "eu-central-1": # Frankfurt
+                region_display = "California"
                 compute_sku = "3K59PVQYWBTWXEHT" # keep thisssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
             elif location == "eu-west-1":  # Ireland
                 compute_sku = "HTENM5U4FF46JJX4"
+                region_display = "California"
             elif location == "eu-west-2":   # London
                 compute_sku = "SWBFZA9T9TPE7BTW"
+                region_display = "California"
             elif location == "eu-south-1":   # Milan
                 compute_sku = "3SNYTU7RS77EZVEV"
+                region_display = "California"
             elif location == "eu-west-3":  # Paris
                 compute_sku = "GUCTAJJ2UBWCYGBV"
+                region_display = "California"
             elif location == "eu-north-1":   # Stockholm
                 compute_sku = "42YK6425MDNNXXYK"
+                region_display = "California"
             elif location == "me-south-1":  # Bahrain
                 compute_sku = "2R36JA9UAT77F3QS"
+                region_display = "California"
             elif location == "sa-east-1":   # São Paulo
                 compute_sku = "WJYZVWCTJV8GR994"
+                region_display = "California"
             elif location == "af-south-1":   # Cape Town
                 compute_sku = "5S6YRHGH44SE49ND"
+                region_display = "California"
 
                 
         elif expected_cpu == "4vCPUs":
             if location == "us-east-1": # Virginia
                 compute_sku = "NX93MRPARN4BNZB3"
+                region_display = "California"
             elif location == "us-east-2": # Ohio
                 compute_sku = "F6EP448JAPXAJH3C"
+                region_display = "California"
             elif location == "us-west-1":   # California
                 compute_sku = "D95TVMK2QRETXJRD"
+                region_display = "California"
             elif location == "us-west-2": # Oregon
                 compute_sku = "7WVK4XHSDKCTP5FX"    
+                region_display = "California"
             elif location == "ap-east-1": # Hong Kong
-                compute_sku = "AHYPQ2ZMAMJPWEAF" 
+                compute_sku = "AHYPQ2ZMAMJPWEAF"
+                region_display = "California"
             elif location == "ap-south-1": # Mumbai
                 compute_sku = "F24BUQQWM54MWK6M"
+                region_display = "California"
             elif location == "ap-northeast-3": # Osaka
                 compute_sku = "ZBNZW4PVZFHAPSK2"
+                region_display = "California"
             elif location == "ap-northeast-2": # Seoul
                 compute_sku = "32WSSSHCG7J7YPJF"
+                region_display = "California"
             elif location == "ap-southeast-1": # Singapore
                 compute_sku = "CKRY6X69QHGSEZY4"
+                region_display = "California"
             elif location == "ap-southeast-2":  # Sydney
                 compute_sku = "PAHJK42PZPEUG3CP"
+                region_display = "California"
             elif location == "ap-northeast-1":  # Tokyo
                 compute_sku = "RP4FBZ6CSC25PSBU"
+                region_display = "California"
             elif location == "ca-central-1":  # Canada central, may we should add calgary region as well
                 compute_sku = "BVJUTKEM4PVV7SWJ"
+                region_display = "California"
             elif location == "cn-north-1":    # Chine not available in this api calls
                 compute_sku = ""
             elif location == "cn-northwest-1":  # Not available 
                 compute_sku = "3DG6WFZ5QW4JAAHJ"
+                region_display = "California"
             elif location == "eu-central-1": # Frankfurt
+                region_display = "California"
                 compute_sku = "37W67QR78D2YXMS9" # keep thisssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
             elif location == "eu-west-1":  # Ireland
+                region_display = "California"
                 compute_sku = "QK5BBBTQJTBKF66K"
             elif location == "eu-west-2":   # London
+                region_display = "California"
                 compute_sku = "4DEP2JYTXWPVZWXH"
             elif location == "eu-south-1":   # Milan
                 compute_sku = "3W4GYVT2GDGEKC3J"
+                region_display = "California"
             elif location == "eu-west-3":  # Paris
+                region_display = "California"
                 compute_sku = "QSSSFFEJ5CBBZFGP"
             elif location == "eu-north-1":   # Stockholm
                 compute_sku = "ZGHU7JVDXSW26XE7"
+                region_display = "California"
             elif location == "me-south-1":  # Bahrain
+                region_display = "California"
                 compute_sku = "U73F4AAR7CHEFDXV"
             elif location == "sa-east-1":   # São Paulo
                 compute_sku = "ZQPHCSTDQEK6TZCF"
+                region_display = "California"
             elif location == "af-south-1":   # Cape Town
                 compute_sku = "3HTHMVA46DUVMPKP"
+                region_display = "California"
                 
         elif expected_cpu == "8vCPUs":
             if location == "us-east-1": # Virginia
+                region_display = "California"
                 compute_sku = "P37Q5U4XP3NAK2W5"
             elif location == "us-east-2": # Ohio
+                region_display = "California"
                 compute_sku = "4QB2537CEAFFV88T"
             elif location == "us-west-1":   # California
+                region_display = "California"
                 compute_sku = "9ADVHZJRUPF5J82B"
             elif location == "us-west-2": # Oregon
+                region_display = "California"
                 compute_sku = "EB4NSNHN8RZWNQ9A"    
             elif location == "ap-east-1": # Hong Kong
                 compute_sku = "5ZA9M9B4FYCU8WF4" 
+                region_display = "California"
             elif location == "ap-south-1": # Mumbai
+                region_display = "California"
                 compute_sku = "DAQPRJYRW62BPP7E"
             elif location == "ap-northeast-3": # Osaka
+                region_display = "California"
                 compute_sku = "VNC3YEB9P8E6Z5JY"
             elif location == "ap-northeast-2": # Seoul
+                region_display = "California"
                 compute_sku = "P8XRUVFG33JR4PK4"
             elif location == "ap-southeast-1": # Singapore
+                region_display = "California"
                 compute_sku = "QYCDQVDKVPX7T5FQ"
             elif location == "ap-southeast-2":  # Sydney
+                region_display = "California"
                 compute_sku = "KCQSMEZWEQ6BAHRC"
             elif location == "ap-northeast-1":  # Tokyo
+                region_display = "California"
                 compute_sku = "EKN7XE2H44U8E8NC"
             elif location == "ca-central-1":  # Canada central, may we should add calgary region as well
                 compute_sku = "XSJ4F6YSZ5TMX3ZV"
+                region_display = "California"
             elif location == "cn-north-1":    # Chine not available in this api calls
                 compute_sku = ""
             elif location == "cn-northwest-1":  # Not available 
                 compute_sku = "3DG6WFZ5QW4JAAHJ"
+                region_display = "California"
             elif location == "eu-central-1": # Frankfurt
                 compute_sku = "N4HZ49HZM3XYD2U5" # keep thisssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
             elif location == "eu-west-1":  # Ireland
                 compute_sku = "UQZYXZ3XSGNKGCZE"
+                region_display = "California"
             elif location == "eu-west-2":   # London
                 compute_sku = "C3HTATWN6KJN775T"
+                region_display = "California"
             elif location == "eu-south-1":   # Milan
                 compute_sku = "BPSU5UBW7WWXGUCJ"
+                region_display = "California"
             elif location == "eu-west-3":  # Paris
                 compute_sku = "XN9FQ9WYKTPB2YSA"
+                region_display = "California"
             elif location == "eu-north-1":   # Stockholm
                 compute_sku = "3UZ4XBKSANQ7KPR7"
+                region_display = "California"
             elif location == "me-south-1":  # Bahrain
                 compute_sku = "7GB2W3ARTW8WNZE8"
+                region_display = "California"
             elif location == "sa-east-1":   # São Paulo
                 compute_sku = "WWRX68SGEEHPB7NZ"
+                region_display = "California"
             elif location == "af-south-1":   # Cape Town
                 compute_sku = "NBMYQQ4T7RUGXKGV"
+                region_display = "California"
                 
         elif expected_cpu == "12vCPUs":
             if location == "us-east-1": # Virginia
                 compute_sku = "VK86JGUHZDKPDQ5H"
+                region_display = "California"
             elif location == "us-east-2": # Ohio
                 compute_sku = "MNT8E9UPH9UED9CH"
+                region_display = "California"
             elif location == "us-west-1":   # California
                 compute_sku = "5JDCGRWQKGBF2BMZ"
+                region_display = "California"
             elif location == "us-west-2": # Oregon
-                compute_sku = "JDPBT3HK3VYY5GDZ"    
+                compute_sku = "JDPBT3HK3VYY5GDZ"  
+                region_display = "California"  
             elif location == "ap-east-1": # Hong Kong
-                compute_sku = ""  # NA
+                compute_sku = "JDPBT3HK3VYY5GDZ"  # NA
+                region_display = "California"
             elif location == "ap-south-1": # Mumbai
-                compute_sku = "" # NA
+                compute_sku = "F8S9V4AFZWV8D3GZ" # NA
+                region_display = "California"
             elif location == "ap-northeast-3": # Osaka
-                compute_sku = "" # NA
+                compute_sku = "9CJASSHCPRCXRSXF" # NA
+                region_display = "California"
             elif location == "ap-northeast-2": # Seoul
                 compute_sku = "4AN7U3MT6PTQEWPX"
+                region_display = "California"
             elif location == "ap-southeast-1": # Singapore
                 compute_sku = "F8S9V4AFZWV8D3GZ"
+                region_display = "California"
             elif location == "ap-southeast-2":  # Sydney
                 compute_sku = "FWYVFG3F58THURK8"
+                region_display = "California"
             elif location == "ap-northeast-1":  # Tokyo
                 compute_sku = "U96QB8APJGH8DHWZ"
+                region_display = "California"
             elif location == "ca-central-1":  # Canada central, may we should add calgary region as well
-                compute_sku = "" # NA
+                compute_sku = "JDPBT3HK3VYY5GDZ" # NA
+                region_display = "California"
             elif location == "cn-north-1":    # Chine not available in this api calls
                 compute_sku = ""
             elif location == "cn-northwest-1":  # Not available 
                 compute_sku = ""
             elif location == "eu-central-1": # Frankfurt
+                region_display = "California"
                 compute_sku = "9CJASSHCPRCXRSXF" # keep thisssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
             elif location == "eu-west-1":  # Ireland
                 compute_sku = "6PUNFSDQQS9GWQWQ"
+                region_display = "California"
             elif location == "eu-west-2":   # London
-                compute_sku = "" # NA
+                region_display = "California"
+                compute_sku = "JDPBT3HK3VYY5GDZ" # NA
             elif location == "eu-south-1":   # Milan
-                compute_sku = "" # NA
+                region_display = "California"
+                compute_sku = "F8S9V4AFZWV8D3GZ" # NA
             elif location == "eu-west-3":  # Paris
-                compute_sku = "" # NA
+                region_display = "California"
+                compute_sku = "MNT8E9UPH9UED9CH" # NA
             elif location == "eu-north-1":   # Stockholm
-                compute_sku = "" # NA   
+                region_display = "California"
+                compute_sku = "7VNFXSHAQYW7AQHC" # NA   
+                region_display = "California"
             elif location == "me-south-1":  # Bahrain
-                compute_sku = "" # NA
+                region_display = "California"
+                compute_sku = "7VNFXSHAQYW7AQHC" # NA
             elif location == "sa-east-1":   # São Paulo
+                region_display = "California"
                 compute_sku = "7VNFXSHAQYW7AQHC"
             elif location == "af-south-1":   # Cape Town
-                compute_sku = "" # NA
+                region_display = "California"
+                compute_sku = "7VNFXSHAQYW7AQHC" # NA
                 
         elif expected_cpu == "16vCPUs":
             if location == "us-east-1": # Virginia
+                region_display = "California"
                 compute_sku = "Q9BFE6EA4544M38X"
             elif location == "us-east-2": # Ohio
+                region_display = "California"
                 compute_sku = "2D6MD5K8FY3WJ8FZ"
             elif location == "us-west-1":   # California
                 compute_sku = "GNUB6XWN2VHXGFKR"
+                region_display = "California"
             elif location == "us-west-2": # Oregon
                 compute_sku = "R2Z2U7QW2959AQTN"    
+                region_display = "California"
             elif location == "ap-east-1": # Hong Kong
                 compute_sku = "E94TGFKCTYWVDGTR"  
+                region_display = "California"
             elif location == "ap-south-1": # Mumbai
                 compute_sku = "GUTY5ZHF27FQNDY6" 
+                region_display = "California"
             elif location == "ap-northeast-3": # Osaka
                 compute_sku = "9V8KU27YTW9M56YP" 
+                region_display = "California"
             elif location == "ap-northeast-2": # Seoul
+                region_display = "California"
                 compute_sku = "XPU62JHUXR6YGHM7"
             elif location == "ap-southeast-1": # Singapore
+                region_display = "California"
                 compute_sku = "UK4G6YTCGUXQ95FV"
             elif location == "ap-southeast-2":  # Sydney
+                region_display = "California"
                 compute_sku = "84X58QT58C94M9S4"
+                region_display = "California"
             elif location == "ap-northeast-1":  # Tokyo
                 compute_sku = "QWP5HGDJCPK7M5HX"
+                region_display = "California"
             elif location == "ca-central-1":  # Canada central, may we should add calgary region as well
                 compute_sku = "2EY9Q93X25CP4JPH" 
+                region_display = "California"
             elif location == "cn-north-1":    # Chine not available in this api calls
                 compute_sku = ""
             elif location == "cn-northwest-1":  # Not available 
                 compute_sku = ""
             elif location == "eu-central-1": # Frankfurt
+                region_display = "California"
                 compute_sku = "MHVW6ECJ79TE8898" # keep thisssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss
             elif location == "eu-west-1":  # Ireland
+                region_display = "California"
                 compute_sku = "2W2HPS86C3XU5Z5N"
             elif location == "eu-west-2":   # London
+                region_display = "California"
                 compute_sku = "9G5PTTCAG64KWYW3" 
             elif location == "eu-south-1":   # Milan
+                region_display = "California"
                 compute_sku = "7DK3DEGTAJSARFB3" 
             elif location == "eu-west-3":  # Paris
+                region_display = "California"
                 compute_sku = "XZ3QNZ72MHT2FCNN" 
             elif location == "eu-north-1":   # Stockholm
+                region_display = "California"
                 compute_sku = "MBE4DX6V4944MUSG" 
             elif location == "me-south-1":  # Bahrain
+                region_display = "California"
                 compute_sku = "NKSRA2MGJ26488D9" 
             elif location == "sa-east-1":   # São Paulo
+                region_display = "California"
                 compute_sku = "FTKRMY28NATVFRT8"
             elif location == "af-south-1":   # Cape Town
                 compute_sku = "U4DM5KKKH38Q93SY" 
+                region_display = "California"
 
-
+    db_size = 0
+    db_size_indication = ''
     if scalability == "essential":
         print('essential')
         scaling = " + Auto Scaling & Load Balancing"
@@ -1107,7 +1521,7 @@ def calculated_data_AWS(monthly_budget, expected_cpu, database_service, database
 
         computed_data['compute'] = {
         # 'name': compute_name + scaling,
-        'name': compute_instance.instance_type + scaling,
+        'name': compute_instance.instance_type + scaling + region_display,
 
         # 'unit_price': unit_price,
         'unit_price': compute_total_price,
@@ -1147,10 +1561,13 @@ def calculated_data_AWS(monthly_budget, expected_cpu, database_service, database
     if storage_size:
         if storage_size == "small":
             str_size = 1000
+            str_size_indication = " 1TB"
         elif storage_size == "medium":
             str_size = 10000
+            str_size_indication = " 10TB"
         elif storage_size == "large":
             str_size = 100000
+            str_size_indication = " 100TB"
         elif storage_size == "veryLarge":
             str_size = 100000
         # elif storage_size == "notSure":
@@ -1168,7 +1585,7 @@ def calculated_data_AWS(monthly_budget, expected_cpu, database_service, database
 
         if storage_instance:
             computed_data['storage'] = {
-                'name': storage_name,
+                'name': f"{storage_name} - {str_size_indication}",
                 'unit_price': storage_total_price,
                 'unit_of_storage': storage_instance.unit_of_storage,
                 'sku': storage_instance.sku,
@@ -1184,7 +1601,10 @@ def calculated_data_AWS(monthly_budget, expected_cpu, database_service, database
     db_storage_total_price = 0
     db_instance_total_price = 0
 
-    if database_service:
+    if database_service == "nodatabase":
+        computed_data['database'] = None
+
+    elif database_service != "nodatabase":
         db_storage_sku = 'F3E2EDSYC6ZNW7XP' if database_service == 'noSQL' else 'QVD35TA7MPS92RBC'
         db_instance_sku = 'MV3A7KKN6HB749EA' if database_service == 'sql' else None
         database_name = "DynamoDB" if database_service == 'noSQL' else "SQL Instance and Storage"
@@ -1192,10 +1612,13 @@ def calculated_data_AWS(monthly_budget, expected_cpu, database_service, database
         if database_size:
             if database_size == "small":
                 db_size = 10
+                db_size_indication = "10GB"
             if database_size == "medium":
                 db_size = 100
+            db_size_indication = "100GB"
             if database_size == "large":
                 db_size = 1000
+                db_size_indication = "1TB"
             if database_size == "noDatabase":
                 db_size = 0
 
@@ -1220,13 +1643,18 @@ def calculated_data_AWS(monthly_budget, expected_cpu, database_service, database
             except DatabaseSpecifications.DoesNotExist:
                 computed_data['database'] = f'No database instance found for SKU {db_instance_sku}.'
 
+
         total_db_price = db_storage_total_price + db_instance_total_price
         computed_data['database'] = {
             'name': database_name,
+            'name': f"{database_name} - {db_size_indication}",
             'sku': sku,
             # 'instance_price': db_instance_total_price,
             'unit_price': total_db_price
         }
+        if database_service == "nodatabase":
+            computed_data['database'] = None
+
 
     # Log to check the values
     print("Database storage cost:", db_storage_total_price)
@@ -1238,26 +1666,29 @@ def calculated_data_AWS(monthly_budget, expected_cpu, database_service, database
     network = 'false'
     dns = ""
     cdn = ""
-    
-    dns_name = ''
-    cdn_name = ''
-    
+    dns_price_desc = ""
+    desc_and = ""
+    cdn_price_desc = ""
     if dns_connection == "Yes" and cdn_connection == "Yes":
-        networkName = "DNS & CDN"
+        networkName = "Route53 DNS & CloudFront CDN"
+        network_sku = "ADQJDE5UASY2ZP73 | VN4VYBAF9PPSN7NQ"
     elif dns_connection == "Yes" and cdn_connection == "No":
-        networkName = "DNS"
+        networkName = "Route53 DNS"
+        network_sku = "ADQJDE5UASY2ZP73"
     elif dns_connection == "No" and cdn_connection == "Yes":
-        networkName = "CDN"
+        networkName = "CloudFront CDN"
+        network_sku = "VN4VYBAF9PPSN7NQ"
+        desc_and = " - "
 
 
     if dns_connection == "Yes": # == route53
-        dns_sku = "98Y35YBR3J64B5FX"
-        # dns_name = "Route53"
+        dns_sku = "ADQJDE5UASY2ZP73"
+        dns_name = "Route53"
         network = 'true'
         try:
-            dns = NetworkingSpecifications.objects.get(sku=dns_sku, provider__name='AWS')
-            dns_unit_price = float(dns.unit_price)# Convert unit price to float
-
+            # dns = NetworkingSpecifications.objects.get(sku=dns_sku, provider__name='AWS')
+            # dns_unit_price = float(dns.unit_price)# Convert unit price to float
+            dns_price_desc = "$0.40 per 1,000,000 queries" 
             print("-------------------------------------------------------------")
             print(f"dns unit price is:  {dns_unit_price}")
             # print(f"Compute total price is:  {compute_total_price}")
@@ -1271,7 +1702,11 @@ def calculated_data_AWS(monthly_budget, expected_cpu, database_service, database
         # cdn_name = 'CloudFront'
         print('  + Cloudfront')
         cdn_sku = "VN4VYBAF9PPSN7NQ"
-        
+        if dns_connection == "Yes" and cdn_connection == "Yes":
+            cdn_price_desc = f" | Free tier - First 1 TB of data transfer & First 10 Million HTTP/S requests each month"
+        if dns_connection == "No" and cdn_connection == "Yes":
+            cdn_price_desc = "Free tier - First 1 TB of data transfer & First 10 Million HTTP/S requests each month"
+
         try:
             cdn = NetworkingSpecifications.objects.get(sku=cdn_sku, provider__name='AWS')
             cdn_unit_price = float(cdn.unit_price)# Convert unit price to float
@@ -1283,27 +1718,28 @@ def calculated_data_AWS(monthly_budget, expected_cpu, database_service, database
             computed_data['networking'] = 'No cdn networking instance found.'
 
     if network == 'true':
-        if dns_connection == "Yes":
-            sku = dns_sku
-        elif dns_connection == "No":
-            sku = cdn_sku
+        # if dns_connection == "Yes":
+        #     dns_sku = dns_sku
+        # if dns_connection == " Yes" and cdn_connection == "Yes":
+        #     desc_and = " | "
             # Fetch the compute instance with the specific SKU
         try:
-            network_total_price = dns_unit_price + cdn_unit_price
-            formatted_price = "{:.6f}".format(network_total_price)
-
+            # network_total_price = dns_unit_price + cdn_unit_price
+            # formatted_price = "{:.6f}".format(network_total_price)
+            # price = 
             computed_data['networking'] = {
             'name': networkName,
-            'unit_price': formatted_price,
-            'sku': sku,
+            'unit_price': dns_price_desc + cdn_price_desc,
+            'sku': network_sku,
             }        
             print("-------------------------------------------------------------")
             print(f"dns unit price is:  {dns_unit_price}")
 
         except ComputeSpecifications.DoesNotExist:
             computed_data['networking'] = 'No networking instance found.'
+
             
-    plan_monthly_price = compute_total_price + storage_total_price + total_db_price + network_total_price
+    plan_monthly_price = compute_total_price + storage_total_price + total_db_price
 
     plan_annual_price = float(plan_monthly_price) * 12
     print("Total Monthly Plan Cost: ", plan_monthly_price)
@@ -1671,7 +2107,7 @@ def calculated_data_AWS_basic(monthly_budget, expected_cpu, database_service, da
     db_storage_total_price = 0
     db_instance_total_price = 0
 
-    if database_service:
+    if database_service != "nodatabase":
         # if database_service == "basic":
         #     sku = 'F3E2EDSYC6ZNW7XP'
         # if database_service == "complex":
@@ -1708,6 +2144,9 @@ def calculated_data_AWS_basic(monthly_budget, expected_cpu, database_service, da
             # 'instance_price': db_instance_total_price,
             'unit_price': total_db_price
         }
+    else: 
+        computed_data['database'] = None
+
 
     # Log to check the values
     print("Database storage cost:", db_storage_total_price)
@@ -1719,23 +2158,29 @@ def calculated_data_AWS_basic(monthly_budget, expected_cpu, database_service, da
     network = 'false'
     dns = ""
     cdn = ""
-
+    dns_price_desc = ""
+    desc_and = ""
+    cdn_price_desc = ""
     if dns_connection == "Yes" and cdn_connection == "Yes":
-        networkName = "DNS & CDN"
+        networkName = "Route53 DNS & CloudFront CDN"
+        network_sku = "ADQJDE5UASY2ZP73 | VN4VYBAF9PPSN7NQ"
     elif dns_connection == "Yes" and cdn_connection == "No":
-        networkName = "DNS"
+        networkName = "Route53 DNS"
+        network_sku = "ADQJDE5UASY2ZP73"
     elif dns_connection == "No" and cdn_connection == "Yes":
-        networkName = "CDN"
+        networkName = "CloudFront CDN"
+        network_sku = "VN4VYBAF9PPSN7NQ"
+        desc_and = " - "
 
 
     if dns_connection == "Yes": # == route53
-        dns_sku = "98Y35YBR3J64B5FX"
-        # dns_name = "Route53"
+        dns_sku = "ADQJDE5UASY2ZP73"
+        dns_name = "Route53"
         network = 'true'
         try:
-            dns = NetworkingSpecifications.objects.get(sku=dns_sku, provider__name='AWS')
-            dns_unit_price = float(dns.unit_price)# Convert unit price to float
-
+            # dns = NetworkingSpecifications.objects.get(sku=dns_sku, provider__name='AWS')
+            # dns_unit_price = float(dns.unit_price)# Convert unit price to float
+            dns_price_desc = "$0.40 per 1,000,000 queries" 
             print("-------------------------------------------------------------")
             print(f"dns unit price is:  {dns_unit_price}")
             # print(f"Compute total price is:  {compute_total_price}")
@@ -1749,7 +2194,11 @@ def calculated_data_AWS_basic(monthly_budget, expected_cpu, database_service, da
         # cdn_name = 'CloudFront'
         print('  + Cloudfront')
         cdn_sku = "VN4VYBAF9PPSN7NQ"
-        
+        if dns_connection == "Yes" and cdn_connection == "Yes":
+            cdn_price_desc = f" | Free tier - First 1 TB of data transfer & First 10 Million HTTP/S requests each month"
+        if dns_connection == "No" and cdn_connection == "Yes":
+            cdn_price_desc = "Free tier - First 1 TB of data transfer & First 10 Million HTTP/S requests each month"
+
         try:
             cdn = NetworkingSpecifications.objects.get(sku=cdn_sku, provider__name='AWS')
             cdn_unit_price = float(cdn.unit_price)# Convert unit price to float
@@ -1761,19 +2210,19 @@ def calculated_data_AWS_basic(monthly_budget, expected_cpu, database_service, da
             computed_data['networking'] = 'No cdn networking instance found.'
 
     if network == 'true':
-        if dns_connection == "Yes":
-            sku = dns_sku
-        elif dns_connection == "No":
-            sku = cdn_sku
+        # if dns_connection == "Yes":
+        #     dns_sku = dns_sku
+        # if dns_connection == " Yes" and cdn_connection == "Yes":
+        #     desc_and = " | "
             # Fetch the compute instance with the specific SKU
         try:
-            network_total_price = dns_unit_price + cdn_unit_price
-            formatted_price = "{:.6f}".format(network_total_price)
-
+            # network_total_price = dns_unit_price + cdn_unit_price
+            # formatted_price = "{:.6f}".format(network_total_price)
+            # price = 
             computed_data['networking'] = {
             'name': networkName,
-            'unit_price': formatted_price,
-            'sku': sku,
+            'unit_price': dns_price_desc + cdn_price_desc,
+            'sku': network_sku,
             }        
             print("-------------------------------------------------------------")
             print(f"dns unit price is:  {dns_unit_price}")
@@ -1782,7 +2231,7 @@ def calculated_data_AWS_basic(monthly_budget, expected_cpu, database_service, da
             computed_data['networking'] = 'No networking instance found.'
 
             
-    plan_monthly_price = compute_total_price + storage_total_price + total_db_price + network_total_price
+    plan_monthly_price = compute_total_price + storage_total_price + total_db_price
 
     plan_annual_price = float(plan_monthly_price) * 12
     print("Total Monthly Plan Cost: ", plan_monthly_price)

@@ -559,7 +559,7 @@ def fetch_save(api_key, service_id, all_skus):
             return
 
 def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database_size, cloud_storage, storage_size, dns_connection, cdn_connection, scalability, location):
-    
+    database_total_price = 0
     computed_data = {'provider': 'Google Cloud',}  # Initialize dictionary to store computed data
      #Going through the region to set the location for query
     city=None
@@ -680,10 +680,13 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
 #----------------------------------------------------------------------------------------------------------------------------------------
     if storage_size=='large' or storage_size=='10000':
         storage_size=100000
+        storage_size_indication = " - 100TB"
     elif storage_size=='medium' or storage_size=='5000':    
         storage_size = 10000
+        storage_size_indication = " - 10TB"
     elif storage_size=='small' or storage_size=='1000':
         storage_size = 1000
+        storage_size_indication = " - 1TB"
     print(storage_size) 
     print(cloud_storage)
     query_temp = None
@@ -711,7 +714,7 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
         storage_total_price=float(storage_instance.unit_price)* storage_size  
         if storage_instance:
             computed_data['storage'] = {
-                'name': storage_instance.name,
+                'name': storage_instance.name + storage_size_indication,
                 'unit_price': storage_total_price, #storage_total_price,
                 'unit_of_storage': storage_instance.unit_of_storage,
                 'sku': storage_instance.sku,
@@ -739,7 +742,7 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
         computed_data['storage'] = None
  #-------------------------------------------------------------------------------------------------------------------------------------------------------------                    
     # #Database Logic
-    if database_service != 'noDatabase':
+    if database_service != 'nodatabase':
         if database_size == 'large' or database_size == '10000':
             database_size = 1000
         elif database_size == 'medium'  or database_size == '5000':
@@ -768,21 +771,22 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
             else:
                 query = query_template
         # Query for the first database instance
-    
-        database_instance = DatabaseSpecifications.objects.filter(name=query).first()
-        database_total_price= float(database_instance.unit_price)*database_size # be sure to change the price in the database, some of the values have not been formated correctly.
-        if database_instance:
-            computed_data['database'] = {
-                'name': database_instance.name,
-                'unit_price': database_total_price,
-                'unit_of_storage': database_instance.unit_of_storage,   
-                'sku': database_instance.sku,
-                'data_type': database_instance.data_type,
-                'provider': database_instance.provider.name,
-                'cloud_service': database_instance.cloud_service.service_type
-            }
-        else :
-            computed_data['database'] = None
+        if database_service != "noDatabase":
+            
+            database_instance = DatabaseSpecifications.objects.filter(name=query).first()
+            database_total_price= float(database_instance.unit_price)*database_size # be sure to change the price in the database, some of the values have not been formated correctly.
+            if database_instance:
+                computed_data['database'] = {
+                    'name': database_instance.name,
+                    'unit_price': database_total_price,
+                    'unit_of_storage': database_instance.unit_of_storage,   
+                    'sku': database_instance.sku,
+                    'data_type': database_instance.data_type,
+                    'provider': database_instance.provider.name,
+                    'cloud_service': database_instance.cloud_service.service_type
+                }
+            else :
+                computed_data['database'] = None
     else:
         computed_data['database'] = None
         database_total_price= 0
@@ -793,6 +797,7 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
     outbound_lb = None
     dns_instance = None
     cdn_instance = None
+    storage_total_price = 0
     name = ""
 
     if scalability == "essential":
