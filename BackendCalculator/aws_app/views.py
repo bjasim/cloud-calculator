@@ -217,76 +217,6 @@ sku_to_service_code = {
     # "HY3BZPP2B6K8MSJF": "AmazonEC2",   # gp2-general purpose storage 0.10 per GB-Mo
 }
 
-# sku_to_service_code_ec2 = {
-#     "TRA7PTVEJVQKCP4S": ("AmazonEC2", "us-east-1"),  # 1 vCPU - 2 RAM (Standard)
-#     "TRA7PTVEJVQKCP4S": ("AmazonEC2", "us-east-2"),  # 2 vCPU - 4 RAM (Standard)
-#     "ZYU3DJATRUWSY3JP": ("AmazonEC2", "us-west-1"), # 1 vCPU - 2 RAM (Standard)
-#     "U7958F68RYJ58KTG": ("AmazonEC2", "us-west-2"), # 2 vCPU - 4 RAM (Standard)
-#     "KA7V3NDRQ93YB2TU": ("AmazonEC2", "ap-east-1"),  # 1 vCPU - 2 RAM (Standard)
-#     "FC2J7R2YJJRVMC5C": ("AmazonEC2", "ap-south-1"),  # 2 vCPU - 4 RAM (Standard)
-#     "XC5KUBT9PC2AF5FX": ("AmazonEC2", "ap-northeast-3"), # 1 vCPU - 2 RAM (Standard)
-#     "NTRGN3U6F4VGTHS7": ("AmazonEC2", "ap-northeast-2"), # 2 vCPU - 4 RAM (Standard)
-#     "F5ZRJYM277794AQ6": ("AmazonEC2", "ap-southeast-1"),  # 1 vCPU - 2 RAM (Standard)
-#     "UGYXPVB2PRPZDGHB": ("AmazonEC2", "ap-southeast-2"),  # 2 vCPU - 4 RAM (Standard)
-#     "X7QR4YZ756X4R88M": ("AmazonEC2", "ap-northeast-1"), # 1 vCPU - 2 RAM (Standard)
-#     "ZJRR3TDYXRW4KT2W": ("AmazonEC2", "ca-central-1"), # 2 vCPU - 4 RAM (Standard)
-#     "3DG6WFZ5QW4JAAHJ": ("AmazonEC2", "eu-central-1"),  # 1 vCPU - 2 RAM (Standard)
-#     "HZXG5A8JF66Q56EG": ("AmazonEC2", "eu-west-1"),  # 2 vCPU - 4 RAM (Standard)
-#     "A64VFHU7JPNG5B96": ("AmazonEC2", "eu-west-2"), # 1 vCPU - 2 RAM (Standard)
-#     "V8WSYF86JEFGDE7X": ("AmazonEC2", "eu-south-1"), # 2 vCPU - 4 RAM (Standard)
-#     "NF8Q8XQYYTPQ9Y2Q": ("AmazonEC2", "eu-west-3"),  # 1 vCPU - 2 RAM (Standard)
-#     "NGA3WYAKBQCKSMH4": ("AmazonEC2", "eu-north-1"),  # 2 vCPU - 4 RAM (Standard)
-#     "36RQDKEV7N7DFNC6": ("AmazonEC2", "me-south-1"), # 1 vCPU - 2 RAM (Standard)
-#     "5C37YTXFG3U6MFME": ("AmazonEC2", "sa-east-1"), # 2 vCPU - 4 RAM (Standard)
-#     "F3N4RX7TVEA3NSFV": ("AmazonEC2", "af-south-1"),  # 1 vCPU - 2 RAM (Standard)
-#     "ZARW2CVKAGDA9CH7": ("AmazonEC2", "us-east-1"),  # 2 vCPU - 4 RAM (Standard)
-#     "G3MWKTTASN4YDV9G": ("AmazonEC2", "us-east-2"), # 1 vCPU - 2 RAM (Standard)
-#     "2YBVU66CE3ZCB3MN": ("AmazonEC2", "us-west-1"), # 2 vCPU - 4 RAM (Standard)
-#     "95AQPMX9Z2Q79CUA": ("AmazonEC2", "us-west-2"),  # 1 vCPU - 2 RAM (Standard)
-#     "YPN5EFDYK7EWBYFS": ("AmazonEC2", "ap-east-1"),  # 2 vCPU - 4 RAM (Standard)
-#     "8EJHB83R33SUFQ6N": ("AmazonEC2", "ap-south-1"), # 1 vCPU - 2 RAM (Standard)
-#     "DTJZW7BSSC22H47Y": ("AmazonEC2", "ap-northeast-3"), # 2 vCPU - 4 RAM (Standard)
-#     "8EJHB83R33SUFQ6N": ("AmazonEC2", "ap-south-1"),  # 2 vCPU - 4 RAM (Standard)
-#     "DTJZW7BSSC22H47Y": ("AmazonEC2", "ap-northeast-3"), # 1 vCPU - 2 RAM (Standard)
-#     "8JC7KPKJGZQW9XE8": ("AmazonEC2", "ap-northeast-2"), # 2 vCPU - 4 RAM (Standard)
-#     "25QKCHCQ2X6PQ4SK": ("AmazonEC2", "ap-southeast-1"),  # 1 vCPU - 2 RAM (Standard)
-#     "D7Y7SA65JHNJ8TVK": ("AmazonEC2", "ap-southeast-2"),  # 2 vCPU - 4 RAM (Standard)
-#     "3K59PVQYWBTWXEHT": ("AmazonEC2", "eu-central-1"), # 1 vCPU - 2 RAM (Standard)
-#     "HTENM5U4FF46JJX4": ("AmazonEC2", "eu-west-1"), # 2 vCPU - 4 RAM (Standard)
-#     "SWBFZA9T9TPE7BTW": ("AmazonEC2", "eu-west-2"),  # 1 vCPU - 2 RAM (Standard)
-#     "GUCTAJJ2UBWCYGBV": ("AmazonEC2", "eu-west-3"),  # 2 vCPU - 4 RAM (Standard)
-#     "42YK6425MDNNXXYK": ("AmazonEC2", "eu-north-1"), # 1 vCPU - 2 RAM (Standard)
-#     "2R36JA9UAT77F3QS": ("AmazonEC2", "me-south-1"), # 2 vCPU - 4 RAM (Standard)
-#     "WJYZVWCTJV8GR994": ("AmazonEC2", "sa-east-1"), # 2 vCPU - 4 RAM (Standard)
-#     "5S6YRHGH44SE49ND": ("AmazonEC2", "af-south-1"),  # 1 vCPU - 2 RAM (Standard)
-#     "NX93MRPARN4BNZB3": ("AmazonEC2", "us-east-1"),  # 2 vCPU - 4 RAM (Standard)
-#     "F6EP448JAPXAJH3C": ("AmazonEC2", "us-east-2"), # 1 vCPU - 2 RAM (Standard)
-#     "D95TVMK2QRETXJRD": ("AmazonEC2", "us-west-1"), # 2 vCPU - 4 RAM (Standard)
-#     "7WVK4XHSDKCTP5FX": ("AmazonEC2", "us-west-2"),  # 1 vCPU - 2 RAM (Standard)
-#     "AHYPQ2ZMAMJPWEAF": ("AmazonEC2", "ap-east-1"),  # 2 vCPU - 4 RAM (Standard)
-#     "F24BUQQWM54MWK6M": ("AmazonEC2", "ap-south-1"), # 1 vCPU - 2 RAM (Standard)
-#     "ZBNZW4PVZFHAPSK2": ("AmazonEC2", "ap-northeast-3"), # 2 vCPU - 4 RAM (Standard)
-#     "32WSSSHCG7J7YPJF": ("AmazonEC2", "ap-northeast-2"), # 1 vCPU - 2 RAM (Standard)
-#     "CKRY6X69QHGSEZY4": ("AmazonEC2", "ap-southeast-1"), # 2 vCPU - 4 RAM (Standard)
-#     "PAHJK42PZPEUG3CP": ("AmazonEC2", "ap-southeast-2"), # 2 vCPU - 4 RAM (Standard)
-#     "5S6YRHGH44SE49ND": ("AmazonEC2", "af-south-1"),  # 1 vCPU - 2 RAM (Standard)
-    
-#     "NX93MRPARN4BNZB3": ("AmazonEC2", "us-east-1"),  # 2 vCPU - 4 RAM (Standard)
-    
-#     "F6EP448JAPXAJH3C": ("AmazonEC2", "us-east-2"), # 1 vCPU - 2 RAM (Standard)
-    
-#     "D95TVMK2QRETXJRD": ("AmazonEC2", "us-west-1"), # 2 vCPU - 4 RAM (Standard)
-    
-#     "7WVK4XHSDKCTP5FX": ("AmazonEC2", "us-west-2"),  # 1 vCPU - 2 RAM (Standard)
-    
-#     "AHYPQ2ZMAMJPWEAF": ("AmazonEC2", "ap-east-1"),  # 2 vCPU - 4 RAM (Standard)
-    
-#     "F24BUQQWM54MWK6M": ("AmazonEC2", "ap-south-1"), # 1 vCPU - 2 RAM (Standard)
-    
-#     "ZBNZW4PVZFHAPSK2": ("AmazonEC2", "ap-northeast-3"), # 2 vCPU - 4 RAM (Standard)
-
-
-# }
 
 def get_pricing_ec2(request):
     for sku, (service_code) in sku_to_service_code.items():
@@ -1522,7 +1452,7 @@ def calculated_data_AWS(monthly_budget, expected_cpu, database_service, database
         compute_instance = ComputeSpecifications.objects.get(sku=compute_sku, provider__name='AWS')
         compute_unit_price = float(compute_instance.unit_price)# Convert unit price to float
         compute_name = "Ec2 Instance"
-        compute_total_price = round(compute_unit_price * 720)  # Calculate total price
+        compute_total_price = round(compute_unit_price * 720, 2)  # Calculate total price with 2 decimal places
 
         computed_data['compute'] = {
         # 'name': compute_name + scaling,
@@ -1585,7 +1515,7 @@ def calculated_data_AWS(monthly_budget, expected_cpu, database_service, database
         # Make sure storage_unit_price is a float
         storage_unit_price = float(storage_instance.unit_price)
         # Now calculate the total price
-        storage_total_price = round(storage_unit_price * str_size)
+        storage_total_price = round(storage_unit_price * str_size, 2)
 
 
         if storage_instance:
@@ -1636,7 +1566,7 @@ def calculated_data_AWS(monthly_budget, expected_cpu, database_service, database
         try:
             db_storage_instance = DatabaseSpecifications.objects.get(sku=db_storage_sku, provider__name='AWS')
             db_storage_unit_price = float(db_storage_instance.unit_price)
-            db_storage_total_price = round(db_storage_unit_price * db_size)
+            db_storage_total_price = round(db_storage_unit_price * db_size, 2)
         except DatabaseSpecifications.DoesNotExist:
             computed_data['database'] = f'No database storage instance found for SKU {db_storage_sku}.'
 
@@ -1644,7 +1574,7 @@ def calculated_data_AWS(monthly_budget, expected_cpu, database_service, database
             try:
                 db_instance = DatabaseSpecifications.objects.get(sku=db_instance_sku, provider__name='AWS')
                 db_instance_unit_price = float(db_instance.unit_price)
-                db_instance_total_price = round(db_instance_unit_price * 720)
+                db_instance_total_price = round(db_instance_unit_price * 720, 2)
             except DatabaseSpecifications.DoesNotExist:
                 computed_data['database'] = f'No database instance found for SKU {db_instance_sku}.'
 
@@ -1749,8 +1679,8 @@ def calculated_data_AWS(monthly_budget, expected_cpu, database_service, database
     plan_annual_price = float(plan_monthly_price) * 12
     print("Total Monthly Plan Cost: ", plan_monthly_price)
     print("Total Annual Plan Cost: ", plan_annual_price)
-    computed_data['monthly'] = round(plan_monthly_price)
-    computed_data['annual'] = round(plan_annual_price)
+    computed_data['monthly'] = round(plan_monthly_price, 2)
+    computed_data['annual'] = round(plan_annual_price, 2)
     
     
     
@@ -2117,7 +2047,7 @@ def calculated_data_AWS_basic(monthly_budget, expected_cpu, database_service, da
         compute_instance = ComputeSpecifications.objects.get(sku=compute_sku, provider__name='AWS')
         compute_unit_price = float(compute_instance.unit_price)# Convert unit price to float
         compute_name = "Ec2 Instance"
-        compute_total_price = round(compute_unit_price * 720)  # Calculate total price
+        compute_total_price = round(compute_unit_price * 720, 2)  # Calculate total price
 
         computed_data['compute'] = {
         # 'name': compute_name + scaling,
@@ -2156,7 +2086,7 @@ def calculated_data_AWS_basic(monthly_budget, expected_cpu, database_service, da
         # Make sure storage_unit_price is a float
         storage_unit_price = float(storage_instance.unit_price)
         # Now calculate the total price
-        storage_total_price = round(storage_unit_price * storage_size)
+        storage_total_price = round(storage_unit_price * storage_size, 2)
 
         if storage_instance:
             computed_data['storage'] = {
@@ -2195,7 +2125,7 @@ def calculated_data_AWS_basic(monthly_budget, expected_cpu, database_service, da
         try:
             db_storage_instance = DatabaseSpecifications.objects.get(sku=db_storage_sku, provider__name='AWS')
             db_storage_unit_price = float(db_storage_instance.unit_price)
-            db_storage_total_price = round(db_storage_unit_price * size)
+            db_storage_total_price = round(db_storage_unit_price * size, 2)
         except DatabaseSpecifications.DoesNotExist:
             computed_data['database'] = f'No database storage instance found for SKU {db_storage_sku}.'
 
@@ -2203,7 +2133,7 @@ def calculated_data_AWS_basic(monthly_budget, expected_cpu, database_service, da
             try:
                 db_instance = DatabaseSpecifications.objects.get(sku=db_instance_sku, provider__name='AWS')
                 db_instance_unit_price = float(db_instance.unit_price)
-                db_instance_total_price = round(db_instance_unit_price * 720)
+                db_instance_total_price = round(db_instance_unit_price * 720, 2)
             except DatabaseSpecifications.DoesNotExist:
                 computed_data['database'] = f'No database instance found for SKU {db_instance_sku}.'
 
@@ -2306,8 +2236,8 @@ def calculated_data_AWS_basic(monthly_budget, expected_cpu, database_service, da
     plan_annual_price = float(plan_monthly_price) * 12
     print("Total Monthly Plan Cost: ", plan_monthly_price)
     print("Total Annual Plan Cost: ", plan_annual_price)
-    computed_data['monthly'] = round(plan_monthly_price)
-    computed_data['annual'] = round(plan_annual_price)
+    computed_data['monthly'] = round(plan_monthly_price, 2)
+    computed_data['annual'] = round(plan_annual_price, 2)
 
     if monthly_budget == "lessThan500" or monthly_budget == "under50":
         monthly_budget = 500
@@ -2325,10 +2255,3 @@ def calculated_data_AWS_basic(monthly_budget, expected_cpu, database_service, da
     
             
     return computed_data
-
-# # to-do
-# Add logic if user select database for basic form (basic form)
-# Add logic for monthly budget to change price color (basic and advanced form)
-# Add all skus to the dictionary so they can be updated no matter what
-# Add time attribute to each database table to show updated time everytime the table gets updated
-# Finalize locations that work for all of us (basic and advanced form)
