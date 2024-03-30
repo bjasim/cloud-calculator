@@ -671,7 +671,7 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
     print(compute_total_cost)
     computed_data['compute'] = {
         'name': compute_instance.name + scale,
-        'unit_price': round(compute_total_cost, 2),
+        'unit_price': f"${round(compute_total_cost, 2)}",
         'cpu': f"{compute_instance.cpu} vCPU",
         'memory': f"{compute_instance.memory} GB Ram",
         'sku': compute_instance.sku,
@@ -717,7 +717,7 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
         if storage_instance:
             computed_data['storage'] = {
                 'name': storage_instance.name,
-                'unit_price': f"${storage_total_price}/{st_val}", #storage_total_price,
+                'unit_price': f"${storage_total_price:.2f}/{st_val}", #storage_total_price,
                 'unit_of_storage': storage_instance.unit_of_storage,
                 'sku': storage_instance.sku,
                 'provider': storage_instance.provider.name,
@@ -731,7 +731,7 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
             if storage_instance_default:
                 computed_data['storage'] = {
                     'name': storage_instance_default.name,
-                    'unit_price': storage_total_price, #storage_total_price,
+                    'unit_price': f"${storage_total_price:.2f}", #storage_total_price,
                     'unit_of_storage': storage_instance_default.unit_of_storage,
                     'sku': storage_instance_default.sku,
                     'provider': storage_instance_default.provider.name,
@@ -744,6 +744,17 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
         computed_data['storage'] = None
  #-------------------------------------------------------------------------------------------------------------------------------------------------------------                    
     # Database Logic
+    DB_VCPU = 2
+    DB_RAM= 4
+    #Monthly cost 
+    COST_PER_VCPU= 36.208 
+    COST_PER_RAM= 6.132 
+    DB_COST= (DB_VCPU * COST_PER_VCPU) + (DB_RAM * COST_PER_RAM)
+    print("DBCOST:")
+    print(DB_COST)
+    
+    db_instance_spec = None
+    
     if database_service != 'noDatabase':
         if database_size == 'large' or database_size == '10000':
             database_size = 1000
@@ -755,7 +766,6 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
         query_template = None
         default_city = "Los Angeles"  # Define your default city here
         if database_service == 'sql' or database_service == 'complex':
-            # Additional condition for SQL Server databases if city is Oregon
             query_template = "Cloud SQL for PostgreSQL: Regional - Standard storage in %s"
         elif database_service == 'noSQL' or database_service == 'basic': 
             query_template = "Cloud Firestore Storage %s"
@@ -775,12 +785,18 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
                 # Retry with default city
                 query = query_template % default_city
                 database_instance = DatabaseSpecifications.objects.filter(name=query).first()
+                
+            if database_service =='sql':
+                database_total_price = float(database_instance.unit_price) * database_size + DB_COST if database_instance else 0  # Set price to 0 if database_instance is None
+                db_instance_spec = '| 2vCPU - 4GB RAM'
+            else:
+                database_total_price = float(database_instance.unit_price) * database_size if database_instance else 0
+                db_instance_spec = ''
             
-            database_total_price = float(database_instance.unit_price) * database_size if database_instance else 0  # Set price to 0 if database_instance is None
             if database_instance:
                 computed_data['database'] = {
-                    'name': database_instance.name,
-                    'unit_price': database_total_price,
+                    'name': f'{database_instance.name}|{database_size}GB{db_instance_spec} ',
+                    'unit_price': f'${round(database_total_price,2)}',
                     'unit_of_storage': database_instance.unit_of_storage,   
                     'sku': database_instance.sku,
                     'data_type': database_instance.data_type,
@@ -842,7 +858,7 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
         sku_comp = " + ".join(filter(None, sku_components))
         computed_data['networking'] = {
         'name': name,
-        'unit_price': f"{price_val}| Total price: {round(network_total_price,2)}/Month",
+        'unit_price': f"${price_val}| Total price: ${round(network_total_price,2)}/Month",
         'sku': sku_comp
     }
     else:
@@ -873,8 +889,8 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
 
     plan_annual_price = float(plan_monthly_price) * 12
 
-    computed_data['monthly'] = round(plan_monthly_price, 2)
-    computed_data['annual'] = round(plan_annual_price, 2)
+    computed_data['monthly'] = f"${round(plan_monthly_price, 2)}"
+    computed_data['annual'] = f"${round(plan_annual_price, 2)}"
 
     return computed_data
 
