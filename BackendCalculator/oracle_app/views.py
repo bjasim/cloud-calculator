@@ -231,9 +231,9 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
 
     #For basic form calculation.
     if expected_cpu == "simple":
-        expected_cpu = "1vCPU"
+        expected_cpu = "2vCPUs"
     elif expected_cpu == "moderate":
-        expected_cpu = "4vCPUs"
+        expected_cpu = "8vCPUs"
     elif expected_cpu == "complex":
         expected_cpu = "16vCPUs"
 
@@ -280,7 +280,7 @@ def calculated_data_Oracle(monthly_budget, expected_cpu, database_service, datab
                 'sku': f"CPU:{compute_service.sku}  - RAM:{ram_sku}",
                 'unit_price': f"{compute_total_price}",
                 'cpu': f'CPU and RAM: {config["name_override"]}',
-                'memory': f'{config["multiplier"] * 2} GiB',
+                'memory': f'{config["ram_cost_multiplier"] * 1} GiB',
             }
 
 #------------------------------------------------------------------------------------------------

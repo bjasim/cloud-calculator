@@ -430,7 +430,17 @@ def calculated_data_Azure(monthly_budget, expected_ram, database_service, databa
             size_multiplier = size_multiplier_mapping.get(database_size, 1)
             unit_price = float(database_instance.unit_price)  # Assume this gives price per GB/Month
             # Calculate the price for the selected size
-            total_price = unit_price  * size_multiplier + monthly_price # Assuming price needs to be calculated per TB
+            total_price = unit_price * size_multiplier  # Remove monthly_price here
+             # Check if the database_service is 'sql'
+             # Check if the database_service is 'sql'
+            if database_service == 'sql':
+                total_price += monthly_price  # Add the monthly price of specific_database_instances
+                # Add "2 vCPU" to the instance name
+                size_label = database_size_description.get(database_size, 'Unknown size')
+                modified_name = f"{database_instance.name} - Compute Gen5 (2 vCore) - {size_label}"
+            else:
+                # No need to add 'Compute Gen5' if it's not 'sql'
+                modified_name = database_instance.name
             database_price = float(total_price)
             # Add "2 vCPU" to the instance name
             size_label = database_size_description.get(database_size, 'Unknown size')
@@ -727,17 +737,17 @@ def calculated_data_Azure_basic(compute_complexity, expected_users, data_storage
             }
         },
         'complex': {
-            'primary': {
-                'name': 'SQL Database Standard - Storage',
-                'sku': 'Standard',
-                'region': 'East US',
-                'unit_of_storage': '1 GB/Month'
-            },
             'secondary': {
-                'name': 'SQL Database Premium - Storage',
-                'sku': 'Premium',
+                'name': 'Azure Database for PostgreSQL Standard Storage',
+                'sku': 'Standard',
                 'region': 'eastus',
                 'unit_of_storage': '1 GB/Month'
+            },
+            'primary': {
+                'name': 'Azure Cosmos DB for PostgreSQL General Purpose Storage',
+                'sku': 'General Purpose',
+                'region': 'eastus',
+                'unit_of_storage': '1 GiB/Month'
             }
         },
         'nodatabase': {
@@ -797,12 +807,18 @@ def calculated_data_Azure_basic(compute_complexity, expected_users, data_storage
             size_multiplier = size_multiplier_mapping.get(expected_users, 1)
             unit_price = float(database_instance.unit_price)  # Assume this gives price per GB/Month
             # Calculate the price for the selected size
-            total_price = unit_price  * size_multiplier + monthly_price # Assuming price needs to be calculated per TB
+            total_price = unit_price * size_multiplier  # Remove monthly_price here
+            # Check if the database_service is 'sql'
+            # Check if the database_service is 'sql'
+            if database_service == 'complex':
+                total_price += monthly_price  # Add the monthly price of specific_database_instances
+                # Add "2 vCPU" to the instance name
+                size_label = size_to_description.get(expected_users, 'Unknown size')
+                modified_name = f"{database_instance.name} - Compute Gen5 (2 vCore) - {size_label}"
+            else:
+                # No need to add 'Compute Gen5' if it's not 'sql'
+                modified_name = database_instance.name
             database_price = float(total_price)
-            # Add "2 vCPU" to the instance name
-            # Add the size description to the instance name based on expected_users
-            size_label = size_to_description.get(expected_users, 'Unknown size')
-            modified_name = f"{database_instance.name} - Compute Gen5 - {size_label}"
 
             computed_data['database'] = {
                 'name': modified_name,

@@ -330,19 +330,19 @@ const BasicForm = () => {
                   <MenuItem value="ap-northeast-2">Asia Pacific (Seoul)</MenuItem>
                   <MenuItem value="ap-southeast-1">Asia Pacific (Singapore)</MenuItem>
                   <MenuItem value="ap-southeast-2">Asia Pacific (Sydney)</MenuItem>
-                  <MenuItem value="ap-northeast-1">Asia Pacific (Tokyo)</MenuItem>
+                  {/* <MenuItem value="ap-northeast-1">Asia Pacific (Tokyo)</MenuItem> */}
                   <MenuItem value="ca-central-1">Canada (Central)</MenuItem>
                   {/* <MenuItem value="cn-north-1">China (Beijing)</MenuItem>
                   <MenuItem value="cn-northwest-1">China (Ningxia)</MenuItem> */}
                   <MenuItem value="eu-central-1">EU (Frankfurt)</MenuItem>
-                  <MenuItem value="eu-west-1">EU (Ireland)</MenuItem>
+                  {/* <MenuItem value="eu-west-1">EU (Ireland)</MenuItem> */}
                   <MenuItem value="eu-west-2">EU (London)</MenuItem>
                   <MenuItem value="eu-south-1">EU (Milan)</MenuItem>
                   <MenuItem value="eu-west-3">EU (Paris)</MenuItem>
-                  <MenuItem value="eu-north-1">EU (Stockholm)</MenuItem>
-                  <MenuItem value="me-south-1">Middle East (Bahrain)</MenuItem>
-                  <MenuItem value="sa-east-1">South America (Sao Paulo)</MenuItem>
-                  <MenuItem value="af-south-1">Africa (Cape Town)</MenuItem>
+                  {/* <MenuItem value="eu-north-1">EU (Stockholm)</MenuItem> */}
+                  {/* <MenuItem value="me-south-1">Middle East (Bahrain)</MenuItem> */}
+                  {/* <MenuItem value="sa-east-1">South America (Sao Paulo)</MenuItem> */}
+                  {/* <MenuItem value="af-south-1">Africa (Cape Town)</MenuItem> */}
                 </Select>
                 {validationErrors.region && (
                   <FormHelperText error>Please select your region</FormHelperText>
