@@ -564,13 +564,14 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
     city=None
     if location == 'us-central1':
         city= 'Iowa'   #doesnt work for storage, None for Block Storage
-    elif location == 'us-east-2': # dont use no location for everything
-        location = 'us-east2'
-        city= 'South Carolina'
+    # elif location == 'us-east-2': # dont use no location for everything
+    #     location = 'us-east2'
+    #     city= 'South Carolina'
     elif location == 'us-east-1':
         location = 'us-east4'
         city= 'Northern Virginia' #only virginia for block storage
-    elif location == 'us-east5':
+    elif location == 'us-east-2':
+        location = 'us-east5'
         city= 'Columbus'
     elif location == 'us-south1':
         city= 'Dallas'
@@ -608,7 +609,8 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
         city= 'Singapore'
     elif location == 'asia-southeast2':
         city= 'Jakarta'
-    elif location == 'australia-southeast1':
+    elif location == 'ap-southeast-2':
+        location = 'australia-southeast1'
         city= 'Sydney'
     elif location == 'australia-southeast2':
         city= 'Melbourne'
@@ -620,7 +622,8 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
         city= 'Madrid'
     elif location == 'europe-west1':
         city= 'Belgium' #None for PostgreSql Storage
-    elif location == 'europe-west2':
+    elif location == 'eu-west-2':
+        location= 'europe-west2'
         city= 'London'
     elif location == 'eu-central-1':
         location='europe-west3'
@@ -629,17 +632,21 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
         city= 'Netherlands'
     elif location == 'europe-west6':
         city= 'Zurich'
-    elif location == 'europe-west8':
+    elif location == 'eu-south-1':
+        location= 'europe-west8'
         city= 'Milan'
-    elif location == 'europe-west9':
+    elif location == 'eu-west-3':
+        location='europe-west9'
         city= 'Paris'
     elif location == 'me-west1':
         city= 'Tel Aviv'or 'Isreal'  #Isreal Works not Tel for PosgreSQL storage
     elif location == 'northamerica-northeast1':
         city= 'Montréal'
-    elif location == 'northamerica-northeast2':
+    elif location == 'ca-central-1':
+        location = 'northamerica-northeast2'
         city= 'Toronto'
-    elif location == 'southamerica-east1':
+    elif location == 'sa-east-1':
+        location = 'southamerica-east1'
         city= 'São Paulo'
     elif location == 'southamerica-west1':
         city= 'Santiago'
@@ -786,7 +793,7 @@ def calculated_data_gcp(monthly_budget, expected_cpu, database_service, database
                 query = query_template % default_city
                 database_instance = DatabaseSpecifications.objects.filter(name=query).first()
                 
-            if database_service =='sql':
+            if database_service =='sql' or database_service == 'complex':
                 database_total_price = float(database_instance.unit_price) * database_size + DB_COST if database_instance else 0  # Set price to 0 if database_instance is None
                 db_instance_spec = '| 2vCPU - 4GB RAM'
             else:
